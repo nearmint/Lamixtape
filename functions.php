@@ -312,18 +312,19 @@ function loadmore_enqueue() {
 }
 add_action( 'wp_enqueue_scripts', 'loadmore_enqueue' );
 
-// Localize script with site info + REST nonce for AJAX
-// NOTE: still attached to handle 'jquery'; switching to 'lmt-main' is the
-// next commit (rename of the localized var bloginfo -> lmtData, SEC-006).
+// Localize site info + REST nonce on the lmt-main handle (SEC-006).
+// Hooked on wp_enqueue_scripts (not init) so that lmt-main is already
+// registered by loadmore_enqueue() — wp_localize_script silently
+// no-ops on an unregistered handle.
 function push_script() {
-    wp_localize_script( 'jquery', 'bloginfo', array(
+    wp_localize_script( 'lmt-main', 'lmtData', array(
         'template_url' => get_template_directory_uri(),
         'site_url'     => site_url(),
         'post_id'      => get_queried_object_id(),
         'nonce'        => wp_create_nonce( 'wp_rest' ),
     ));
 }
-add_action('init', 'push_script');
+add_action( 'wp_enqueue_scripts', 'push_script' );
 
 // Register REST API routes for likes
 add_action( 'rest_api_init', function () {

@@ -8,11 +8,11 @@ jQuery(function ($) {
         $('.like__btn').on('click', function() {
             var $btn = $(this);
             $.ajax({
-                url: bloginfo.site_url + '/wp-json/social/v2/likes/' + postid,
+                url: lmtData.site_url + '/wp-json/social/v2/likes/' + postid,
                 type: 'POST',
                 beforeSend: function (xhr) {
-                    if (bloginfo.nonce) {
-                        xhr.setRequestHeader('X-WP-Nonce', bloginfo.nonce);
+                    if (lmtData.nonce) {
+                        xhr.setRequestHeader('X-WP-Nonce', lmtData.nonce);
                     }
                 },
                 success: function (response) {
