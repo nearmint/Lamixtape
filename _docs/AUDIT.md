@@ -408,6 +408,15 @@
 - **Impact** : Code mort.
 - **Recommandation** : Supprimer la fonction `prefix_conditional_body_class` ou réécrire si une page "about" est prévue.
 
+### [QC-NEW-001] `WP_POST_REVISIONS` redéfinie sans garde
+- **Sévérité** : Moyenne
+- **Axe** : Qualité (et Fiabilité côté REST)
+- **Fichier(s)** : `functions.php:127` (avant Phase 1.NEW)
+- **Découvert** : Phase 1, retour utilisateur post-cleanup (warning visible sur toutes les pages côté Local).
+- **Description** : `define( 'WP_POST_REVISIONS', 3 );` est déclaré sans test `defined()` préalable. La constante est déjà définie dans `wp-config.php`, ce qui produit un `Warning: Constant WP_POST_REVISIONS already defined in functions.php on line 127` sur **toutes** les pages quand `WP_DEBUG_DISPLAY` est `true` (cas Local par défaut).
+- **Impact** : Au-delà du bruit visuel, le warning HTML pollue les réponses **REST** : la sortie n'est plus du JSON pur, le `Content-Type: application/json` ment, et les callbacks JS qui parsent la réponse échouent ou affichent du HTML. Régression observée sur le bouton like (handler côté client cassé après l'ajout du compteur retour serveur en Phase 0).
+- **Recommandation** : Wrapper la définition dans `if ( ! defined( 'WP_POST_REVISIONS' ) ) { ... }`. À terme (cf. PERF-014), supprimer la définition du thème et ne la conserver que dans `wp-config.php`.
+
 ---
 
 ## <a id="wp"></a>5. Bonnes pratiques WordPress
@@ -630,9 +639,11 @@
 |---|:-:|
 | **Critique** | 5 |
 | **Haute** | 20 |
-| **Moyenne** | 26 |
+| **Moyenne** | 27 |
 | **Basse** | 19 |
-| **TOTAL** | **70** |
+| **TOTAL** | **71** |
+
+> Note : 70 findings dans l'audit initial (28 avril 2026), +1 finding ajouté en Phase 1 (`QC-NEW-001`, découvert par l'utilisateur). Tout finding ajouté post-audit utilise le suffixe `-NEW-NNN`.
 
 ### Findings par axe
 
@@ -641,11 +652,11 @@
 | Sécurité | 2 | 1 | 3 | 3 | **9** |
 | Performance | 2 | 4 | 4 | 4 | **14** |
 | Accessibilité | 0 | 4 | 5 | 2 | **11** |
-| Qualité code | 1 | 4 | 5 | 4 | **14** |
+| Qualité code | 1 | 4 | 6 | 4 | **15** |
 | WP best practices | 0 | 3 | 4 | 2 | **9** |
 | Migration Tailwind | 0 | 2 | 3 | 0 | **5** |
 | Autres (SEO/RGPD/Obs) | 0 | 2 | 2 | 4 | **8** |
-| **TOTAL** | **5** | **20** | **26** | **19** | **70** |
+| **TOTAL** | **5** | **20** | **27** | **19** | **71** |
 
 ### Top 5 findings critiques (à régler avant tout autre travail)
 

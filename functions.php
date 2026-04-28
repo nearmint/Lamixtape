@@ -124,7 +124,11 @@ add_action( 'init', 'revcon_change_post_object' );
 // -----------------------------------------------------
 // ------------- Reduce Post Revisions -----------------
 // -----------------------------------------------------
-define( 'WP_POST_REVISIONS', 3 );
+// NOTE: ideal location is wp-config.php (cf. PERF-014), but guarded here
+// to avoid 'already defined' warnings when the constant is set upstream.
+if ( ! defined( 'WP_POST_REVISIONS' ) ) {
+    define( 'WP_POST_REVISIONS', 3 );
+}
 
 // -----------------------------------------------------
 // ------------- Remove WP version # -------------------
