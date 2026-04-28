@@ -9,8 +9,10 @@ Thumbs.db
 *.swo
 
 # Dependencies (anticipation Phase 4 Tailwind)
-node_modules/
-vendor/
+# NOTE: anchored at root so /vendor/ (Composer) is ignored but
+# assets/vendor/ (self-hosted libs) is tracked.
+/node_modules/
+/vendor/
 
 # Logs
 *.log
