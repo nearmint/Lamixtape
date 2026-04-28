@@ -1,4 +1,8 @@
-$(document).ready(function() {
+// Pass `jQuery` explicitly and alias as `$` inside the closure: stays
+// safe regardless of whether `$` is bound globally (jQuery noConflict
+// behaves differently depending on whether a CDN jQuery is loaded
+// alongside the WP-bundled one).
+jQuery(function ($) {
     // Like button AJAX logic
     $(document).ready(function() {
         $('.like__btn').on('click', function() {
