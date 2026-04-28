@@ -6,6 +6,52 @@
 add_theme_support( 'post-thumbnails' );
 
 // -----------------------------------------------------
+// ------------ Frontend assets (CSS only) -------------
+// -----------------------------------------------------
+// Enqueues vendor CSS (Bootstrap, MediaElement, Outfit) and the 14 theme
+// CSS files in the exact cascade order of the legacy style.css @import
+// chain. JS assets (jQuery, MediaElement JS, Bootstrap JS, main.js) are
+// handled separately further down (and will be migrated in subsequent
+// Phase 1.3 steps).
+//
+// Cascade contract: lmt-bootstrap MUST load first; every theme stylesheet
+// declares lmt-bootstrap as a dependency so WP guarantees ordering.
+function lmt_enqueue_assets() {
+    $theme_uri = get_template_directory_uri();
+
+    // Vendor CSS — load before theme CSS to preserve override semantics.
+    wp_enqueue_style( 'lmt-bootstrap',    $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css',         array(),                '4.4.1' );
+    wp_enqueue_style( 'lmt-mediaelement', $theme_uri . '/assets/vendor/mediaelement/mediaelementplayer.css', array( 'lmt-bootstrap' ), '4.2.16' );
+    wp_enqueue_style( 'lmt-outfit',       $theme_uri . '/assets/vendor/outfit/outfit.css',                   array( 'lmt-bootstrap' ), '1.0' );
+
+    // Theme CSS — strict order from the legacy style.css @import chain.
+    // Each depends on lmt-bootstrap so it always loads after vendor CSS.
+    // Loaded globally for now; conditional loading per template is a
+    // follow-up optimization (deferred to keep this commit cascade-safe).
+    $theme_css = array(
+        'search'               => 'css/search.css',
+        'category'             => 'css/category.css',
+        'general'              => 'css/general.css',
+        'navbar'               => 'css/navbar.css',
+        'mixtape-page'         => 'css/mixtape-page.css',
+        'comment-form'         => 'css/comment-form.css',
+        'mixtape-of-the-month' => 'css/mixtape-of-the-month.css',
+        // 'newsletter' was removed in Phase 1.3 (commit 370eec3).
+        'donation'             => 'css/donation.css',
+        'guests'               => 'css/guests.css',
+        'explore'              => 'css/explore.css',
+        '404'                  => 'css/404.css',
+        'list-of-mixtapes'     => 'css/list-of-mixtapes.css',
+        'player'               => 'css/player.css',
+        'text'                 => 'css/text.css',
+    );
+    foreach ( $theme_css as $slug => $rel ) {
+        wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-bootstrap' ), '1.0' );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
+
+// -----------------------------------------------------
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
 
