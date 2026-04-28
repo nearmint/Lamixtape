@@ -48,6 +48,11 @@ function lmt_enqueue_assets() {
     foreach ( $theme_css as $slug => $rel ) {
         wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-bootstrap' ), '1.0' );
     }
+
+    // Vendor JS — Bootstrap bundle includes Popper, required for the
+    // data-toggle="tooltip" in index.php and for modal/dropdown plugins.
+    // Loaded in the footer; jQuery is a hard dependency.
+    wp_enqueue_script( 'lmt-bootstrap-bundle', $theme_uri . '/assets/vendor/bootstrap/bootstrap.bundle.min.js', array( 'jquery' ), '4.4.1', true );
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 

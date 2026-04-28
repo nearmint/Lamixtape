@@ -44,7 +44,6 @@
     </div>
 
     <?php wp_footer(); ?>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <?php include "analytics.php" ?>
 </body>
 </html>
