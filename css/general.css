@@ -1,0 +1,80 @@
+/* ========== General Styles ========== */
+body {
+    font-family: "Futura", "Outfit", sans-serif;
+    background: #333;
+}
+
+a, body, small {
+    color: #fff;
+}
+
+.font-smoothing {
+    -webkit-font-smoothing: antialiased!important;
+    -moz-osx-font-smoothing: grayscale!important;
+}
+
+/* ========== Button & Form Focus Styles ========== */
+.btn:focus, button:focus, input:focus, select:focus, textarea:focus,
+.btn:active, button:active, input:active, select:active, textarea:active {
+    outline: 0!important;
+    box-shadow: none!important;
+}
+
+.form-control:focus {
+    border-color: #66afe9;
+    outline: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+/* ========== Link Styles ========== */
+a:focus, a:hover {
+    color: #fff;
+    text-decoration: none;
+    outline: 0;
+}
+
+a.underline {
+    border-bottom: solid 2px CurrentColor;
+    padding-bottom: 1px;
+}
+
+a:hover {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: solid 2px CurrentColor;
+    padding-bottom: 1px;
+}
+
+a.no--border, a.no--hover:hover {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: none!important;
+}
+
+/* ========== Miscellaneous ========== */
+hr {
+    margin-top: 0!important;
+    margin-bottom: 10px;
+    border: 0;
+    border-top: 2px solid #fff;
+}
+
+/* ========== Homepage Entrance Animations ========== */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.fade-in.visible {
+    opacity: 1;
+    transform: none;
+}
+/* Staggered delays for animation */
+.delay-1 { transition-delay: 0.2s; }
+.delay-2 { transition-delay: 0.4s; }
+.delay-3 { transition-delay: 0.6s; }
+.delay-4 { transition-delay: 0.8s; }
+.delay-5 { transition-delay: 1.0s; }
+
+/* ========== [END general.css] ========== */

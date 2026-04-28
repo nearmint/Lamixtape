@@ -1,0 +1,59 @@
+#commentform .logged-in-as {
+    display: none
+}
+
+#reply-title {
+    display: none
+}
+
+#commentform .comment-notes {
+    display: none
+}
+
+#commentform .comment-form-url {
+    display: none
+}
+
+#commentform .comment-form-email {
+    display: none
+}
+
+#commentform textarea {
+    background: 0 0;
+    border: solid 2px #fff;
+    color: #fff;
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    font-size: 18px
+}
+
+#commentform input {
+    background: 0 0;
+    border: solid 2px #fff;
+    color: #fff;
+    padding: 5px 10px;
+    width: 100%;
+    font-size: 18px
+}
+
+#commentform ::placeholder {
+    color: #fff;
+    opacity: 1
+}
+
+#commentform ::-ms-input-placeholder {
+    color: #fff
+}
+
+#commentform ::-ms-input-placeholder {
+    color: #fff
+}
+
+#commentform .comment-form-author {
+    margin-top: 10px
+}
+
+#commentform .comment-form-comment {
+    margin: 0
+}

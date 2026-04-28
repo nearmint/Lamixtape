@@ -1,0 +1,70 @@
+#explore header {
+    height: 85px;
+    background-color: #333
+}
+
+#explore header form input {
+    height: 70px;
+    width: 100%;
+    background: #333;
+    display: block;
+    padding: 0;
+    font-size: 30px;
+    color: #fff;
+    border: none;
+    border-radius: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none
+}
+
+#explore header form input::-webkit-input-placeholder {
+    color: #fff
+}
+
+#explore header form input::-moz-placeholder {
+    color: #fff
+}
+
+#explore header form input:-ms-input-placeholder {
+    color: #fff
+}
+
+#explore section a:nth-child(10n+1) header {
+    background: #1abc9c!important
+}
+
+#explore section a:nth-child(10n+2) header {
+    background: #3498db!important
+}
+
+#explore section a:nth-child(10n+3) header {
+    background: #34495e!important
+}
+
+#explore section a:nth-child(10n+4) header {
+    background: #9b59b6!important
+}
+
+#explore section a:nth-child(10n+5) header {
+    background: #f1c40f!important
+}
+
+#explore section a:nth-child(10n+6) header {
+    background: #e67e22!important
+}
+
+#explore section a:nth-child(10n+7) header {
+    background: #e74c3c!important
+}
+
+#explore section a:nth-child(10n+8) header {
+    background: #bdc3c7!important
+}
+
+#explore section a:nth-child(10n+9) header {
+    background: #2ecc71!important
+}
+
+#explore section a:nth-child(10n+10) header {
+    background: #16a085!important
+}

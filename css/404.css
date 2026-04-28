@@ -1,0 +1,18 @@
+body.error404, body.error404 #menu, body.error404 nav {
+    background: #e74c3c
+}
+
+body.error404 .btn, body.error404 .btn:hover {
+    padding: 10px 20px;
+    font-size: 18px;
+    background: 0 0;
+    color: #fff;
+    border: CurrentColor solid 2px;
+    border-radius: 0
+}
+
+body.error404 img.travolta {
+    position: fixed;
+    bottom: 0;
+    height: 60vh
+}

@@ -1,0 +1,30 @@
+@media (min-width:768px) {
+    article.highlight {
+        min-height: 350px!important
+    }
+}
+
+article.highlight .sub-title {
+    opacity: .8;
+    font-size: 16px;
+    letter-spacing: 2px
+}
+
+article.highlight .excerpt {
+    font-size: 20px
+}
+
+article.highlight a.btn {
+    color: #fff;
+    background-color: transparent;
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 0;
+    margin-top: 20px;
+    letter-spacing: 1px
+}
+
+article.highlight a.btn:active {
+    transform: translateY(1px)
+}

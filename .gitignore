@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies (anticipation Phase 4 Tailwind)
+node_modules/
+vendor/
+
+# Logs
+*.log
+
+# Build output (anticipation Phase 4)
+dist/
+build/
+
+# WordPress
+wp-config.php

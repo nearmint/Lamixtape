@@ -1,0 +1,148 @@
+/* ========== Player Styles ========== */
+#footer-player {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+@media (max-width:768px) {
+    .footer-player-container {
+        margin-left: 10px !important;
+        margin-right: 10px !important;
+    }
+}
+
+.footer-player-container {
+    background-color: #333;
+    border: solid 2px #fff;
+    margin-bottom: 20px;
+    height: 70px;
+}
+
+#title {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+    /* Animate text scrolling using text-indent */
+    animation: marquee 10s linear infinite;
+}
+
+.btn-discogs {
+    font-size: 12px;
+}
+
+@keyframes marquee {
+    0%   { text-indent: 100%; }
+    100% { text-indent: -100%; }
+}
+
+#play-pause {
+    color: #fff;
+    text-decoration: none;
+    font-size: xx-large;
+}
+
+/* ========== Seekbar Styles ========== */
+#seekbar {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: red;
+    border-radius: 3px;
+    outline: none;
+}
+#seekbar::-webkit-slider-runnable-track {
+    height: 6px;
+    background: white;
+    border-radius: 3px;
+}
+#seekbar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: white;
+    margin-top: -5px;
+    cursor: pointer;
+}
+#seekbar::-moz-range-track {
+    height: 6px;
+    background: #555;
+    border-radius: 3px;
+}
+#seekbar::-moz-range-progress {
+    background: #999;
+    height: 6px;
+    border-radius: 3px;
+}
+#seekbar::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ff6600;
+    cursor: pointer;
+    border: none;
+}
+#seekbar::-ms-track {
+    height: 6px;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+}
+#seekbar::-ms-fill-lower {
+    background: #999;
+    border-radius: 3px;
+}
+#seekbar::-ms-fill-upper {
+    background: #555;
+    border-radius: 3px;
+}
+#seekbar::-ms-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ff6600;
+    cursor: pointer;
+    margin-top: 0;
+}
+
+/* ========== YouTube Player Responsive Styling ========== */
+#youtubePlayer {
+    width: 100%;
+    height: 100%;
+}
+#youtubePlayer iframe {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.player-frame {
+    width: 100%;
+    height: 100%;
+}
+#yt-thumb {
+    transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+#yt-thumb-link:hover #yt-thumb {
+    transform: scale(1.08);
+}
+
+/* ========== Player Slide-Up Animation ========== */
+.player-slide-up {
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+.player-slide-up.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* ========== [END player.css] ========== */
+

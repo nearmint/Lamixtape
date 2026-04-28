@@ -1,0 +1,62 @@
+.newsletter {
+    padding: 0
+}
+
+.newsletter p {
+    font-size: 20px
+}
+
+.playlist .newsletter input:focus, .newsletter input {
+    background: 0 0;
+    border: solid 2px #fff!important;
+    color: #fff!important;
+    background-color: transparent!important;
+    height: 40px;
+    width: 230px;
+    font-size: 18px;
+    border-radius: 0
+}
+
+.newsletter .form-group {
+    margin: 0!important
+}
+
+.newsletter input::placeholder {
+    color: #fff;
+    opacity: 1
+}
+
+.newsletter input:-ms-input-placeholder {
+    color: #fff
+}
+
+.newsletter input::-ms-input-placeholder {
+    color: #fff
+}
+
+.newsletter button,
+.newsletter button button:active,
+.newsletter button button:focus,
+.newsletter button button:hover {
+    background: 0 0!important;
+    border: solid 2px #fff!important;
+    color: #fff;
+    border-radius: 0;
+    height: 40px;
+    width: 40px;
+    margin-left: -2px;
+    font-size: 18px;
+    padding: 0
+}
+
+.newsletter button:active {
+    transform: translateX(1px)
+}
+
+.newsletter button svg {
+    font-size: 28px
+}
+
+.newsletter .return-message {
+    font-size: 16px
+}

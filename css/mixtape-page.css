@@ -1,0 +1,107 @@
+article h2 {
+    font-weight: 500;
+    font-size: 35px;
+    letter-spacing: 0px;
+}
+
+article a.tag, article span.date {
+    font-weight: 500;
+}
+
+article.mixtape span.curated {
+    font-size: 22px
+}
+
+article.mixtape .tracklist {
+    font-size: 22px
+}
+
+article.mixtape ul li {
+    margin-bottom: 4px;
+}
+
+article.mixtape ul li a {
+    font-weight: 500;
+    font-size: 20px;
+}
+
+article.mixtape ul li a.playing {
+    text-decoration: none;
+    border-bottom: solid 2px CurrentColor;
+    padding-bottom: 1px;
+}
+
+@media (max-width:575px) {
+    article.mixtape ul li a {
+        cursor: not-allowed;
+        pointer-events: none
+    }
+}
+
+article.mixtape .buttons .like-btn {
+    background: 0 0;
+    border-radius: 3px;
+    border: 1px solid #e9ebee;
+    color: #fff;
+    margin: 18px 0 0 10px;
+    padding: 0 10px
+}
+
+article.mixtape .buttons .like-btn:active {
+    transform: translateY(1px)
+}
+
+article.mixtape #comments li.comment {
+    font-size: 20px;
+    padding: 0
+}
+
+article.mixtape img.illustration {
+    border: solid 1px RGBA(255, 255, 255, .2);
+    border-radius: 3px
+}
+
+article.mixtape .author-1 {
+    display: none!important
+}
+
+article .action-buttons {
+    width: 100%;
+    display: inline-flex;
+    margin-top: 20px;
+}
+
+article .action-buttons a {
+    width: 33%;
+    text-align: center;
+    border: solid 2px currentColor;
+    padding: 10px;
+    font-size: 20px;
+}
+
+article .action-buttons a.middle{
+    border-left: 0;
+    border-right: 0;
+}
+
+@media (max-width: 768px) {
+    article .action-buttons {
+        width: 100%;
+        display: grid;
+        margin-top: 24px;
+    }
+
+    article .action-buttons a {
+        width: 100%;
+        text-align: center;
+        border: solid 2px currentColor;
+        padding: 10px;
+        font-size: 20px;
+    }
+
+    article .action-buttons a.middle{
+        border: solid 2px currentColor;
+        border-top: 0;
+        border-bottom: 0;
+    }
+}

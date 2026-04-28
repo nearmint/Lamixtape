@@ -1,0 +1,77 @@
+#donatemodal .modal-content, #contactmodal .modal-content {
+  background-attachment: local;
+  background-image: linear-gradient(-170deg, #2376ae, #c16ecf);
+  
+}
+
+#donatemodal .modal-content p, #contactmodal .modal-content p {
+  font-size: 20px;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 2px 2px 0 #1c5e8b;
+  letter-spacing: .5px;
+}
+
+#donatemodal .modal-content h2, #contactmodal .modal-content h2{
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 2px 2px 0 #1c5e8b;
+  letter-spacing: .5px;
+}
+
+#donatemodal .modal-content a.btn-donate, #contactmodal .modal-content a.btn-donate {
+    font-size: 20px;
+    background-color: transparent;
+    border: solid 2px #feff00 !important;
+    border-radius: 0px !important;
+    padding: 5px 25px !important;
+    color: #feff00 !important;
+  }
+
+#donatemodal .modal-content .donate-box {
+  max-width: 60rem;
+  margin: 2rem auto 1rem;
+  overflow: hidden;
+  background: #0003;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 2px #0003;
+}
+
+@media (min-width:768px) {
+    #donatemodal .modal-content .donate-box {
+      width: 80%;
+    }
+    #contactmodal .modal-content .form-container {
+      width: 60% !important;
+      margin: auto;
+    }
+}
+
+#contactmodal .modal-content .form-container {
+      width: 100%;
+    }
+
+#contactmodal .modal-content input, #contactmodal .modal-content textarea {
+    background: transparent;
+    border: solid 2px #fff;
+    padding: 10px;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 18px;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+#contactmodal .modal-content input::placeholder, #contactmodal .modal-content textarea::placeholder {
+    color: #fff;
+}
+
+.wpcf7 form.sent .wpcf7-response-output {
+    border: solid 2px #fff;
+    width: 75%;
+    padding: 10px;
+}
+
+.wpcf7 form.sent .wpcf7-response-output {
+    border-color: white;
+    width: 100%;
+}

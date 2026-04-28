@@ -1,0 +1,54 @@
+#guests header {
+    background-color: #333;
+    height: 85px
+}
+
+#guests header h1 {
+    font-size: 20px;
+    text-align: center;
+    margin: 0;
+}
+
+#guests section span:nth-child(10n+1) header {
+    background: #1abc9c!important
+}
+
+#guests section span:nth-child(10n+2) header {
+    background: #3498db!important
+}
+
+#guests section span:nth-child(10n+3) header {
+    background: #34495e!important
+}
+
+#guests section span:nth-child(10n+4) header {
+    background: #9b59b6!important
+}
+
+#guests section span:nth-child(10n+5) header {
+    background: #f1c40f!important
+}
+
+#guests section span:nth-child(10n+6) header {
+    background: #e67e22!important
+}
+
+#guests section span:nth-child(10n+7) header {
+    background: #e74c3c!important
+}
+
+#guests section span:nth-child(10n+8) header {
+    background: #bdc3c7!important
+}
+
+#guests section span:nth-child(10n+9) header {
+    background: #2ecc71!important
+}
+
+#guests section span:nth-child(10n+10) header {
+    background: #16a085!important
+}
+
+#guests section span.Lamixtape {
+    display: none
+}
