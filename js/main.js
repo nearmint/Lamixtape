@@ -121,10 +121,12 @@ jQuery(function ($) {
 });
 
 // Smooth scrolling
-
+// TODO Phase 5: replace placeholder href="#" with <button> for a11y (cf. A11Y-002).
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
-    const target = document.querySelector(this.getAttribute('href'));
+    const href = this.getAttribute('href');
+    if (!href || href === '#') return; // skip placeholder links (modal toggles, etc.)
+    const target = document.querySelector(href);
     if (target) {
       e.preventDefault();
       target.scrollIntoView({ behavior: 'smooth' });
