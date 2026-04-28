@@ -308,12 +308,13 @@ add_filter( 'the_content_feed', 'wcs_post_thumbnails_in_feeds' );
 // -----------------------------------------------------
 // Enqueue AJAX script for like buttons
 function loadmore_enqueue() {
-    wp_enqueue_script( 'ajax-script', get_template_directory_uri() . '/js/main.js', array('jquery'), null, true);
+    wp_enqueue_script( 'lmt-main', get_template_directory_uri() . '/js/main.js', array('jquery'), null, true);
 }
 add_action( 'wp_enqueue_scripts', 'loadmore_enqueue' );
 
 // Localize script with site info + REST nonce for AJAX
-// NOTE: handle 'jquery' kept temporarily; migration to 'lmt-main' is Phase 1 (SEC-006).
+// NOTE: still attached to handle 'jquery'; switching to 'lmt-main' is the
+// next commit (rename of the localized var bloginfo -> lmtData, SEC-006).
 function push_script() {
     wp_localize_script( 'jquery', 'bloginfo', array(
         'template_url' => get_template_directory_uri(),
