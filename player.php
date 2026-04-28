@@ -33,9 +33,6 @@
   </div>
 <script>
 // --- Diagnostic block ---
-console.log('jQuery:', typeof $);
-console.log('MediaElement:', typeof $.fn.mediaelementplayer);
-console.log('Audio element:', document.getElementById('audioPlayer'));
 
 // --- Dynamic YouTube Iframe API Loader ---
 function loadYouTubeIframeAPI(callback) {
@@ -117,7 +114,6 @@ $(function () {
   // --- YouTube Player Initialization ---
   function initYouTubePlayer() {
     if (window.YT && window.YT.Player && !$youtubePlayer.data('yt-initialized')) {
-    console.log('[YouTube API] Creating YT.Player instance...');
     youtubePlayer = new YT.Player('youtubePlayer', {
       height: '100%',
       width: '100%',
@@ -146,16 +142,13 @@ $(function () {
 
   function onPlayerReady(event) {
     youtubeReady = true;
-    console.log('[YouTube API] Player ready');
     if (pendingYouTubeAction) {
-      console.log('[YouTube API] Executing pending action');
       pendingYouTubeAction();
       pendingYouTubeAction = null;
     }
   }
 
   function onPlayerStateChange(event) {
-console.log('[YouTube API] State change:', event.data);
 
 const playSvg = `
   <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor"
@@ -187,7 +180,6 @@ if (event.data === YT.PlayerState.ENDED) {
 
 
   function onPlayerError(event) {
-    console.log('[YouTube API] Player error:', event.data);
     playNextSong();
   }
 
@@ -231,7 +223,6 @@ if (event.data === YT.PlayerState.ENDED) {
   }
 
   function preparePlayer($item) {
-    console.log('[Player] preparePlayer called for', $item.find('a').text());
     stopTimer();
     playlistItems.find('a').removeClass('playing');
     $item.find('a').addClass('playing');
@@ -240,7 +231,6 @@ if (event.data === YT.PlayerState.ENDED) {
     $titleDiv.text(trackTitle);
     $discogsSearchBtn.show();
     if (!trackUrl) {
-      console.warn('[Player] No trackUrl found for this playlist item. Skipping setPlayerSource.');
       return;
     }
     setPlayerSource();
@@ -248,16 +238,12 @@ if (event.data === YT.PlayerState.ENDED) {
 
   function setPlayerSource() {
     if (!trackUrl) {
-      console.warn('[Player] No trackUrl set, skipping setPlayerSource.');
       return;
     }
-    console.log('[Player] setPlayerSource called. currentType:', currentType, 'trackUrl:', trackUrl);
     // Clean up current player before switching
     if (currentType === 'youtube' && youtubePlayer && typeof youtubePlayer.pauseVideo === 'function') {
-      console.log('[Player] Pausing YouTube player');
       youtubePlayer.pauseVideo();
     } else if (currentType === 'mp3' && player) {
-      console.log('[Player] Pausing MP3/MP4 player');
       player.pause();
     }
     stopTimer();
@@ -287,7 +273,6 @@ if (event.data === YT.PlayerState.ENDED) {
     } else if (trackUrl.match(/\.mp3$|\.mp4$/i)) {
       currentType = 'mp3';
       if (player) {
-        console.log('[Player] Loading MP3/MP4 track');
         player.setSrc([{ src: trackUrl }]);
         player.load();
         player.play();
@@ -327,7 +312,6 @@ if (event.data === YT.PlayerState.ENDED) {
   $playlist.on("click", "li", function (e) {
     e.preventDefault();
     e.stopImmediatePropagation();
-    console.log('[UI] Playlist item clicked:', $(this).find('a').text());
     currentTrack = $(this).index();
     preparePlayer($(this));
   });
@@ -335,29 +319,22 @@ if (event.data === YT.PlayerState.ENDED) {
   // Play/Pause button event
   $playPauseBtn.on("click", function (e) {
     e.preventDefault();
-    console.log('[UI] Play/Pause button clicked. currentType:', currentType);
     if (currentType === 'youtube' && youtubePlayer && typeof youtubePlayer.getPlayerState === 'function') {
       if (youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING && typeof youtubePlayer.pauseVideo === 'function') {
-        console.log('[UI] Pausing YouTube video');
         youtubePlayer.pauseVideo();
       } else if (youtubeReady && typeof youtubePlayer.playVideo === 'function') {
-        console.log('[UI] Playing YouTube video');
         youtubePlayer.playVideo();
       } else if (!youtubeReady) {
-        console.log('[UI] YouTube player not ready, queuing play');
         pendingYouTubeAction = function() {
           if (youtubePlayer && typeof youtubePlayer.playVideo === 'function') {
-            console.log('[UI] (pending) Playing YouTube video');
             youtubePlayer.playVideo();
           }
         };
       }
     } else if (currentType === 'mp3' && player) {
       if (player.paused) {
-        console.log('[UI] Playing MP3/MP4');
         player.play();
       } else {
-        console.log('[UI] Pausing MP3/MP4');
         player.pause();
       }
     }
