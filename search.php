@@ -49,5 +49,4 @@ global $wp_query;
         <?php endif; ?>
     </section>
 </div>
-<script>fbq('track', 'Search');</script>
 <?php get_footer(); ?>
