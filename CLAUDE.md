@@ -178,6 +178,10 @@ Aucune modification ne doit altérer le rendu UI/UX du site. Le refacto est stri
 - L'endpoint REST `social/v2/likes|dislikes` : si on change la route, `js/main.js` doit suivre **et** les compteurs existants doivent être préservés (champ ACF `likes_number`).
 - `wp-config.php` (hors thème) : ne jamais modifier sans confirmation.
 
+### Décisions techniques validées (Phase 1)
+- **Umami analytics** reste **inline** dans `analytics.php` (pattern officiel SaaS, `defer` présent, `data-website-id` public visible dans tout le HTML rendu de toute façon). Pas de migration `wp_enqueue_script` (complexité gratuite). Couvert par `WP-004` (cf. AUDIT.md), accepté tel quel.
+- **`QC-007` partiellement résolu en Phase 1** : extraction des `<script>` inline (player.php → `js/player.js`, `var postid` single.php → `lmtData.post_id`). Partie CSS (~18-20 `style="..."` statiques décoratifs encore présents) **reportée à Phase 4** (migration Tailwind, où les classes utilities absorberont naturellement ces styles inline). Les `style="..."` dynamiques PHP-injected (`background-color: <?php echo get_field('color'); ?>`) restent inline par nécessité.
+
 ### Workflow de travail attendu
 - Toute modification = commit dédié, message conventionnel (`fix:`, `refactor:`, `perf:`, `feat:`, `chore:`, `docs:`).
 - Toute migration de template = commit séparé, avec capture d'écran avant/après en commentaire de PR (ou note dans le commit).
