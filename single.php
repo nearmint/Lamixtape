@@ -47,7 +47,7 @@
                 <ul class="list-unstyled text-lowercase" id="playlist">
                     <?php if( have_rows('tracklist') ): ?>
                         <?php while( have_rows('tracklist') ): the_row();?>
-                            <li data-track-index="<?php echo esc_attr($index); ?>">
+                            <li>
                                 <a href="#" data-src="<?php echo esc_url( get_sub_field('url') ); ?>" data-type="youtube">
                                     <?php echo esc_html( get_sub_field('track') ); ?>
                                 </a>
