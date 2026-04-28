@@ -58,6 +58,17 @@ function lmt_enqueue_assets() {
     // data-toggle="tooltip" in index.php and for modal/dropdown plugins.
     // Loaded in the footer; jQuery is a hard dependency.
     wp_enqueue_script( 'lmt-bootstrap-bundle', $theme_uri . '/assets/vendor/bootstrap/bootstrap.bundle.min.js', array( 'jquery' ), '4.4.1', true );
+
+    // Theme JS — main.js handles the like button, burger menu, fade-in
+    // animations and smooth scroll. Localized with site info + REST nonce
+    // (consumed as `lmtData` inside the closure in main.js).
+    wp_enqueue_script( 'lmt-main', $theme_uri . '/js/main.js', array( 'jquery' ), null, true );
+    wp_localize_script( 'lmt-main', 'lmtData', array(
+        'template_url' => $theme_uri,
+        'site_url'     => site_url(),
+        'post_id'      => get_queried_object_id(),
+        'nonce'        => wp_create_nonce( 'wp_rest' ),
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 
@@ -304,27 +315,10 @@ add_filter( 'the_excerpt_rss', 'wcs_post_thumbnails_in_feeds' );
 add_filter( 'the_content_feed', 'wcs_post_thumbnails_in_feeds' );
 
 // -----------------------------------------------------
-// ------------------- Like buttons --------------------
+// ----------- Likes — REST endpoint -------------------
 // -----------------------------------------------------
-// Enqueue AJAX script for like buttons
-function loadmore_enqueue() {
-    wp_enqueue_script( 'lmt-main', get_template_directory_uri() . '/js/main.js', array('jquery'), null, true);
-}
-add_action( 'wp_enqueue_scripts', 'loadmore_enqueue' );
-
-// Localize site info + REST nonce on the lmt-main handle (SEC-006).
-// Hooked on wp_enqueue_scripts (not init) so that lmt-main is already
-// registered by loadmore_enqueue() — wp_localize_script silently
-// no-ops on an unregistered handle.
-function push_script() {
-    wp_localize_script( 'lmt-main', 'lmtData', array(
-        'template_url' => get_template_directory_uri(),
-        'site_url'     => site_url(),
-        'post_id'      => get_queried_object_id(),
-        'nonce'        => wp_create_nonce( 'wp_rest' ),
-    ));
-}
-add_action( 'wp_enqueue_scripts', 'push_script' );
+// (lmt-main script enqueue + lmtData localize live in lmt_enqueue_assets
+// at the top of this file — single source of truth for theme assets.)
 
 // Register REST API routes for likes
 add_action( 'rest_api_init', function () {
