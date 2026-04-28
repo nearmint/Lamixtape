@@ -63,19 +63,29 @@ $(document).ready(function() {
     // Like button AJAX logic
     $(document).ready(function() {
         $('.like__btn').on('click', function() {
+            var $btn = $(this);
             $.ajax({
                 url: bloginfo.site_url + '/wp-json/social/v2/likes/' + postid,
-                type: 'post',
-                success: function() {
-                    $(this).attr('disabled', true).addClass('tada');
+                type: 'POST',
+                beforeSend: function (xhr) {
+                    if (bloginfo.nonce) {
+                        xhr.setRequestHeader('X-WP-Nonce', bloginfo.nonce);
+                    }
                 },
-                error: function() {
-                    console.log('failed!');
+                success: function (response) {
+                    $btn.attr('disabled', true).addClass('tada');
+                    // Server returns the new count; trust it over optimistic UI.
+                    $('.like__number').html(response);
+                },
+                error: function (xhr) {
+                    if (xhr.status === 429) {
+                        // Already liked from this IP within the hour.
+                        $btn.attr('disabled', true).attr('title', 'Already liked');
+                    } else {
+                        console.log('like failed:', xhr.status);
+                    }
                 }
             });
-            var updated_likes = parseInt($('.like__number').html()) + 1;
-            $('.like__number').html(updated_likes);
-            $(this).attr('disabled', true);
         });
     });
 

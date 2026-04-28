@@ -262,12 +262,14 @@ function loadmore_enqueue() {
 }
 add_action( 'wp_enqueue_scripts', 'loadmore_enqueue' );
 
-// Localize script with site info for AJAX
+// Localize script with site info + REST nonce for AJAX
+// NOTE: handle 'jquery' kept temporarily; migration to 'lmt-main' is Phase 1 (SEC-006).
 function push_script() {
     wp_localize_script( 'jquery', 'bloginfo', array(
-        'template_url' => get_bloginfo('template_url'),
-        'site_url' => get_bloginfo('url'),
-        'post_id'   => get_queried_object()
+        'template_url' => get_template_directory_uri(),
+        'site_url'     => site_url(),
+        'post_id'      => get_queried_object_id(),
+        'nonce'        => wp_create_nonce( 'wp_rest' ),
     ));
 }
 add_action('init', 'push_script');
@@ -275,22 +277,77 @@ add_action('init', 'push_script');
 // Register REST API routes for likes
 add_action( 'rest_api_init', function () {
     register_rest_route( 'social/v2', '/likes/(?P<id>\d+)', array(
-        'methods' => array('GET','POST'),
-        'callback' => 'social__like',
+        'methods'             => WP_REST_Server::CREATABLE, // POST only
+        'callback'            => 'lmt_social_like',
+        'permission_callback' => 'lmt_social_like_permission',
+        'args'                => array(
+            'id' => array(
+                'validate_callback' => function ( $param ) {
+                    return is_numeric( $param ) && get_post( (int) $param );
+                },
+            ),
+        ),
     ) );
 });
 
-// Callback for like endpoint
-function social__like( WP_REST_Request $request ) {
-    // Custom field slug
-    $field_name = 'likes_number';
-    // Get the current like number for the post
-    $current_likes = get_field($field_name, $request['id']);
-    // Add 1 to the existing number
+/**
+ * Permission callback for the likes REST endpoint.
+ * Verifies the X-WP-Nonce header to block CSRF / cross-origin abuse.
+ */
+function lmt_social_like_permission( WP_REST_Request $request ) {
+    $nonce = $request->get_header( 'X-WP-Nonce' );
+    if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+        return new WP_Error(
+            'lmt_invalid_nonce',
+            __( 'Invalid or missing nonce', 'lamixtape' ),
+            array( 'status' => 403 )
+        );
+    }
+    return true;
+}
+
+/**
+ * Callback for the likes REST endpoint.
+ * Increments likes_number for the given post, with IP-based rate limit
+ * (1 like per IP per post per hour). IPs are hashed via wp_hash for GDPR.
+ *
+ * @param WP_REST_Request $request
+ * @return int|WP_Error new like count, or WP_Error on rate limit / invalid IP
+ */
+function lmt_social_like( WP_REST_Request $request ) {
+    $post_id = (int) $request['id'];
+
+    // Resolve and validate the client IP.
+    $ip_raw = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+    $ip     = filter_var( $ip_raw, FILTER_VALIDATE_IP );
+    if ( ! $ip ) {
+        return new WP_Error(
+            'lmt_invalid_ip',
+            __( 'Could not resolve client IP', 'lamixtape' ),
+            array( 'status' => 400 )
+        );
+    }
+
+    // Rate-limit: 1 like / IP / post / hour. Hash IP for GDPR compliance.
+    $ip_hash       = wp_hash( $ip );
+    $transient_key = 'lmt_like_' . $ip_hash . '_' . $post_id;
+    if ( false !== get_transient( $transient_key ) ) {
+        return new WP_Error(
+            'lmt_rate_limited',
+            __( 'Already liked', 'lamixtape' ),
+            array( 'status' => 429 )
+        );
+    }
+
+    // Increment the counter.
+    $field_name    = 'likes_number';
+    $current_likes = (int) get_field( $field_name, $post_id );
     $updated_likes = $current_likes + 1;
-    // Update the field with a new value on this post
-    $likes = update_field($field_name, $updated_likes, $request['id']);
-    return $likes;
+    update_field( $field_name, $updated_likes, $post_id );
+
+    set_transient( $transient_key, 1, HOUR_IN_SECONDS );
+
+    return $updated_likes;
 }
 
 // -----------------------------------------------------
