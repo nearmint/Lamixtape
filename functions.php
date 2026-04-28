@@ -20,9 +20,14 @@ function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
     // Vendor CSS — load before theme CSS to preserve override semantics.
-    wp_enqueue_style( 'lmt-bootstrap',    $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css',         array(),                '4.4.1' );
-    wp_enqueue_style( 'lmt-mediaelement', $theme_uri . '/assets/vendor/mediaelement/mediaelementplayer.css', array( 'lmt-bootstrap' ), '4.2.16' );
-    wp_enqueue_style( 'lmt-outfit',       $theme_uri . '/assets/vendor/outfit/outfit.css',                   array( 'lmt-bootstrap' ), '1.0' );
+    wp_enqueue_style( 'lmt-bootstrap', $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css', array(), '4.4.1' );
+    wp_enqueue_style( 'lmt-outfit',    $theme_uri . '/assets/vendor/outfit/outfit.css',          array( 'lmt-bootstrap' ), '1.0' );
+
+    // MediaElement.js — use the WP-bundled version (matches our 4.2.16 target).
+    // Enqueueing the script also enqueues the corresponding 'wp-mediaelement' CSS
+    // via WP's internal dependency. Saves ~170 KB of self-hosted assets.
+    wp_enqueue_style( 'wp-mediaelement' );
+    wp_enqueue_script( 'wp-mediaelement' );
 
     // Theme CSS — strict order from the legacy style.css @import chain.
     // Each depends on lmt-bootstrap so it always loads after vendor CSS.
