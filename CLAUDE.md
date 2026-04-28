@@ -149,6 +149,9 @@ Critiques (à régler avant tout autre travail) — état au {{Phase 0}} :
 
 ## 8. Règles pour les futures sessions Claude Code
 
+### Règle transversale — Aucun changement visuel sans validation
+Aucune modification ne doit altérer le rendu UI/UX du site. Le refacto est strictement structurel, sécuritaire et de performance. Si une modification risque un changement visuel, arrête, annonce, attends validation. Le polishing UI mineur est possible mais doit être validé séparément.
+
 ### Bootstrap obligatoire avant tout refacto
 1. **Premier travail à faire avant toute modification** : `git init`, écrire un `.gitignore` (au minimum : `.DS_Store`, `node_modules/`, `vendor/`, `.idea/`, `*.log`, `wp-config.php`), faire un **commit initial "as-is"** du thème. Sans cela, tout refacto est non-réversible — interdit.
 2. Ne **jamais modifier en prod directement**. Le workflow sera : dev local → commit → push → déploiement sur prod (workflow à formaliser après init git).
