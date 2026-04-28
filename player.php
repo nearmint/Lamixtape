@@ -60,7 +60,11 @@ function loadYouTubeIframeAPI(callback) {
 }
 
 // --- Hybrid Player Logic (YouTube iframe API for YouTube, MediaElement.js for MP3/MP4) ---
-$(function () {
+// Pass `jQuery` explicitly and alias as `$` inside the closure: ensures we bind
+// to WP-bundled jQuery (which carries the .mediaelementplayer plugin) and not
+// to the global `$`, which may resolve to a different jQuery instance when the
+// CDN jquery in header.php is still loaded alongside the WP-bundled one.
+jQuery(function ($) {
   var player;
   var youtubePlayer;
   var youtubeReady = false;
