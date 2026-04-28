@@ -16,12 +16,6 @@
     <meta name="msapplication-TileColor" content="#333333">
     <meta name="theme-color" content="#ffffff">
     <?php wp_head(); ?>
-
-    <!--[if lt IE 9]>
-    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
 </head>
 <body <?php body_class(); ?>>
     <nav class="navbar">
