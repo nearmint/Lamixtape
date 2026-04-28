@@ -19,9 +19,6 @@
                 <span class="ml-1 mr-2">·</span><span class="date"><?php the_time('F Y'); ?></span>
             </div>
             <div class="col-md-4 text-right buttons d-none d-sm-none d-md-none d-lg-block fade-in delay-3">
-                <script type="text/javascript">
-                    var postid = "<?php the_ID(); ?>";
-                </script>
                 <button class="like__btn animated like-btn">
                     🔥&nbsp;
                     <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
