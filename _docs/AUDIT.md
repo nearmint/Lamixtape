@@ -359,6 +359,7 @@
 - **Description** : Styles inline dispersés (≥ 26 occurrences `style="..."`), JS inline dans `player.php` (~360 lignes), `search.php` (`fbq('track')`), `single.php` (`var postid = ...`).
 - **Impact** : Impossible à minifier, bundler, lint, ou versionner proprement. CSP `unsafe-inline` requis. Bundle Tailwind inutile si du CSS reste inline.
 - **Recommandation** : Extraire le JS du player dans `js/player.js`, enqueuer conditionnellement. `var postid` → `wp_localize_script` propre. Styles inline → classes utilities (Tailwind ou CSS custom). Suppression du `fbq` (cf. OTHER-008).
+- **Statut** : Résolu Phase 1 (partiel) — `c5f0382` extraction `var postid` (single.php) → `lmtData.post_id` + `b3f655b` extraction du JS player (343 l. de `player.php` → nouveau `js/player.js`, enqueued conditionnellement `is_singular('post')` avec deps `['jquery', 'wp-mediaelement']`). Partie CSS (~21 attributs `style="..."` statiques décoratifs encore présents dans header.php / explore.php / guests.php / single.php / player.php) **reportée Phase 4** : la migration Tailwind absorbera ces inline styles via classes utilities (cf. CLAUDE.md section 8). Les 5 `style="background-color:<?php get_field('color') ?>"` PHP-injected dynamiques restent inline par nécessité (couleur ACF unique par post). Umami inline conservé (décision Phase 1, snippet officiel).
 
 ### [QC-008] Aucun docblock, naming PHP incohérent, pas de namespace
 - **Sévérité** : Moyenne

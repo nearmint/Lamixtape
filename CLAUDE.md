@@ -70,25 +70,51 @@ lamixtape/
 
 ## 4. Dette technique priorisée
 
-| Axe | Findings totaux | Critique restant | Haute | Référence |
-|---|:-:|:-:|:-:|---|
-| **Process / Qualité** | 14 | 0 ✅ | 4 | `AUDIT.md#qc` |
-| **Sécurité** | 9 | 0 ✅ | 1 | `AUDIT.md#securite` |
-| **Performance** | 14 | 2 | 4 | `AUDIT.md#performance` |
-| **Accessibilité** | 11 | 0 | 4 | `AUDIT.md#a11y` |
-| **WP best practices** | 9 | 0 | 3 | `AUDIT.md#wp` |
-| **Migration Tailwind** | 5 | 0 | 2 | `AUDIT.md#tailwind` |
-| **Autres (SEO, RGPD, observabilité)** | 8 | 0 | 2 | `AUDIT.md#autres` |
-| **TOTAL** | **70** | **2** | **20** | |
+| Axe | Total | Résolus (P0+P1) | Critique restant | Haute restant | Référence |
+|---|:-:|:-:|:-:|:-:|---|
+| **Process / Qualité** | 16 | 11 ✅ | 0 ✅ | 4 | `_docs/AUDIT.md#qc` |
+| **Sécurité** | 9 | 4 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#securite` |
+| **Performance** | 14 | 1 | 2 | 4 | `_docs/AUDIT.md#performance` |
+| **Accessibilité** | 11 | 0 | 0 | 4 | `_docs/AUDIT.md#a11y` |
+| **WP best practices** | 9 | 2 ✅ | 0 ✅ | 3 | `_docs/AUDIT.md#wp` |
+| **Migration Tailwind** | 5 | 0 | 0 | 2 | `_docs/AUDIT.md#tailwind` |
+| **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
+| **TOTAL** | **72** | **19** | **2** | **20** | |
 
-Critiques (à régler avant tout autre travail) — état au {{Phase 0}} :
-1. **QC-001** ✅ **résolu Phase 0** (commit `9606b78` — init git + `.gitignore` + push GitHub).
-2. **SEC-002** ✅ **résolu Phase 0** (commit `2d656f8` — feature dislike supprimée intégralement).
-3. **SEC-001** ✅ **résolu Phase 0** (commit `f8107e0` — `permission_callback` + nonce REST + rate-limit transient hash IP).
-4. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`). → cible Phase 3.
-5. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date. → cible Phase 3.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 19 résolus à fin Phase 1 (3 P0 + 16 P1). 53 restants pour Phases 2-6. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
-> Phase 0 close : 3 critiques sur 5 résolues. Reste 2 critiques perfo (`PERF-001`, `PERF-002`) qui passent en priorité 1 pour la Phase 3 (sécurité & perf bloquantes), après les phases 1 (hygiène) et 2 (refacto structurel).
+Critiques restants (cibles Phase 3) :
+1. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`).
+2. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date.
+
+### Phase 0 close — récap
+- 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
+
+### Phase 1 close — récap (28 avril 2026)
+
+**Métriques globales** :
+- **31 commits** depuis fin Phase 0 (`f72be03`), tous pushés sur `origin/main`
+- 22 fichiers modifiés
+- **+561 / −573 lignes (net −12)** — bilan net négatif malgré l'ajout de `js/player.js` (+343 l.) et `assets/vendor/` (548 KB de libs auto-hébergées), parce qu'on a supprimé plus de code mort qu'on n'a ajouté de structure
+- **16 findings P1 résolus** (cf. tableau dette ci-dessus)
+- **2 NEW findings découverts et résolus dans la même phase** (QC-NEW-001 `WP_POST_REVISIONS` warning, QC-NEW-002 smooth scroll `SyntaxError`)
+
+**Bonus business surprise** : **la recherche du site était cassée** depuis l'origine (variable `$s` jamais définie en PHP 8.x → query vide → catalogue entier sortait sur n'importe quel `/search/...`). Découvert et corrigé sous QC-005 (`706d209`). Hors scope initial Phase 1, bénéfice indirect du diagnostic poussé.
+
+**Apprentissages clés** (à retenir pour Phases 2-6) :
+1. **Decluttering reveals what was always there.** Chaque cleanup de bruit (warnings PHP, `console.log`, code mort) a révélé un bug pré-existant masqué. Le warning `WP_POST_REVISIONS` masquait `$counter`/`$index`/`$s` ; le nettoyage des warnings a révélé `SyntaxError` smooth scroll ; etc. **Toujours s'attendre à ce que le prochain bug visible soit un bug ancien démasqué, pas une régression.**
+2. **Discipline diagnostic-d'abord** a évité ≥4 régressions silencieuses : (a) un fix `WP_POST_REVISIONS` spéculatif sur le like alors que le vrai bug était la pollution REST par le warning ; (b) virer le CDN jQuery sans wrapper main.js → noConflict aurait cassé tout ; (c) grouper C2+C3 dans le même commit → perte de granularité bisect ; (d) initialiser `$counter`/`$index` à 0 au lieu de constater qu'ils étaient morts.
+3. **1 finding = 1 commit atomique** = bisect/revert-friendly. Seul moment où on a groupé (clôture Phase 1) est explicitement narratif et non fonctionnel.
+4. **Validation utilisateur entre commits critiques** est le rythme par défaut. Coût : ~2 min round-trip par commit. Bénéfice : 0 régression silencieuse arrivée en prod.
+5. **L'ordre du prompt n'est pas sacré.** En Phase 1 step 3 : 3.6 (cascade CSS) inversé avant 3.2 (Bootstrap JS) parce que l'ordre du prompt aurait inversé la cascade thème (régression visuelle massive). En 3.3 (jQuery removal), il a fallu faire 3.4 (MediaElement WP-bundled) d'abord. **Toujours analyser les dépendances avant de suivre l'ordre prescrit.**
+
+**Pointeur Phase 2 — refacto structurel** :
+- **Findings prioritaires** : QC-002 (logique métier dans templates), QC-003 (bloc "card mixtape" dupliqué 4×), QC-004 (text-domain `'text-domain'` placeholder partout), QC-008 (naming PHP incohérent + pas de namespace + pas de docblocks).
+- **Décisions structurantes déjà prises** (à respecter dans le refacto) : préfixe `lmt_*` partout, no-visual-change rule, text-domain cible `'lamixtape'`, template-parts via `get_template_part()`, queries hors templates dans `inc/queries.php`.
+- **Question ouverte Q9** (suppression module commentaires) : à planifier (Phase 2.5 ou Phase 6 selon décision business).
+
+**Validation finale Phase 1 (à charge utilisateur)** :
+- 8 captures post-Phase-1 vs `_docs/captures-pre-3.8/` (template par template) → confirmer **0 différence visuelle** sur les 8 templates. La règle "no visual change" est l'objectif nominal de la Phase 1 ; un diff visuel non-zéro = à investiguer avant de déclarer Phase 1 close côté product.
 
 ## 5. Recommandations stratégiques
 
