@@ -21,9 +21,17 @@ global $wp_query;
         </form>
     </header>
     <section class="mixtape-list">
-        <?php 
-        // Query all posts matching the search
-        $allsearch = new WP_Query("s=$s&showposts=-1"); 
+        <?php
+        // Query all posts matching the search.
+        // get_search_query(false) returns the raw term (no HTML escape);
+        // WP_Query handles SQL escaping internally via $wpdb->prepare().
+        // posts_per_page => -1 keeps the historical behaviour (no
+        // pagination); switching to a real paginated cap is part of
+        // PERF-002 / PERF-007 in Phase 3.
+        $allsearch = new WP_Query( array(
+            's'              => get_search_query( false ),
+            'posts_per_page' => -1,
+        ) );
         ?>
         <?php if ($allsearch->have_posts()) : ?>
             <?php while ($allsearch->have_posts()) : $allsearch->the_post(); ?>
