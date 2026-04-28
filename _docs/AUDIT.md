@@ -417,6 +417,15 @@
 - **Impact** : Au-delà du bruit visuel, le warning HTML pollue les réponses **REST** : la sortie n'est plus du JSON pur, le `Content-Type: application/json` ment, et les callbacks JS qui parsent la réponse échouent ou affichent du HTML. Régression observée sur le bouton like (handler côté client cassé après l'ajout du compteur retour serveur en Phase 0).
 - **Recommandation** : Wrapper la définition dans `if ( ! defined( 'WP_POST_REVISIONS' ) ) { ... }`. À terme (cf. PERF-014), supprimer la définition du thème et ne la conserver que dans `wp-config.php`.
 
+### [QC-NEW-002] Smooth scroll handler crashe sur les liens factices `href="#"`
+- **Sévérité** : Moyenne
+- **Axe** : Qualité (robustesse JS)
+- **Fichier(s)** : `js/main.js:121-129` (bloc `// Smooth scrolling`)
+- **Découvert** : Phase 1, retour utilisateur post-cleanup (rendu visible une fois les autres warnings PHP/JS de console nettoyés).
+- **Description** : Le handler smooth scroll s'attache à tout `<a href^="#">` (sélecteur `'a[href^="#"]'`) et exécute `document.querySelector(this.getAttribute('href'))` au click. Pour les liens factices `href="#"` (modals donation/contact, like btn historique, etc., cf. A11Y-002), `querySelector('#')` est un sélecteur CSS invalide → `Uncaught SyntaxError: Failed to execute 'querySelector' on 'Document': '#' is not a valid selector`.
+- **Impact** : Pas d'impact UX visible (les modals s'ouvrent quand même via leur propre handler Bootstrap, indépendant). Pollution console à chaque click sur un placeholder link. Code qui ne défend pas contre un cas trivial — peut casser des features futures (Sentry/error reporters strictes, rebuilds JS, etc.).
+- **Recommandation** : Early-return si `href` est nul/vide ou égal à `'#'` AVANT l'appel à `querySelector`. Bug pré-existant depuis le commit initial (`9606b78`), masqué par d'autres erreurs console jusqu'à Phase 1. Le souci A11y sous-jacent (`href="#"` sur des éléments qui devraient être `<button>`) est tracé séparément sous **A11Y-002** et reste à traiter en Phase 5.
+
 ---
 
 ## <a id="wp"></a>5. Bonnes pratiques WordPress
@@ -639,11 +648,11 @@
 |---|:-:|
 | **Critique** | 5 |
 | **Haute** | 20 |
-| **Moyenne** | 27 |
+| **Moyenne** | 28 |
 | **Basse** | 19 |
-| **TOTAL** | **71** |
+| **TOTAL** | **72** |
 
-> Note : 70 findings dans l'audit initial (28 avril 2026), +1 finding ajouté en Phase 1 (`QC-NEW-001`, découvert par l'utilisateur). Tout finding ajouté post-audit utilise le suffixe `-NEW-NNN`.
+> Note : 70 findings dans l'audit initial (28 avril 2026), +2 findings ajoutés en Phase 1 (`QC-NEW-001` warning `WP_POST_REVISIONS`, `QC-NEW-002` smooth scroll SyntaxError). Tout finding ajouté post-audit utilise le suffixe `-NEW-NNN`.
 
 ### Findings par axe
 
@@ -652,11 +661,11 @@
 | Sécurité | 2 | 1 | 3 | 3 | **9** |
 | Performance | 2 | 4 | 4 | 4 | **14** |
 | Accessibilité | 0 | 4 | 5 | 2 | **11** |
-| Qualité code | 1 | 4 | 6 | 4 | **15** |
+| Qualité code | 1 | 4 | 7 | 4 | **16** |
 | WP best practices | 0 | 3 | 4 | 2 | **9** |
 | Migration Tailwind | 0 | 2 | 3 | 0 | **5** |
 | Autres (SEO/RGPD/Obs) | 0 | 2 | 2 | 4 | **8** |
-| **TOTAL** | **5** | **20** | **27** | **19** | **71** |
+| **TOTAL** | **5** | **20** | **28** | **19** | **72** |
 
 ### Top 5 findings critiques (à régler avant tout autre travail)
 
