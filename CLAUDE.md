@@ -134,6 +134,12 @@ Critiques (à régler avant tout autre travail) — état au {{Phase 0}} :
 | **Like / Dislike** | Champs ACF `likes_number`/`dislikes_number` incrémentés via REST `social/v2/...` |
 | **author-1** | L'admin du site (ID=1) ; le CSS le masque explicitement dans la liste des curators (`list-of-mixtapes.css:40-42`) — c'est ce que la query `guests.php` essaie aussi de filtrer côté SQL |
 
+### Traces de boilerplate générique
+Le thème a hérité de fonctions/snippets génériques d'un boilerplate non-renommé. Le marqueur récurrent est le préfixe **`prefix_*`** (placeholder jamais remplacé par un slug de thème) :
+- `prefix_conditional_body_class` — supprimé en Phase 1 (commit `d9c0699`, finding QC-014). Référençait un template `about.php` inexistant.
+
+Si tu rencontres d'autres `prefix_*` ou des noms qui sentent le boilerplate (`text-domain` comme text-domain, `revcon_*`, `wpb_*`, `cf_*`), traite-les comme suspects : soit code mort à supprimer, soit code à renommer en `lmt_*` selon la convention thème (cf. section 8).
+
 ## 7. Questions ouvertes
 
 | # | Sujet | Décision attendue | Impact |
