@@ -69,6 +69,13 @@ function lmt_enqueue_assets() {
         'post_id'      => get_queried_object_id(),
         'nonce'        => wp_create_nonce( 'wp_rest' ),
     ) );
+
+    // Player JS — only on single mixtape pages. Depends on jQuery and
+    // wp-mediaelement (the .mediaelementplayer plugin lives on the WP
+    // jQuery instance — cf. fix in commit 81e0af2).
+    if ( is_singular( 'post' ) ) {
+        wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 
