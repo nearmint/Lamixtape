@@ -256,7 +256,7 @@ add_filter( 'the_content_feed', 'wcs_post_thumbnails_in_feeds' );
 // -----------------------------------------------------
 // ------------------- Like buttons --------------------
 // -----------------------------------------------------
-// Enqueue AJAX script for like/dislike buttons
+// Enqueue AJAX script for like buttons
 function loadmore_enqueue() {
     wp_enqueue_script( 'ajax-script', get_template_directory_uri() . '/js/main.js', array('jquery'), null, true);
 }
@@ -272,15 +272,11 @@ function push_script() {
 }
 add_action('init', 'push_script');
 
-// Register REST API routes for like/dislike
+// Register REST API routes for likes
 add_action( 'rest_api_init', function () {
     register_rest_route( 'social/v2', '/likes/(?P<id>\d+)', array(
         'methods' => array('GET','POST'),
         'callback' => 'social__like',
-    ) );
-    register_rest_route( 'social/v2', '/dislikes/(?P<id>\d+)', array(
-        'methods' => array('GET','POST'),
-        'callback' => 'social__dislike',
     ) );
 });
 
@@ -296,8 +292,6 @@ function social__like( WP_REST_Request $request ) {
     $likes = update_field($field_name, $updated_likes, $request['id']);
     return $likes;
 }
-
-// (Add social__dislike and any other missing functions as needed)
 
 // -----------------------------------------------------
 // -- End of functions.php -----------------------------

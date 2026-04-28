@@ -60,7 +60,7 @@ $(document).ready(function() {
         return true;
     }
 
-    // Like/Dislike button AJAX logic
+    // Like button AJAX logic
     $(document).ready(function() {
         $('.like__btn').on('click', function() {
             $.ajax({
@@ -75,21 +75,6 @@ $(document).ready(function() {
             });
             var updated_likes = parseInt($('.like__number').html()) + 1;
             $('.like__number').html(updated_likes);
-            $(this).attr('disabled', true);
-        });
-        $('.dislike__btn').on('click', function() {
-            $.ajax({
-                url: bloginfo.site_url + '/wp-json/social/v2/dislikes/' + postid,
-                type: 'post',
-                success: function() {
-                    $(this).attr('disabled', true).addClass('tada');
-                },
-                error: function() {
-                    console.log('failed!');
-                }
-            });
-            var updated_likes = parseInt($('.dislike__number').html()) + 1;
-            $('.dislike__number').html(updated_likes);
             $(this).attr('disabled', true);
         });
     });
