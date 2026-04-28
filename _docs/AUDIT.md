@@ -267,6 +267,7 @@
 - **Description** : Les 2 modals (`#donatemodal`, `#contactmodal`) reposent intégralement sur le JS BS4 pour le focus trap. Bootstrap 4.4 gère partiellement ce trap, mais la pratique moderne est d'utiliser `<dialog>` HTML natif ou un composant dédié (Reach UI, Headless UI). `aria-labelledby` pointe sur l'ID du modal lui-même au lieu du `<h2>` titre.
 - **Impact** : Comportement clavier non garanti hors BS4.
 - **Recommandation** : Migrer vers `<dialog>` natif (`<dialog id="donatemodal"><h2 id="donatemodal-title">...</h2></dialog>`) avec `dialog.showModal()`. Ajustement `aria-labelledby="donatemodal-title"`.
+- **Note d'observation (Phase 1)** : Chromium émet en console à l'ouverture d'un modal `Blocked aria-hidden on an element because its descendant retained focus.` Manifestation directe du finding : Bootstrap 4.4 pose `aria-hidden="true"` sur le modal pendant que le focus s'y trouve, et les navigateurs récents flaguent ce conflit. **Pas une régression Phase 1** — bug intrinsèque à BS4. Résolution attendue avec la migration `<dialog>` (Phase 5).
 
 ### [A11Y-009] Couleurs ACF `color` appliquées sans contrôle de contraste
 - **Sévérité** : Moyenne
@@ -335,6 +336,7 @@
 - **Description** : `single.php:136` incrémente `$counter` jamais initialisé. `single.php:50` lit `$index` sans initialisation. `search.php:26` utilise `$s` (alias historique de la query var search, dépend de `register_globals` ou des magic globals WP).
 - **Impact** : Warnings PHP (sur PHP 8.1+ : `Undefined variable`), comportement non-déterministe. Sur PHP 8.2+ : warning explicite.
 - **Recommandation** : Initialiser explicitement (`$counter = 0;` avant la boucle), retirer `$index` (variable morte), remplacer `$s` par `get_search_query()`.
+- **Statut** : Résolu Phase 1 (`5465b59` $counter + `0f131e8` $index + `706d209` $s). Investigation a montré que `$counter` et `$index` étaient calculés/émis pour rien — suppression complète au lieu d'initialisation. `$s` remplacé par `get_search_query(false)` dans un array `WP_Query` (`showposts` deprecated remplacé par `posts_per_page`). Bug fonctionnel critique découvert au passage : avant fix, **toute recherche `/search/*` retournait le catalogue entier** (terme vide envoyé à WP_Query).
 
 ### [QC-006] `wp_localize_script` mal cadré (cf. SEC-006)
 - **Sévérité** : Moyenne
