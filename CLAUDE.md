@@ -70,23 +70,25 @@ lamixtape/
 
 ## 4. Dette technique priorisée
 
-| Axe | Findings totaux | Critique | Haute | Référence |
+| Axe | Findings totaux | Critique restant | Haute | Référence |
 |---|:-:|:-:|:-:|---|
-| **Process / Qualité** | 14 | 1 | 4 | `AUDIT.md#qc` |
-| **Sécurité** | 9 | 2 | 1 | `AUDIT.md#securite` |
+| **Process / Qualité** | 14 | 0 ✅ | 4 | `AUDIT.md#qc` |
+| **Sécurité** | 9 | 0 ✅ | 1 | `AUDIT.md#securite` |
 | **Performance** | 14 | 2 | 4 | `AUDIT.md#performance` |
 | **Accessibilité** | 11 | 0 | 4 | `AUDIT.md#a11y` |
 | **WP best practices** | 9 | 0 | 3 | `AUDIT.md#wp` |
 | **Migration Tailwind** | 5 | 0 | 2 | `AUDIT.md#tailwind` |
 | **Autres (SEO, RGPD, observabilité)** | 8 | 0 | 2 | `AUDIT.md#autres` |
-| **TOTAL** | **70** | **5** | **20** | |
+| **TOTAL** | **70** | **2** | **20** | |
 
-Top 5 critiques (à régler avant tout autre travail) :
-1. **QC-001** — Repo non versionné. Init git + `.gitignore` + premier commit "as-is" comme prérequis du refacto.
-2. **SEC-001** — Endpoint REST `social/v2/likes` sans `permission_callback`, sans nonce, sans rate-limit.
-3. **SEC-002** — Callback `social__dislike` référencé mais non défini → 500.
-4. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`).
-5. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date.
+Critiques (à régler avant tout autre travail) — état au {{Phase 0}} :
+1. **QC-001** ✅ **résolu Phase 0** (commit `9606b78` — init git + `.gitignore` + push GitHub).
+2. **SEC-002** ✅ **résolu Phase 0** (commit `2d656f8` — feature dislike supprimée intégralement).
+3. **SEC-001** ✅ **résolu Phase 0** (commit `f8107e0` — `permission_callback` + nonce REST + rate-limit transient hash IP).
+4. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`). → cible Phase 3.
+5. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date. → cible Phase 3.
+
+> Phase 0 close : 3 critiques sur 5 résolues. Reste 2 critiques perfo (`PERF-001`, `PERF-002`) qui passent en priorité 1 pour la Phase 3 (sécurité & perf bloquantes), après les phases 1 (hygiène) et 2 (refacto structurel).
 
 ## 5. Recommandations stratégiques
 
