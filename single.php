@@ -133,12 +133,6 @@
                 </div>
             </article>
             <?php
-            if($counter > 9){
-                $counter = 1;
-            }
-            else {
-                $counter++;
-            }
         endforeach;
     else : ?>
         <?php // No output for else, as before ?>
