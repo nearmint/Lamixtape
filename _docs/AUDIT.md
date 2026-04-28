@@ -19,6 +19,7 @@
 - **Description** : `register_rest_route('social/v2', '/likes/(?P<id>\d+)', ...)` est déclaré sans `permission_callback` (équivaut à `__return_true` selon les versions de WP, mais émet un warning et expose la route à tout anonyme). Aucun `wp_verify_nonce`, aucun rate-limit, aucune capability check. Le callback `social__like` incrémente naïvement `likes_number` à chaque requête POST/GET.
 - **Impact** : N'importe qui peut spammer le compteur de likes d'un post (curl en boucle), faussant la métrique éditoriale "🔥". Surface d'attaque : DoS léger, pollution des données.
 - **Recommandation** : Ajouter `'permission_callback' => '__return_true'` (explicite) **et** un nonce REST (`wp_create_nonce('wp_rest')` côté JS, `WP_REST_Server::READABLE` + check). Restreindre aux méthodes POST seules. Ajouter un transient par IP (`set_transient('lmt_like_'.$ip.'_'.$id, 1, HOUR_IN_SECONDS)`) pour bloquer les spams. Idéalement, exiger un cookie session ou un cookie WP.
+- **Statut** : Résolu Phase 0 (`f8107e0` `permission_callback` `lmt_social_like_permission` + nonce REST `X-WP-Nonce` + rate-limit transient avec hash IP `wp_hash` (RGPD) + `WP_REST_Server::CREATABLE` (POST only) + `validate_callback` sur `id`).
 
 ### [SEC-002] Callback `social__dislike` référencé mais non défini → 500 sur l'endpoint
 - **Sévérité** : Critique
@@ -27,6 +28,7 @@
 - **Description** : La route `social/v2/dislikes/{id}` est enregistrée avec `'callback' => 'social__dislike'`, mais aucune fonction `social__dislike` n'existe dans le thème (un commentaire `// (Add social__dislike and any other missing functions as needed)` confirme l'oubli). `js/main.js:80-94` envoie pourtant des POST vers cette route.
 - **Impact** : Tout clic sur le bouton dislike → erreur 500 / rest_invalid_handler / fatal côté serveur, log pollué, UX cassée.
 - **Recommandation** : Soit implémenter `social__dislike` (symétrique de `social__like`), soit retirer la route et le bouton dislike. Vu la conversation business, choisir avant de coder (probablement supprimer : feature jamais finie).
+- **Statut** : Résolu Phase 0 (`2d656f8` route REST `/dislikes/{id}` supprimée + handler JS `.dislike__btn` supprimé + commentaire orphelin `social__dislike` supprimé). Champ ACF `dislikes_number` préservé en BDD (décision business).
 
 ### [SEC-003] Requête SQL custom avec interpolation directe (`guests.php`)
 - **Sévérité** : Haute
@@ -59,6 +61,7 @@
 - **Description** : `wp_localize_script('jquery', 'bloginfo', [...])` — la variable globale `bloginfo` (qui contient `template_url`, `site_url`, `post_id`) est rattachée à un handle qui n'appartient pas au thème. Si jQuery n'est pas effectivement enqueued sur une page (ex. admin), la variable est absente. Pire, n'importe quel autre plugin qui dépend de `jquery` reçoit cette variable injectée dans son scope JS.
 - **Impact** : Fuite involontaire d'info, bugs intermittents (variable `undefined`).
 - **Recommandation** : Attacher au handle propre du thème (`wp_localize_script('lmt-main', 'lmtData', [...])` après avoir enregistré le script `main.js` sous le handle `lmt-main`).
+- **Statut** : Résolu Phase 1 — 3 commits atomiques (`83d72cb` rename handle `'ajax-script'` → `'lmt-main'` + `72647ba` rename `bloginfo` → `lmtData` attaché à `'lmt-main'` + déplacement hook `'init'` → `'wp_enqueue_scripts'` + `62457a2` fusion de `loadmore_enqueue` + `push_script` dans `lmt_enqueue_assets()`).
 
 ### [SEC-007] Scripts/CSS externes via CDN sans Subresource Integrity (SRI)
 - **Sévérité** : Basse
@@ -67,6 +70,7 @@
 - **Description** : 6 sources externes (Bootstrap CDN, jQuery CDN, MediaElement CDN, Google Fonts, Umami, YouTube) sont chargées sans attribut `integrity=` ni `crossorigin=`. Si l'un de ces CDN est compromis, du code malveillant s'exécute en frontal Lamixtape.
 - **Impact** : Risque supply-chain. Faible probabilité, impact élevé.
 - **Recommandation** : Soit auto-héberger Bootstrap/jQuery/MediaElement (`composer require` ou `npm install`, copie dans `assets/vendor/`), soit ajouter SRI (`integrity="sha384-..."`). L'auto-hébergement est aussi une optimisation perf (un seul domaine, HTTP/2 multiplexing).
+- **Statut** : Résolu Phase 1 (`57404c9` Bootstrap 4.4.1 + jQuery 3.6.0 + Outfit variable woff2 auto-hébergés dans `assets/vendor/` + `ed7bb07` MediaElement basculé vers `wp-mediaelement` WP-bundled — équivalent fonctionnel : la dépendance n'est plus un CDN externe mais une lib WP). SRI non nécessaire pour les fichiers locaux (intégrité git). Umami reste inline en CDN (snippet officiel SaaS, decision Phase 1).
 
 ### [SEC-008] Aucun header de sécurité émis côté thème
 - **Sévérité** : Basse
@@ -191,6 +195,7 @@
 - **Description** : ~18 `console.log` actifs en production dans le JS du player (préfixés `[Player]`, `[YouTube API]`, `[UI]`).
 - **Impact** : Pollution console (mauvaise UX dev externe, +1 KB minifié, micro-coût d'évaluation).
 - **Recommandation** : Supprimer tous les `console.log` ou les wrapper dans `if (window.LMT_DEBUG)`. À faire pendant le refacto JS.
+- **Statut** : Résolu Phase 1 (`2462471` 21 `console.log` + 2 `console.warn` supprimés de `player.php` — tous purement diagnostiques `[Player]` / `[YouTube API]` / `[UI]`).
 
 ### [PERF-014] `WP_POST_REVISIONS` défini dans `functions.php` (trop tard)
 - **Sévérité** : Basse
@@ -304,6 +309,7 @@
 - **Description** : Le thème (et le projet parent `app/public/wp-content/themes/lamixtape/`) n'est pas un dépôt git. Aucun historique, aucun rollback possible, aucune branche, aucune PR review.
 - **Impact** : **Tout refacto est non-réversible.** Une erreur = perte définitive (sauf backup serveur). Aucun audit du code historique possible. Bloquant pour tout travail sérieux.
 - **Recommandation** : `git init` dans le dossier du thème, `.gitignore` couvrant `.DS_Store`, `node_modules/`, `vendor/`, `wp-config.php`, `*.log`, `.idea/`, `.vscode/`. Commit initial "as-is". Pousser vers GitHub/GitLab privé. **Action n°1 du refacto**, avant toute modification.
+- **Statut** : Résolu Phase 0 (`9606b78` `git init` + `.gitignore` + commit initial as-is + remote SSH `git@github.com:nearmint/Lamixtape.git`).
 
 ### [QC-002] Logique métier (queries SQL, filtres) dans les templates
 - **Sévérité** : Haute
@@ -369,6 +375,7 @@
 - **Description** : 2 fichiers `.DS_Store` macOS présents. Pas critique tant qu'il n'y a pas de git, mais à exclure dès l'init.
 - **Impact** : Bruit dans le futur dépôt.
 - **Recommandation** : Ajouter `.DS_Store` au `.gitignore` initial. Supprimer du dossier (`find . -name '.DS_Store' -delete`).
+- **Statut** : Résolu Phase 0 + Phase 1 (`9606b78` ajouté au `.gitignore` initial — jamais trackés dans git ; Phase 1 step 1.1 cleanup disque sans commit nécessaire).
 
 ### [QC-010] Documentation interne (`audit-prompt.md`, `CLAUDE.md`, `AUDIT.md`) servie depuis le thème
 - **Sévérité** : Moyenne
@@ -377,6 +384,7 @@
 - **Description** : Fichiers de documentation (audit, mémoire de travail) servis par WordPress comme part of the theme. Inutiles en runtime, et contiennent des éléments stratégiques internes.
 - **Impact** : Bruit dans le bundle déployé. Si les fichiers `.md` sont accessibles via URL directe (selon config serveur), exposition d'info.
 - **Recommandation** : Soit déplacer hors du thème (`docs/` à la racine du repo, hors `wp-content/`), soit ajouter une règle `.htaccess`/Nginx qui bloque l'accès aux `*.md`. Garder `CLAUDE.md` est utile pour les futures sessions Claude Code, mais idéalement hors prod.
+- **Statut** : Résolu Phase 1 (`89991d6` `audit-prompt.md`, `AUDIT.md`, `prompt-phase-0.md`, `screenshot.png` déplacés dans `_docs/`. `CLAUDE.md` reste à la racine par convention Claude Code. Note : règle `.htaccess`/Nginx pour bloquer l'accès direct aux `*.md` reste à mettre côté infra hors thème).
 
 ### [QC-011] HTML conditionnels IE9 (`<!--[if lt IE 9]>`)
 - **Sévérité** : Basse
@@ -385,6 +393,7 @@
 - **Description** : `<!--[if lt IE 9]> ... html5shiv ... respond.js ...` — IE 11 a perdu son dernier support en 2022, IE 9 jamais.
 - **Impact** : Code mort, charge inutilement deux scripts en cas d'IE.
 - **Recommandation** : Supprimer entièrement les lignes 20-24 de `header.php`.
+- **Statut** : Résolu Phase 1 (`d81e307` bloc IE9 conditional comments + html5shim/html5shiv/respond.js supprimés de `header.php`).
 
 ### [QC-012] Usage incorrect de `__()` sur la chaîne `'%s'`
 - **Sévérité** : Basse
@@ -393,6 +402,7 @@
 - **Description** : `printf( __( '%s' ), get_comment_author_link() )` — traduire `'%s'` n'a pas de sens.
 - **Impact** : Pollution du `.pot` si jamais généré, code confus.
 - **Recommandation** : Remplacer par `echo get_comment_author_link();` (sans `printf`/`__`).
+- **Statut** : Résolu Phase 1 (`5ee885e` `printf(__('%s'), get_comment_author_link())` remplacé par `echo get_comment_author_link();` dans le callback `tape_comment`).
 
 ### [QC-013] Code mort newsletter `#subscribe-form` orphelin
 - **Sévérité** : Basse
@@ -401,6 +411,7 @@
 - **Description** : `js/main.js` cible `$("#subscribe-form")` et `$("#subscribe-form-2")`, qui ne sont **présents dans aucun template** du thème, et **aucun plugin newsletter n'est installé** (vérifié dans `wp-content/plugins/` : pas de `mailchimp-*`, `mc4wp`, `newsletter`, `subscribe-*`). Les fonctions `submitSubscribeForm`, `ajaxMailChimpForm`, `isValidEmail` (~50 lignes) sont mortes.
 - **Impact** : Bytes inutiles.
 - **Recommandation** : Supprimer les lignes 3-4 et 7-50 de `js/main.js`.
+- **Statut** : Résolu Phase 1 (`370eec3` ~60 lignes JS newsletter supprimées de `js/main.js` + `css/newsletter.css` supprimé + `@import` correspondant retiré de `style.css`. Aucun plugin newsletter installé, code 100% mort confirmé).
 
 ### [QC-014] Référence à `about.php` (template inexistant)
 - **Sévérité** : Basse
@@ -409,6 +420,7 @@
 - **Description** : `if( is_page_template('about.php') ) $classes[] = 'about';` — aucun fichier `about.php` n'existe dans le thème.
 - **Impact** : Code mort.
 - **Recommandation** : Supprimer la fonction `prefix_conditional_body_class` ou réécrire si une page "about" est prévue.
+- **Statut** : Résolu Phase 1 (`d9c0699` fonction `prefix_conditional_body_class` + son `add_filter` supprimés. Le template `about.php` n'a jamais existé. Trace de boilerplate générique tracée dans `CLAUDE.md` section 6).
 
 ### [QC-NEW-001] `WP_POST_REVISIONS` redéfinie sans garde
 - **Sévérité** : Moyenne
@@ -418,6 +430,7 @@
 - **Description** : `define( 'WP_POST_REVISIONS', 3 );` est déclaré sans test `defined()` préalable. La constante est déjà définie dans `wp-config.php`, ce qui produit un `Warning: Constant WP_POST_REVISIONS already defined in functions.php on line 127` sur **toutes** les pages quand `WP_DEBUG_DISPLAY` est `true` (cas Local par défaut).
 - **Impact** : Au-delà du bruit visuel, le warning HTML pollue les réponses **REST** : la sortie n'est plus du JSON pur, le `Content-Type: application/json` ment, et les callbacks JS qui parsent la réponse échouent ou affichent du HTML. Régression observée sur le bouton like (handler côté client cassé après l'ajout du compteur retour serveur en Phase 0).
 - **Recommandation** : Wrapper la définition dans `if ( ! defined( 'WP_POST_REVISIONS' ) ) { ... }`. À terme (cf. PERF-014), supprimer la définition du thème et ne la conserver que dans `wp-config.php`.
+- **Statut** : Résolu Phase 1 (`389dd3c` wrap `if ( ! defined('WP_POST_REVISIONS') )` ajouté dans `functions.php`. À terme cf. PERF-014 pour déplacement vers `wp-config.php`).
 
 ### [QC-NEW-002] Smooth scroll handler crashe sur les liens factices `href="#"`
 - **Sévérité** : Moyenne
@@ -427,6 +440,7 @@
 - **Description** : Le handler smooth scroll s'attache à tout `<a href^="#">` (sélecteur `'a[href^="#"]'`) et exécute `document.querySelector(this.getAttribute('href'))` au click. Pour les liens factices `href="#"` (modals donation/contact, like btn historique, etc., cf. A11Y-002), `querySelector('#')` est un sélecteur CSS invalide → `Uncaught SyntaxError: Failed to execute 'querySelector' on 'Document': '#' is not a valid selector`.
 - **Impact** : Pas d'impact UX visible (les modals s'ouvrent quand même via leur propre handler Bootstrap, indépendant). Pollution console à chaque click sur un placeholder link. Code qui ne défend pas contre un cas trivial — peut casser des features futures (Sentry/error reporters strictes, rebuilds JS, etc.).
 - **Recommandation** : Early-return si `href` est nul/vide ou égal à `'#'` AVANT l'appel à `querySelector`. Bug pré-existant depuis le commit initial (`9606b78`), masqué par d'autres erreurs console jusqu'à Phase 1. Le souci A11y sous-jacent (`href="#"` sur des éléments qui devraient être `<button>`) est tracé séparément sous **A11Y-002** et reste à traiter en Phase 5.
+- **Statut** : Résolu Phase 1 (`0474328` early-return sur `href` null/vide/`'#'` dans le smooth scroll handler de `js/main.js` + commentaire TODO Phase 5 pointant vers A11Y-002).
 
 ---
 
@@ -439,6 +453,7 @@
 - **Description** : `<link rel="stylesheet" href=".../style.css">` est codé en dur dans `header.php`. WP attend qu'un thème enqueue son `style.css` via `wp_enqueue_style('lmt-style', get_stylesheet_uri())`. Aucun child theme ne pourra surcharger correctement.
 - **Impact** : Violation WP Coding Standards. Impossibilité de child theme. Pas de versionnement (cache busting) automatique.
 - **Recommandation** : Supprimer le `<link>` en dur. Ajouter `wp_enqueue_style('lmt-main', get_stylesheet_uri(), [], wp_get_theme()->get('Version'))` dans `wp_enqueue_scripts`.
+- **Statut** : Résolu Phase 1 (`97a7e96` `<link>` en dur supprimé de `header.php`, `style.css` réduit au header de thème WP, fonction `lmt_enqueue_assets()` créée pour enqueuer les 14 CSS thème via `wp_enqueue_style` avec ordre de cascade préservé).
 
 ### [WP-002] Pas de `theme.json`
 - **Sévérité** : Haute
@@ -470,6 +485,7 @@
 - **Description** : Bootstrap, jQuery, MediaElement, font Outfit, Umami, YouTube IFrame API : tous chargés via balises `<script>`/`<link>` en dur ou via `@import` dans `style.css`. Aucun n'est passé par `wp_enqueue_*`.
 - **Impact** : Pas de gestion des dépendances par WP, pas de cache busting, pas de `defer/async` côté WP, pas de désenqueue propre par d'autres thèmes/plugins.
 - **Recommandation** : Tout passer par `wp_enqueue_style()` et `wp_enqueue_script()`. Charger conditionnellement (ex. MediaElement seulement sur `is_singular('post')`).
+- **Statut** : Résolu Phase 1 (`97a7e96` Bootstrap CSS + Outfit + 14 theme CSS via `wp_enqueue_style` + `e064272` Bootstrap bundle JS via `wp_enqueue_script` + `ed7bb07` MediaElement via `wp-mediaelement` WP-bundled + `863ee0f` jQuery CDN supprimé, jQuery WP-bundled utilisé via dependency chain). Note : chargement conditionnel par template (404.css sur `is_404()`, etc.) reporté à un follow-up commit (cf. note dans lmt_enqueue_assets pour préserver la cascade de la migration initiale). Umami reste inline (analytics.php — snippet officiel, defer).
 
 ### [WP-005] Hack "rename Posts → Playlist" sur le post type natif
 - **Sévérité** : Moyenne
@@ -639,6 +655,7 @@
 - **Description** : `<script>fbq('track', 'Search');</script>` est appelé sans que le snippet Facebook Pixel soit chargé (ni dans le thème, ni dans aucun plugin trouvé). Confirmé par le contexte : pixel retiré historiquement, résidu orphelin.
 - **Impact** : Erreur JS silencieuse en console (`Uncaught ReferenceError: fbq is not defined`) à chaque recherche.
 - **Recommandation** : Supprimer la ligne 52 de `search.php`.
+- **Statut** : Résolu Phase 1 (`d1cbe33` `<script>fbq('track','Search');</script>` supprimé de `search.php`. Pixel Facebook retiré historiquement, résidu orphelin confirmé).
 
 ---
 
