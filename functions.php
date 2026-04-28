@@ -61,16 +61,6 @@ function wp_change_search_url() {
 }
 add_action( 'template_redirect', 'wp_change_search_url' );
 
-// -----------------------------------------------------
-// ---------- Add page slug to body class --------------
-// -----------------------------------------------------
-add_filter( 'body_class', 'prefix_conditional_body_class' );
-function prefix_conditional_body_class( $classes ) {
-    if( is_page_template('about.php') )
-        $classes[] = 'about';
-    return $classes;
-}
-
 // -----------------------------------------
 // ---------- Clean up the <head> ----------
 // -----------------------------------------
