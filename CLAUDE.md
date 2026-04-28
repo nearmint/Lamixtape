@@ -152,6 +152,7 @@ Si tu rencontres d'autres `prefix_*` ou des noms qui sentent le boilerplate (`te
 | 6 | **Newsletter** | Suppression confirmée (code mort) | Aucun (rien à faire côté contenu) |
 | 7 | **`fbq` Pixel** | Suppression confirmée (résidu) | Aucun |
 | 8 | **Cookies / RGPD** | Définir si Umami suffit (sans bandeau, car analyse anonyme), ou si un bandeau est requis par politique éditoriale | Conformité RGPD/CNIL |
+| 9 | **Suppression du module de commentaires** | À confirmer (probable suppression complète). À planifier dans une phase dédiée après le refacto structurel — **Phase 2.5** ou **Phase 6** | `comments.php`, callback `tape_comment`, customisations via `comment_form_default_fields` / `comment_form_field_comment` dans `functions.php`, `css/comment-form.css`, hook éventuel `pre_get_comments`. Vérifier aussi : `comments_open()` / `pings_open()` dans la BDD (à fermer côté admin), `wp_list_comments` callback dans `comments.php` |
 
 ## 8. Règles pour les futures sessions Claude Code
 
