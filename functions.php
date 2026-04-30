@@ -123,6 +123,30 @@ function lmt_enqueue_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 
+/**
+ * Preload the Outfit (latin subset) woff2 file in <head>.
+ *
+ * The latin subset covers ASCII + common Western European
+ * accents (French é, è, à, ç...) which is what every page on
+ * Lamixtape needs at first paint. The latin-ext subset is loaded
+ * on demand by the browser only when an extra glyph is encountered,
+ * so preloading it would waste bandwidth on most page loads and
+ * isn't done here.
+ *
+ * crossorigin="anonymous" must match the implicit CORS mode of the
+ * @font-face src: url() declaration (cf. assets/vendor/outfit/outfit.css).
+ *
+ * Hook priority 1 so the preload hint is emitted before any other
+ * <link>/<script> from wp_head.
+ *
+ * @return void
+ */
+function lmt_preload_outfit_font() {
+    $url = get_template_directory_uri() . '/assets/vendor/outfit/outfit-latin.woff2';
+    echo '<link rel="preload" as="font" type="font/woff2" href="' . esc_url( $url ) . '" crossorigin="anonymous">' . "\n";
+}
+add_action( 'wp_head', 'lmt_preload_outfit_font', 1 );
+
 // -----------------------------------------------------
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
