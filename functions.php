@@ -147,6 +147,33 @@ function lmt_preload_outfit_font() {
 }
 add_action( 'wp_head', 'lmt_preload_outfit_font', 1 );
 
+/**
+ * Add defer to non-critical theme scripts.
+ *
+ * lmt-player and lmt-infinite-scroll only run after first paint
+ * (lmt-player on user interaction, lmt-infinite-scroll on
+ * IntersectionObserver firing), so they can be deferred without
+ * any UX impact. Defer = parse the script while HTML continues to
+ * stream + execute after the parser finishes, before DOMContentLoaded.
+ *
+ * lmt-main stays sync (it binds the like-button handler that may
+ * be needed before DOMContentLoaded on a fast click) and so does
+ * the Bootstrap bundle (modal init relies on synchronous BS4 boot).
+ * wp-mediaelement is left to WP defaults.
+ *
+ * @param  string $tag     Existing <script> tag.
+ * @param  string $handle  Script handle.
+ * @return string
+ */
+function lmt_defer_scripts( $tag, $handle ) {
+    $defer_handles = array( 'lmt-player', 'lmt-infinite-scroll' );
+    if ( in_array( $handle, $defer_handles, true ) && false === strpos( $tag, ' defer' ) ) {
+        return str_replace( ' src=', ' defer src=', $tag );
+    }
+    return $tag;
+}
+add_filter( 'script_loader_tag', 'lmt_defer_scripts', 10, 2 );
+
 // -----------------------------------------------------
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
