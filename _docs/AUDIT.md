@@ -116,6 +116,7 @@
 - **Description** : `@import url(https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css);` dans `style.css`. Les `@import` CSS sont **séquentiels** : le navigateur ne télécharge `bootstrap.min.css` qu'après avoir parsé `style.css`. Idem pour MediaElement CSS et la font Outfit. Multiplie le critical path.
 - **Impact** : First Contentful Paint dégradé, render-blocking en cascade.
 - **Recommandation** : Enqueuer chaque dépendance CSS via `wp_enqueue_style()` (handles distincts, dépendances explicites). Préférer auto-hébergement de Bootstrap (et MediaElement) dans `assets/vendor/`.
+- **Statut** : Résolu Phase 1 (`97a7e96` `<link>` en dur supprimé de `header.php` + `style.css` réduit au header de thème WP + chaîne `@import` Bootstrap/MediaElement/Outfit remplacée par `wp_enqueue_style` dans `lmt_enqueue_assets()` (Bootstrap depuis `assets/vendor/`, ordre de cascade préservé via dépendances explicites). Cf. aussi PERF-010 résolu par le même commit, PERF-004 (jQuery CDN), SEC-007 (auto-hébergement vendor), WP-001 (style.css enqueué proprement)).
 
 ### [PERF-004] jQuery chargée deux fois (CDN dans `<head>` + dépendance enqueue)
 - **Sévérité** : Haute
@@ -124,6 +125,7 @@
 - **Description** : `<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>` est en dur dans `header.php`, et `wp_enqueue_script('ajax-script', ..., array('jquery'), ...)` déclare `jquery` comme dépendance — WP enqueue alors **sa propre** jQuery bundlée. Résultat : deux versions de jQuery chargées, conflits potentiels (`$.fn.mediaelementplayer` peut viser une version, le code utilisateur l'autre).
 - **Impact** : ~90 Ko inutiles, conflits de plugins jQuery, comportement non-déterministe.
 - **Recommandation** : Supprimer la balise CDN dans `header.php`. Si une version spécifique est requise, `wp_deregister_script('jquery')` puis `wp_register_script('jquery', '...', [], '3.6.0', true)` dans un hook `wp_enqueue_scripts` à priorité basse. Mieux : viser le retrait progressif de jQuery.
+- **Statut** : Résolu Phase 1 (`863ee0f` `<script src="https://code.jquery.com/jquery-3.6.0.min.js">` supprimé de `header.php`. Le thème consomme uniquement la jQuery bundlée par WP via la chaîne de dépendance des handles `lmt-main`, `lmt-bootstrap-bundle`, `lmt-player`, `wp-mediaelement` (tous déclarent `'jquery'` comme dépendance dans `lmt_enqueue_assets()`). 1 seule version chargée, ~90 Ko économisés).
 
 ### [PERF-005] Multiples `WP_Query` aléatoires (`orderby => rand`) par page
 - **Sévérité** : Haute
@@ -174,6 +176,7 @@
 - **Description** : 15 `@import url(...)` locaux + 3 externes = **18 requêtes CSS séquentielles**. HTTP/2 multiplexe, mais l'`@import` CSS-dans-CSS est toujours sérialisé.
 - **Impact** : Critical path CSS allongé.
 - **Recommandation** : Concaténer en un seul `style.css` (ou en bundles thématiques chargés par template via `wp_enqueue_style`). Avec Tailwind v4, la migration produira un seul fichier CSS final.
+- **Statut** : Résolu Phase 1 (`97a7e96` `style.css` réduit au header de thème WP — toutes les `@import` éliminées. Les 14 fichiers CSS thème (15 moins newsletter supprimé en Phase 1.3) sont maintenant enqueued individuellement via `wp_enqueue_style` dans `lmt_enqueue_assets()`, en parallèle HTTP/2 plutôt qu'en cascade `@import` sérielle. La concaténation en un bundle unique reste un objectif Phase 4 Tailwind où le pipeline produira un CSS final).
 
 ### [PERF-011] Pas de `loading="lazy"`, pas de `srcset`/`sizes` sur les images
 - **Sévérité** : Basse
@@ -190,6 +193,7 @@
 - **Description** : `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap')` — l'URL contient bien `display=swap`, mais l'`@import` empêche les pre-resolve DNS. Pas de `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` non plus.
 - **Impact** : FOIT/FOUT mal géré, ~100 ms perdus sur la connexion DNS+TLS.
 - **Recommandation** : Auto-héberger la police (variable font Outfit, ~50 Ko woff2), ou ajouter `preconnect` dans `header.php`.
+- **Statut** : Partiel Phase 1, finalisation Phase 3 (`57404c9` Outfit variable woff2 auto-hébergé dans `assets/vendor/outfit/` + chaîne `@import` Google Fonts éliminée — le besoin de `preconnect` vers `fonts.googleapis.com` / `fonts.gstatic.com` disparaît avec l'auto-hébergement. Reste à ajouter `<link rel="preload" as="font" type="font/woff2" crossorigin>` sur le woff2 local pour optimiser le LCP — finalisation Phase 3 Axe B).
 
 ### [PERF-013] `console.log` de diagnostic en production (`player.php`)
 - **Sévérité** : Basse
