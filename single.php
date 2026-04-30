@@ -23,7 +23,6 @@
                     🔥&nbsp;
                     <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
                 </button>
-                <button class="like-btn" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="image comments">💬&nbsp;&nbsp;<?php printf( _nx( '1', '%1$s', get_comments_number(), 'comments title', 'lamixtape' ), number_format_i18n(get_comments_number() ) ); ?></button>
             </div>
         </div>
         <hr class="my-4">
@@ -55,14 +54,10 @@
             </div>
             <div class="col-4 d-none d-sm-none d-md-none d-lg-block fade-in delay-6">
                 <div class="tab-content">
-                    <div class="collapse multi-collapse show" id="image">
+                    <div>
                         <?php if( has_post_thumbnail() ): ?>
                             <a href="#" data-toggle="modal" data-target="#donatemodal" class="no--hover"><img src="<?php the_post_thumbnail_url(); ?>" class="img-fluid mt-4 illustration" alt="<?php the_title(); ?>"></a>
                         <?php endif; ?>
-                    </div>
-                    <div class="collapse multi-collapse" id="comments">
-                        <!-- Comments are intentionally closed -->
-                        <p><?php esc_html_e('Comments are now closed.', 'lamixtape'); ?></p>
                     </div>
                     <!-- Container for player iframes -->
                     <div id="player-container"></div>
