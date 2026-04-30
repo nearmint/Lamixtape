@@ -17,7 +17,15 @@ nav h1 {
 }
 
 /* ========== Burger Menu ========== */
-.burger-menu { display: none; }
+/* .burger-menu { display: none; } removed Phase 4 CP2 fix #2.
+ * The desktop "hidden" rule was historical dead code: the inline
+ * style="display:block" on the <li> always overrode it, so the
+ * burger has actually been visible at every breakpoint forever.
+ * In C9 the inline was migrated to tw:block (in @layer utilities),
+ * which lost the cascade against this unlayered rule on desktop —
+ * making the burger genuinely disappear above 768px for the first
+ * time. Removing the rule lets the natural <li> default (list-item)
+ * + tw:block work, which means burger visible everywhere. */
 @media (max-width: 768px) {
     .burger-menu { display: block !important; }
     .navbar .list-inline-item.d-md-inline { display: none !important; }
