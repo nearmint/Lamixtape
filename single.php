@@ -56,7 +56,12 @@
                 <div class="tab-content">
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
-                            <a href="#" data-toggle="modal" data-target="#donatemodal" class="no--hover"><img src="<?php the_post_thumbnail_url(); ?>" class="img-fluid mt-4 illustration" alt="<?php the_title(); ?>"></a>
+                            <a href="#" data-toggle="modal" data-target="#donatemodal" class="no--hover"><?php the_post_thumbnail( 'large', array(
+                                'class'    => 'img-fluid mt-4 illustration',
+                                'alt'      => esc_attr( get_the_title() ),
+                                'loading'  => 'lazy',
+                                'decoding' => 'async',
+                            ) ); ?></a>
                         <?php endif; ?>
                     </div>
                     <!-- Container for player iframes -->
