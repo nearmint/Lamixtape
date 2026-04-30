@@ -53,3 +53,22 @@ function lmt_get_previous_mixtapes( $current_post_id ) {
 
     return $query->posts;
 }
+
+/**
+ * Run the front-end search query for the current request.
+ *
+ * Wraps the WP_Query call previously inlined at the top of search.php.
+ * The search term is read via get_search_query(false) (raw, WP handles
+ * SQL escaping internally).
+ *
+ * posts_per_page stays at -1 to keep the historical visual; switching
+ * to a real paginated cap is part of the Phase 3 pagination work.
+ *
+ * @return WP_Query
+ */
+function lmt_get_search_results() {
+    return new WP_Query( array(
+        's'              => get_search_query( false ),
+        'posts_per_page' => -1, // PERF-002 / PERF-007 tracked, pagination strategy in Phase 3
+    ) );
+}
