@@ -110,6 +110,12 @@ function lmt_enqueue_assets() {
         wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
     }
 
+    // Dialogs JS — Phase 4 Axe C. Vanilla (no jQuery dep), handles
+    // open/close of #donatemodal and #contactmodal native <dialog>s.
+    // Loaded site-wide because the modal triggers live in header.php
+    // (mobile menu) and content templates (single, index).
+    wp_enqueue_script( 'lmt-dialogs', $theme_uri . '/js/dialogs.js', array(), null, true );
+
     // Infinite scroll — home, single (previous mixtapes), category.
     // The script early-returns if no #lmt-infinite-sentinel is present,
     // so the conditional is mainly a network-payload optimisation.

@@ -56,7 +56,7 @@
                 <div>
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
-                            <a href="#" data-toggle="modal" data-target="#donatemodal" class="no--hover"><?php the_post_thumbnail( 'large', array(
+                            <a href="#" data-lmt-dialog="donatemodal" class="no--hover"><?php the_post_thumbnail( 'large', array(
                                 'class'    => 'tw:max-w-full tw:h-auto tw:mt-6 illustration',
                                 'alt'      => esc_attr( get_the_title() ),
                                 'loading'  => 'lazy',
@@ -83,8 +83,8 @@
                             echo '</a>';
                         endif;
                         ?>
-                    <a data-toggle="modal" data-target="#contactmodal" href="#" class="middle">💌 Send feedback</a>
-                    <a data-toggle="modal" data-target="#donatemodal" href="#">⚡️ Support us</a>
+                    <a data-lmt-dialog="contactmodal" href="#" class="middle">💌 Send feedback</a>
+                    <a data-lmt-dialog="donatemodal" href="#">⚡️ Support us</a>
                 </div>
         </div>
     </div>
