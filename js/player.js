@@ -112,6 +112,15 @@ jQuery(function ($) {
 
   function onPlayerReady(event) {
     youtubeReady = true;
+    // SEC-009: harden the YouTube iframe — limit Referer leak.
+    // sandbox is intentionally NOT applied (it breaks postMessage to
+    // the YT JS API).
+    try {
+      var iframeEl = youtubePlayer && youtubePlayer.getIframe ? youtubePlayer.getIframe() : null;
+      if (iframeEl && !iframeEl.hasAttribute('referrerpolicy')) {
+        iframeEl.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      }
+    } catch (e) { /* defensive: never block the player on a hardening tweak */ }
     if (pendingYouTubeAction) {
       pendingYouTubeAction();
       pendingYouTubeAction = null;
