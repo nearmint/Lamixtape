@@ -20,7 +20,7 @@ function lmt_setup_theme() {
     add_theme_support( 'title-tag' );
     add_theme_support(
         'html5',
-        array( 'comment-form', 'comment-list', 'gallery', 'caption', 'search-form', 'style', 'script' )
+        array( 'gallery', 'caption', 'search-form', 'style', 'script' )
     );
     add_theme_support( 'automatic-feed-links' );
     add_theme_support( 'responsive-embeds' );
@@ -328,97 +328,6 @@ function lmt_post_link_class_prev() {
 function lmt_post_link_class_next() {
     return 'class="next-post"';
 }
-
-// -----------------------------------------------------
-// -------------  Comments on Mixtapes  ----------------
-// -----------------------------------------------------
-/**
- * Custom callback for wp_list_comments() — renders a single comment
- * as <div> or <li> depending on $args['style'].
- *
- * @param  WP_Comment $comment
- * @param  array      $args
- * @param  int        $depth
- * @return void
- */
-function lmt_comment_callback( $comment, $args, $depth ) {
-    if ( 'div' === $args['style'] ) {
-        $tag       = 'div';
-        $add_below = 'comment';
-    } else {
-        $tag       = 'li';
-        $add_below = 'div-comment';
-    }?>
-    <<?php echo $tag; ?> <?php comment_class( empty( $args['has_children'] ) ? '' : 'parent' ); ?> id="comment-<?php comment_ID() ?>"><?php
-    if ( 'div' != $args['style'] ) { ?>
-        <div id="div-comment-<?php comment_ID() ?>" class="comment-body"><?php
-    } ?>
-    <?php echo get_comment_text(); ?><br>
-        <p><small>&mdash; <?php
-            if ( $args['avatar_size'] != 0 ) {
-                echo get_avatar( $comment, $args['avatar_size'] );
-            }
-            echo get_comment_author_link(); ?>
-        </small></p><?php
-        if ( $comment->comment_approved == '0' ) { ?>
-            <em class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.' ); ?></em><br/><?php
-        } ?>
-    <?php
-        if ( 'div' != $args['style'] ) : ?>
-            </div><?php
-        endif;
-}
-
-/**
- * Customize the default comment form fields (author / email / url) to
- * use placeholders only and our own markup.
- *
- * @param  array $fields  Default comment form fields.
- * @return array
- */
-function lmt_comment_form_fields( $fields ) {
-    $commenter = wp_get_current_commenter();
-    $req       = get_option( 'require_name_email' );
-    $label     = $req ? '*' : ' ' . __( '(optional)', 'lamixtape' );
-    $aria_req  = $req ? "aria-required='true'" : '';
-
-    $fields['author'] =
-        '<p class="comment-form-author">
-            <input id="author" name="author" type="text" placeholder="' . esc_attr__( "Name", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author'] ) .
-        '" size="30" ' . $aria_req . ' />
-        </p>';
-
-    $fields['email'] =
-        '<p class="comment-form-email">
-            <input id="email" name="email" type="email" placeholder="' . esc_attr__( "name@email.com", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author_email'] ) .
-        '" size="30" ' . $aria_req . ' />
-        </p>';
-
-    $fields['url'] =
-        '<p class="comment-form-url">
-            <input id="url" name="url" type="url"  placeholder="' . esc_attr__( "http://google.com", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author_url'] ) .
-        '" size="30" />
-        </p>';
-
-    return $fields;
-}
-add_filter( 'comment_form_default_fields', 'lmt_comment_form_fields' );
-
-/**
- * Customize the comment textarea markup (replace the default <p>
- * wrapper with our own).
- *
- * @param  string $comment_field  Default textarea HTML.
- * @return string
- */
-function lmt_comment_form_textarea( $comment_field ) {
-    $comment_field =
-        '<p class="comment-form-comment">
-            <textarea required id="comment" name="comment" placeholder="' . esc_attr__( "Comment...", "lamixtape" ) . '" cols="45" rows="8" aria-required="true"></textarea>
-        </p>';
-    return $comment_field;
-}
-add_filter( 'comment_form_field_comment', 'lmt_comment_form_textarea' );
 
 // -----------------------------------------------------
 // ------------------- Images on RSS -------------------
