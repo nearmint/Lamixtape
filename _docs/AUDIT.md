@@ -37,6 +37,7 @@
 - **Description** : `$query = "SELECT ID, user_nicename from $wpdb->users WHERE ID != '$site_admin' ORDER BY user_nicename"` — `$site_admin` est aujourd'hui une chaîne vide, donc inoffensif, mais le pattern utilise `$wpdb->get_results($query)` sans `$wpdb->prepare()`. Le jour où `$site_admin` est rendu dynamique (via une option, un GET, un champ admin), c'est une SQLi directe.
 - **Impact** : SQLi potentielle si la variable devient dynamique. Mauvais pattern qui se propagera.
 - **Recommandation** : Remplacer par `get_users(['exclude' => [1], 'orderby' => 'nicename', 'fields' => ['ID', 'user_nicename']])` (API WP). Si un `$wpdb->get_results` est vraiment nécessaire, passer par `$wpdb->prepare("... WHERE ID != %d", $admin_id)`.
+- **Statut** : Résolu Phase 2 (`37fd794` interpolation `$wpdb->get_results($query)` brute remplacée par `get_users(['exclude' => [1], 'orderby' => 'nicename', 'fields' => ['ID', 'user_nicename']])` dans `lmt_get_curators()` (`inc/queries.php`). Le filtre legacy `WHERE ID != '$site_admin'` avec `$site_admin = ""` était un no-op (chaîne vide → comparaison à 0 → aucun utilisateur exclu) ; CSS masquait `.author-1` pour compenser. Phase 2 exprime l'intention au niveau data — visuel inchangé puisque CSS le masquait déjà).
 
 ### [SEC-004] `cf_search_where` modifie la clause SQL via `preg_replace` sans audit du résultat
 - **Sévérité** : Moyenne
@@ -155,6 +156,7 @@
 - **Description** : Pour chaque auteur listé, une `WP_Query('author=ID&posts_per_page=-1')` est exécutée pour afficher ses titres. Avec 50 auteurs × 7 mixtapes en moyenne, c'est 50 requêtes BDD séquentielles juste pour cette page.
 - **Impact** : TTFB > 1s sur la page Guests, scaling linéaire avec le nombre d'auteurs.
 - **Recommandation** : Une seule `get_posts(['posts_per_page' => -1, 'post_status' => 'publish'])` puis grouper en PHP par `post_author`. Ou utiliser un cache full-page sur cette URL (rarement modifiée).
+- **Statut** : Résolu Phase 2 (`37fd794` 1 query `get_posts(posts_per_page=-1, post_status=publish)` + bucketing PHP par `post_author` dans `lmt_get_posts_grouped_by_author()` ; `guests.php` consomme le résultat sans WP_Query par auteur. ~50 roundtrips SQL collapsés en 1 quel que soit le nombre de curators).
 
 ### [PERF-009] `filter_where` redéclarée à chaque rendu de `single.php`
 - **Sévérité** : Moyenne
@@ -163,6 +165,7 @@
 - **Description** : `function filter_where($where = '') { ... }` est définie au scope global **dans le template**. Si une autre partie de l'app inclut `single.php` deux fois (peu probable mais possible via shortcodes/REST), PHP émet `Cannot redeclare filter_where()` → fatal. De plus, le filtre `posts_where` est ajouté juste avant la query et retiré juste après — si une exception se lève entre les deux, le filtre reste actif et pollue toutes les queries suivantes.
 - **Impact** : Risque de fatal error, risque de pollution des queries.
 - **Recommandation** : Déclarer la fonction dans `functions.php` avec un nom préfixé (`lmt_filter_where_before_date`), et utiliser une closure si possible. Idéalement, **supprimer ce mécanisme** au profit d'un `date_query` natif WP.
+- **Statut** : Résolu Phase 2 (`df0590d` `function filter_where(...)` global au scope de `single.php` remplacée par closure scoped dans `lmt_get_previous_mixtapes()` (`inc/queries.php`). Le `posts_where` filter est ajouté/retiré strictement à l'intérieur de la helper, et la `$publish_date` est capturée par valeur via `use` — plus de risque de redéclaration ni de pollution. Date interpolation aussi durcie via `$wpdb->prepare(' AND post_date < %s', $publish_date)`).
 
 ### [PERF-010] `style.css` ne sert qu'à `@import` 15 fichiers CSS séparés
 - **Sévérité** : Moyenne
@@ -318,6 +321,7 @@
 - **Description** : `single.php` définit une fonction `filter_where`, ajoute/retire des filtres WP, exécute des queries custom. `guests.php` exécute un `$wpdb->get_results()` brut. `search.php` exécute `new WP_Query("s=$s&showposts=-1")`. Aucune séparation entre "couche données" et "couche présentation".
 - **Impact** : Tests impossibles, réutilisation impossible, code dupliqué (cf. QC-003), risque de fatal (cf. PERF-009).
 - **Recommandation** : Extraire dans `inc/queries.php` (ou une classe `Lmt_Repository`). Templates ne contiennent que `the_loop` ou `get_template_part(..., $args)`.
+- **Statut** : Résolu Phase 2 — 4 commits (`9b41c70` scaffold `inc/queries.php` + require depuis `functions.php` ; `df0590d` extraction previous-mixtapes → `lmt_get_previous_mixtapes()` ; `2b46822` extraction search → `lmt_get_search_results()` ; `37fd794` extraction guests → `lmt_get_curators()` + `lmt_get_posts_grouped_by_author()`). `single.php`, `search.php`, `guests.php` ne contiennent plus de WP_Query custom ni de filtres ajoutés/retirés. `index.php` (PERF-001) et `category.php` (PERF-007) gardent leur WP_Query inline en Phase 2 par décision UX (pagination = changement visuel) — extraction reportée Phase 3 avec PERF-001.
 
 ### [QC-003] Bloc "card mixtape" dupliqué 4 fois
 - **Sévérité** : Haute
@@ -326,6 +330,7 @@
 - **Description** : Le `<article style="background-color: ...">` avec le titre, l'icône highlight, les tags catégorie, le curator, est réécrit textuellement dans 4 templates avec micro-variations cosmétiques.
 - **Impact** : Toute modification visuelle = 4 modifications à synchroniser. Source garantie de bugs.
 - **Recommandation** : Extraire en `template-parts/card-mixtape.php`. Appel via `get_template_part('template-parts/card-mixtape')` dans la loop.
+- **Statut** : Résolu Phase 2 (`1e658de` `template-parts/card-mixtape.php` créé, 4 instances factorisées via `get_template_part('template-parts/card-mixtape', null, $args)`). 6 micro-variations conservées via `$args` : `delay`, `article_extra_classes`, `h2_extra_classes`, `highlight_mode` (`always_span` / `conditional` / `none`), `hide_curator_on_small`, `tag_link_attr` (préserve A11Y-005 `alt=` sur `<a>` invalid HTML, fix tracé séparément).
 
 ### [QC-004] Text-domain littéral `'text-domain'` (placeholder jamais remplacé)
 - **Sévérité** : Haute
@@ -334,6 +339,7 @@
 - **Description** : Tous les `__()/_e()/esc_html__()` utilisent le slug `'text-domain'` (placeholder de générateur), jamais remplacé par un slug réel. `load_theme_textdomain` n'est appelé nulle part. Aucun fichier `.pot`/`.po`/`.mo`.
 - **Impact** : Le site n'est traduisible **dans aucune langue**. Les outils i18n WP (Loco, WPML) ne trouveront pas le text-domain.
 - **Recommandation** : `find/replace` global `'text-domain'` → `'lamixtape'`. Ajouter dans `functions.php` : `add_action('after_setup_theme', function() { load_theme_textdomain('lamixtape', get_template_directory() . '/languages'); });`. Générer un `.pot` initial.
+- **Statut** : Résolu Phase 2 (`23cf296` 41 occurrences `'text-domain'` / `"text-domain"` remplacées par `'lamixtape'` / `"lamixtape"` sur 9 fichiers PHP via `perl -i -pe`. `load_theme_textdomain('lamixtape', .../languages)` ajouté dans `lmt_setup_theme()`. Dossier `languages/` créé (vide, `.gitkeep`). `.pot` à générer ultérieurement via `wp i18n make-pot`).
 
 ### [QC-005] Variables non initialisées (`$counter`, `$index`, `$s`)
 - **Sévérité** : Haute
@@ -368,6 +374,7 @@
 - **Description** : Coexistence de styles `cf_*`, `revcon_*`, `wpb_*`, `tape_*`, `social__*` (double underscore), `loadmore_*`, `SearchFilter` (PascalCase). Pas un seul `/** @param ... */`.
 - **Impact** : Onboarding impossible, IDE incapable d'aider, refacto à risque.
 - **Recommandation** : Préfixer toutes les fonctions du thème par `lmt_*`. Ajouter docblocks PHPDoc. Si OOP : namespace `Lamixtape\Theme`.
+- **Statut** : Résolu Phase 2 — 5 commits thématiques (QC-008) : `4eafbf3` search-related (cf_search_join/where/distinct, SearchFilter, wp_change_search_url → `lmt_search_*`), `8c9745a` backoffice/admin (revcon_change_post_label/object, no_wordpress_errors → `lmt_relabel_*` / `lmt_obfuscate_login_errors`), `ba3cad6` head cleanup (wpb_remove_version, my_deregister_scripts, wps_deregister_styles → `lmt_remove_generator_version` / `lmt_deregister_wp_embed` / `lmt_deregister_block_library_css`), `d1d15ca` comment-related (tape_comment, my_update_comment_fields/field → `lmt_comment_callback` / `lmt_comment_form_fields` / `lmt_comment_form_textarea` ; +1 ligne comments.php callback), `2a982ad` RSS/feed + post-link (wcs_post_thumbnails_in_feeds, posts_link_attributes_1/2 → `lmt_rss_post_thumbnail` / `lmt_post_link_class_prev|next`). 17 fonctions renommées + PHPDoc. Décision D2 : pas de namespace OOP, procédural maintenu.
 
 ### [QC-009] `.DS_Store` présents dans le thème
 - **Sévérité** : Moyenne
@@ -463,6 +470,7 @@
 - **Description** : Le thème ne fournit aucun `theme.json`. Or depuis WP 5.8, `theme.json` permet de définir la palette, la typographie, les espacements, et de désactiver proprement Gutenberg. Le thème désactive `wp-block-library` à la main (functions.php:97-100), mais sans `theme.json`, l'intégration block editor reste fragile.
 - **Impact** : Pas de palette globale, pas de spacings cohérents avec Gutenberg, pas de styles globaux.
 - **Recommandation** : Ajouter un `theme.json` minimal (`version: 2`, `settings.color.palette`, `settings.typography.fontFamilies` avec Outfit, `settings.layout.contentSize`).
+- **Statut** : Résolu Phase 2 (`945b5c5` `theme.json` v2 minimal — `settings.layout.contentSize: 1140px` + `wideSize: 1320px`. Pas de palette / fontFamilies / spacing — réservés Phase 4 Tailwind où ils auront leur source de vérité unique. Décision D3).
 
 ### [WP-003] `add_theme_support` minimal (uniquement `post-thumbnails`)
 - **Sévérité** : Haute
@@ -478,6 +486,7 @@
   add_theme_support('responsive-embeds');
   add_theme_support('editor-styles');
   ```
+- **Statut** : Résolu Phase 2 (`68f406d` `lmt_setup_theme()` sur `after_setup_theme` consolide `post-thumbnails` (déplacé du top-level) + ajoute `title-tag`, `html5` (comment-form/list, gallery, caption, search-form, style, script), `automatic-feed-links`, `responsive-embeds`, `editor-styles`. Aucun `<title>` hardcodé en `header.php`, donc pas de risque de doublon avec Rank Math (qui surcharge via `pre_get_document_title`). Test 2 Rank Math fallback skippé en mode marathon (D-MARATHON-4) ; Test 1 (Rank Math actif) à valider côté product à la closure des 8 captures).
 
 ### [WP-004] CSS et JS tiers non-enqueued (CDN en dur)
 - **Sévérité** : Moyenne
@@ -511,6 +520,7 @@
 - **Description** : Boucle `foreach ($pageposts as $post) { setup_postdata($post); ... }` — pas de `wp_reset_postdata()` à la fin (la boucle se termine sans reset, ce qui peut polluer le `$post` global pour le code suivant comme `get_footer()`).
 - **Impact** : Données de post incorrectes dans le footer ou les widgets après la boucle.
 - **Recommandation** : Ajouter `wp_reset_postdata();` après `endforeach;`.
+- **Statut** : Résolu Phase 2 (`f606aa8` `wp_reset_postdata()` ajouté après `endforeach;` dans la boucle previous-mixtapes de `single.php`. Restaure le `$post` global pour `get_footer()` et widgets aval).
 
 ### [WP-008] Pas de `add_theme_support('responsive-embeds')`
 - **Sévérité** : Basse
@@ -519,6 +529,7 @@
 - **Description** : Le thème intègre des iframes YouTube via le player ; sans `responsive-embeds`, les embeds Gutenberg ne sont pas responsive automatiquement.
 - **Impact** : Embed Gutenberg dans le contenu = pas responsive.
 - **Recommandation** : Ajouter (cf. WP-003).
+- **Statut** : Résolu Phase 2 (`68f406d` `add_theme_support('responsive-embeds')` ajouté dans `lmt_setup_theme()`, voir WP-003).
 
 ### [WP-009] `wp_change_search_url` ne nettoie pas le query string
 - **Sévérité** : Basse
@@ -527,6 +538,7 @@
 - **Description** : `wp_safe_redirect( get_home_url(...) . urlencode( get_query_var('s') ) )` — si `s=` contient déjà des caractères URL-encodés (ex. `%20`), le `urlencode` re-encode (`%2520`), brouillant l'URL.
 - **Impact** : URL de recherche cassée pour des termes complexes.
 - **Recommandation** : Utiliser `rawurlencode()` (ou laisser WP gérer via `add_query_arg`).
+- **Statut** : Résolu Phase 2 (`ea5958f` `urlencode()` remplacé par `rawurlencode()` dans `lmt_search_url_redirect()` (anciennement `wp_change_search_url`). Évite le double-encodage `%2520` sur les termes contenant déjà des caractères encodés).
 
 ---
 

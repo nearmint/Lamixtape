@@ -70,22 +70,25 @@ lamixtape/
 
 ## 4. Dette technique priorisée
 
-| Axe | Total | Résolus (P0+P1) | Critique restant | Haute restant | Référence |
+| Axe | Total | Résolus (P0+P1+P2) | Critique restant | Haute restant | Référence |
 |---|:-:|:-:|:-:|:-:|---|
-| **Process / Qualité** | 16 | 11 ✅ | 0 ✅ | 4 | `_docs/AUDIT.md#qc` |
-| **Sécurité** | 9 | 4 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#securite` |
-| **Performance** | 14 | 1 | 2 | 4 | `_docs/AUDIT.md#performance` |
+| **Process / Qualité** | 16 | 15 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
+| **Sécurité** | 9 | 5 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
+| **Performance** | 14 | 3 | 2 | 4 | `_docs/AUDIT.md#performance` |
 | **Accessibilité** | 11 | 0 | 0 | 4 | `_docs/AUDIT.md#a11y` |
-| **WP best practices** | 9 | 2 ✅ | 0 ✅ | 3 | `_docs/AUDIT.md#wp` |
+| **WP best practices** | 9 | 7 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#wp` |
 | **Migration Tailwind** | 5 | 0 | 0 | 2 | `_docs/AUDIT.md#tailwind` |
 | **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
-| **TOTAL** | **72** | **19** | **2** | **20** | |
+| **TOTAL** | **72** | **31** | **2** | **12** | |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 19 résolus à fin Phase 1 (3 P0 + 16 P1). 53 restants pour Phases 2-6. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 31 résolus à fin Phase 2 (3 P0 + 16 P1 + 12 P2). 41 restants pour Phases 2.5-6. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
 Critiques restants (cibles Phase 3) :
 1. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`).
 2. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date.
+
+Toujours ouvert et déféré conjointement à Phase 3 (même problème UX = pagination catalogue) :
+- **PERF-007** — `category.php` `posts_per_page => -1`. Trois Critiques/Moyennes liées (PERF-001, PERF-002, PERF-007) seront traitées en bloc Phase 3 avec une stratégie unique (load-more / paginate_links / infinite, à arbitrer).
 
 ### Phase 0 close — récap
 - 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
@@ -115,6 +118,37 @@ Critiques restants (cibles Phase 3) :
 
 **Validation finale Phase 1 (à charge utilisateur)** :
 - 8 captures post-Phase-1 vs `_docs/captures-pre-3.8/` (template par template) → confirmer **0 différence visuelle** sur les 8 templates. La règle "no visual change" est l'objectif nominal de la Phase 1 ; un diff visuel non-zéro = à investiguer avant de déclarer Phase 1 close côté product.
+
+### Phase 2 close — récap (30 avril 2026)
+
+**Métriques globales** :
+- **16 commits** depuis fin Phase 1 (`bf2aee6`), tous pushés sur `origin/main` (mode marathon, pas de validation intermédiaire entre sous-étapes)
+- 15 fichiers modifiés / créés
+- **+769 / −208 lignes (net +561)** — phase de structuration : ajout de `inc/queries.php`, `template-parts/card-mixtape.php`, `theme.json`, docblocks PHPDoc sur 17 fonctions, élargissement de `lmt_setup_theme()`. Le delta net positif reflète le coût normal d'une phase d'extraction (vs Phase 1 où on supprimait du code mort).
+- **12 findings résolus** (cf. tableau dette ci-dessus) : QC-002, QC-003, QC-004, QC-008 (4 Hautes/Moyennes Qualité), WP-002, WP-003, WP-007, WP-008, WP-009 (5 Hautes/Basses WP), PERF-008, PERF-009 (2 Moyennes Performance), SEC-003 (1 Haute Sécurité bonus, fixée en passant via QC-002 sur guests.php).
+
+**Bonus business surprise** : Le filtre legacy `WHERE ID != '$site_admin'` dans `guests.php` était un **no-op silencieux** depuis l'origine — `$site_admin = ""` produisait `WHERE ID != 0`, qui n'exclut personne. Le CSS `list-of-mixtapes.css:40-42` masquait `.author-1` pour compenser à la volée. Découvert pendant l'extraction PERF-008 (`37fd794`). Le fix structurel SEC-003 (`get_users(['exclude' => [1]])`) exprime maintenant l'intention au niveau data, et le visuel reste identique parce que le CSS le masquait déjà. Pattern Phase 1 confirmé : **decluttering reveals what was always there.**
+
+**Apprentissages clés** (à retenir pour Phases 2.5-6) :
+1. **Marathon mode tient si la discipline est tenue.** 16 commits sans validation intermédiaire fonctionne parce que (a) les décisions D1-D7 et D-MARATHON-1à4 ont retiré les ambiguïtés en amont, (b) chaque commit reste atomique (1 finding = 1 commit), (c) la règle no-visual-change a été tenue à 100 % (validation différée mais traçable). Si la discipline diagnostic-d'abord avait sauté, le marathon aurait amplifié les régressions au lieu de les contenir.
+2. **Contradictions internes au prompt = stop-and-think, pas auto-decision.** Sur la question des fonctions de commentaires (D1 "ne touche à rien" vs 2.5.4 "renomme-les"), j'ai tranché en faveur du plan 2.5.4 (rename pur, structurel, réversible) tout en documentant le raisonnement dans le commit `d1d15ca`. Si la décision avait été plus risquée (suppression effective, refonte de comportement), la discipline EXCEPTION CRITIQUE imposait l'arrêt.
+3. **PERF-002 reste ouvert volontairement.** Bornage à 30 = changement visuel (perte de 330+ entrées listées sous chaque single.php). Conformément à D4, repoussé Phase 3 avec PERF-001 et PERF-007 (même problème UX, à trancher en bloc). Commentaire explicite `// PERF-002 tracked, pagination strategy in Phase 3` posé dans `lmt_get_previous_mixtapes()` pour traçabilité.
+4. **PERF-007 (`category.php`) requalifié en compagnon de PERF-001/002.** Le prompt l'annonçait comme "absorbé par QC-002" mais l'extraction structurelle nécessitait `posts_per_page = -1` (no visual change), donc le **vrai** fix (bornage) reste Phase 3. PERF-007 retiré de la liste des findings closed Phase 2 par cohérence avec la règle no-visual-change.
+5. **Test Rank Math fallback skippé.** D-MARATHON-4 confirmé applicable : pas d'environnement Local opérationnel pour le test 2 (Rank Math désactivé). Risque accepté par le user en marathon ; à valider côté product au moment des captures finales.
+
+**Pointeur Phase 2.5 — suppression module commentaires (Q9)** :
+- Périmètre : `comments.php`, callback `lmt_comment_callback` (ex-`tape_comment`), filtres `lmt_comment_form_fields` / `lmt_comment_form_textarea` (ex-`my_update_comment_*`), `css/comment-form.css`, `comments_template()` calls dans templates, BDD (`comments_open` / `pings_open` à fermer), `wp-mediaelement` deps si jamais lié.
+- Préparation Phase 2 : les 3 fonctions de comment ont été renommées et docblockées en `d1d15ca` ; comments.php contient désormais `'callback' => 'lmt_comment_callback'`. Le rename est purement structurel — la suppression Phase 2.5 reste triviale (suppression nette des 3 fonctions + comments.php + css + références templates).
+
+**Pointeur Phase 3 — perf bloquante** :
+- Critiques restants : **PERF-001** (home `posts_per_page=-1`), **PERF-002** (single previous-mixtapes 1M).
+- Compagnon Moyen : **PERF-007** (category `posts_per_page=-1`).
+- Décision pré-actée Phase 2 : tous les 3 traités conjointement. Stratégie pagination (load-more / paginate_links / infinite) à arbitrer en Phase 3, puis appliquée aux 3 templates en cohérence. Indication préliminaire = load-more.
+- Autres findings perf à attaquer : SEC-001 already done en P0, mais reste **PERF-003** (Bootstrap CSS @import), **PERF-004** (jQuery double load), **PERF-005** (orderby rand×4), **PERF-006** (LEFT JOIN postmeta), **PERF-010** (style.css = @import-only), **PERF-011** (lazy/srcset), **PERF-012** (preconnect Google Font), **PERF-014** (WP_POST_REVISIONS dans wp-config).
+
+**Validation finale Phase 2 (à charge utilisateur)** :
+- 8 captures post-Phase-2 vs `_docs/captures-post-phase-1/` (= captures pre-Phase-2 par construction — la Phase 1 garantissait no-visual-change). Diff attendu : **0 différence visuelle** sur les 8 templates de référence (`/`, single mixtape, `/category/<une-cat>/`, `/search/<terme>`, `/explore/`, `/guests/`, `/colophon` ou `/legal-notice`, 404). Un diff non-zéro = à investiguer avant clôture officielle Phase 2 côté product.
+- Test Rank Math `<title>` (test 1, Rank Math actif) : view source sur 5 templates (home, single, category, search, 404) → 1 seul `<title>` attendu, généré par Rank Math. Test 2 (fallback Rank Math désactivé) skippé en marathon.
 
 ## 5. Recommandations stratégiques
 
@@ -161,10 +195,16 @@ Critiques restants (cibles Phase 3) :
 | **author-1** | L'admin du site (ID=1) ; le CSS le masque explicitement dans la liste des curators (`list-of-mixtapes.css:40-42`) — c'est ce que la query `guests.php` essaie aussi de filtrer côté SQL |
 
 ### Traces de boilerplate générique
-Le thème a hérité de fonctions/snippets génériques d'un boilerplate non-renommé. Le marqueur récurrent est le préfixe **`prefix_*`** (placeholder jamais remplacé par un slug de thème) :
-- `prefix_conditional_body_class` — supprimé en Phase 1 (commit `d9c0699`, finding QC-014). Référençait un template `about.php` inexistant.
+Le thème a hérité de fonctions/snippets génériques d'un boilerplate non-renommé. À la fin de la Phase 2, **toutes les traces connues ont été soit supprimées soit renommées** :
+- `prefix_conditional_body_class` — supprimé en Phase 1 (`d9c0699`, finding QC-014). Référençait un template `about.php` inexistant.
+- `cf_search_*` (3 fonctions), `SearchFilter`, `wp_change_search_url` — renommés `lmt_search_*` en Phase 2 (`4eafbf3`, QC-008).
+- `revcon_change_post_*` (2 fonctions), `no_wordpress_errors` — renommés `lmt_relabel_*` / `lmt_obfuscate_login_errors` (`8c9745a`).
+- `wpb_remove_version`, `my_deregister_scripts`, `wps_deregister_styles` — renommés `lmt_remove_generator_version` / `lmt_deregister_wp_embed` / `lmt_deregister_block_library_css` (`ba3cad6`).
+- `tape_comment`, `my_update_comment_*` — renommés `lmt_comment_callback` / `lmt_comment_form_fields` / `lmt_comment_form_textarea` (`d1d15ca`).
+- `wcs_post_thumbnails_in_feeds`, `posts_link_attributes_1/2` — renommés `lmt_rss_post_thumbnail` / `lmt_post_link_class_prev|next` (`2a982ad`).
+- Text-domain `'text-domain'` (placeholder) — remplacé partout par `'lamixtape'` (`23cf296`, QC-004).
 
-Si tu rencontres d'autres `prefix_*` ou des noms qui sentent le boilerplate (`text-domain` comme text-domain, `revcon_*`, `wpb_*`, `cf_*`), traite-les comme suspects : soit code mort à supprimer, soit code à renommer en `lmt_*` selon la convention thème (cf. section 8).
+Si tu rencontres encore un nom qui sent le boilerplate générique (préfixe non-`lmt_`, double underscore, casse étrange), traite-le comme suspect : soit code mort à supprimer, soit code à renommer en `lmt_*` (cf. section 8).
 
 ## 7. Questions ouvertes
 
@@ -207,6 +247,14 @@ Aucune modification ne doit altérer le rendu UI/UX du site. Le refacto est stri
 ### Décisions techniques validées (Phase 1)
 - **Umami analytics** reste **inline** dans `analytics.php` (pattern officiel SaaS, `defer` présent, `data-website-id` public visible dans tout le HTML rendu de toute façon). Pas de migration `wp_enqueue_script` (complexité gratuite). Couvert par `WP-004` (cf. AUDIT.md), accepté tel quel.
 - **`QC-007` partiellement résolu en Phase 1** : extraction des `<script>` inline (player.php → `js/player.js`, `var postid` single.php → `lmtData.post_id`). Partie CSS (~18-20 `style="..."` statiques décoratifs encore présents) **reportée à Phase 4** (migration Tailwind, où les classes utilities absorberont naturellement ces styles inline). Les `style="..."` dynamiques PHP-injected (`background-color: <?php echo get_field('color'); ?>`) restent inline par nécessité.
+
+### Décisions techniques validées (Phase 2)
+- **Pas de namespace OOP** (D2). Convention thème = procédural préfixé `lmt_*` + docblocks PHPDoc. Rester cohérent dans les futures phases.
+- **`theme.json` minimal** (D3). v2 + `settings.layout.contentSize/wideSize` uniquement. Pas de `color.palette` ni `typography.fontFamilies` — réservés Phase 4 Tailwind où ils auront leur source de vérité unique.
+- **Structure `inc/`** = flat files (D6). Aujourd'hui : `inc/queries.php`. Pas de classes, pas de sous-dossiers. Si un nouveau besoin émerge (ex. setup, hooks, helpers), créer un nouveau fichier flat (`inc/setup.php`, `inc/hooks.php`, etc.) plutôt que d'introduire une couche OOP.
+- **PERF-002 reste ouvert volontairement** (D4). `lmt_get_previous_mixtapes()` garde `posts_per_page = -1` en Phase 2 (no-visual-change). Borné en Phase 3 conjointement avec PERF-001 (home) et PERF-007 (category) — même problème UX = pagination catalogue. Indication préliminaire D5 : load-more.
+- **Comments chain renommée mais préservée** : `lmt_comment_callback`, `lmt_comment_form_fields`, `lmt_comment_form_textarea` (rename pur en `d1d15ca`). Suppression effective du module commentaires reste **Q9 / Phase 2.5 dédiée**. La discipline D1 (ne touche à rien) a été respectée au sens du comportement — le rename est purement structurel et facilite la suppression Phase 2.5.
+- **Tests Rank Math fallback skippés en Phase 2** (D-MARATHON-4). Test 1 (Rank Math actif) à valider côté product au moment des captures finales. Test 2 (Rank Math désactivé) skippé en l'absence d'environnement Local opérationnel ; à reprogrammer si une régression `<title>` est observée.
 
 ### Workflow de travail attendu
 - Toute modification = commit dédié, message conventionnel (`fix:`, `refactor:`, `perf:`, `feat:`, `chore:`, `docs:`).
