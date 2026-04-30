@@ -44,21 +44,19 @@
  * Source detection — Phase 4 Apprentissage TW-SCAN.
  *
  * Tailwind v4 default heuristic auto-scans HTML, JS, JSX, TS, TSX,
- * MD(X) and a few others — but NOT *.php. Without this directive,
- * the build comes out near-empty even though the templates are full
- * of tw:* utilities, and the page renders unstyled in cohabitation.
+ * MD(X) and a few others — but NOT *.php. Without explicit @source
+ * directives, the build comes out near-empty even though the
+ * templates are full of tw:* utilities.
  *
- * Path is relative to this file (assets/css/) — `../../` reaches the
- * theme root (lamixtape/), then `**\/*.php` recursively captures every
- * .php template, partial, include and helper.
- *
- * Required for: every *.php template (root + template-parts/) plus
- * any class-string built in PHP code (e.g. card-mixtape.php composes
- * h2_classes via string concatenation; the literal tokens `tw:mb-0`
- * etc. are still detected by the v4 scanner because it operates on
- * raw text, not AST).
+ * VARIANTE A — explicit per-directory patterns.
+ * The recursive glob "../../**\/*.php" silently failed (build stayed
+ * 9.3 KB with 0 tw: matches), so we list the 3 dirs that actually
+ * host .php files instead. Path relative to this file (assets/css/),
+ * "../../" reaches the theme root.
  */
-@source "../../**/*.php";
+@source "../../*.php";
+@source "../../inc/*.php";
+@source "../../template-parts/*.php";
 
 @theme {
     /*
