@@ -47,14 +47,12 @@
                 <li class="menu-fade-in menu-delay-0"><a href="<?php echo esc_url( home_url( '/explore/' ) ); ?>">Search</a></li>
                 <li class="menu-fade-in menu-delay-1">
                     <?php
-                    // Show a random mixtape link
-                    $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => 1 ) );
-                    while ( $the_query->have_posts() ) : $the_query->the_post();
-                        echo '<a href="' . esc_url( get_permalink() ) . '" style="color:#fff;font-size:2rem;">';
+                    $random = lmt_get_random_mixtape( 'header_mobile_menu' );
+                    if ( $random ) :
+                        echo '<a href="' . esc_url( get_permalink( $random ) ) . '" style="color:#fff;font-size:2rem;">';
                         esc_html_e( 'Random mixtape', 'lamixtape' );
                         echo '</a>';
-                    endwhile;
-                    wp_reset_postdata();
+                    endif;
                     ?>
                 </li>
                 <li class="menu-fade-in menu-delay-2"><a href="<?php echo esc_url( home_url( '/guests/' ) ); ?>">Guest curators</a></li>

@@ -17,14 +17,13 @@ $the_query = new WP_Query( array(
                 <p><?php esc_html_e('If you really want to see what we’re about, go and explore our', 'lamixtape'); ?> <a class="underline" href="#mixtapes">360+ mixtapes</a>.</p>
                 <p><?php esc_html_e('And remember,', 'lamixtape'); ?>
                     <?php
-                    // Show a random mixtape link
-                    $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => 1 ) );
-                    while ( $the_query->have_posts() ) : $the_query->the_post();
-                        echo '<a data-toggle="tooltip" data-placement="top" title="' . esc_attr__('Random mixtape', 'lamixtape') . '" href="' . esc_url( get_permalink() ) . '" class="underline">';
+                    $random = lmt_get_random_mixtape( 'home_about_inline' );
+                    if ( $random ) :
+                        echo '<a data-toggle="tooltip" data-placement="top" title="' . esc_attr__('Random mixtape', 'lamixtape') . '" href="' . esc_url( get_permalink( $random ) ) . '" class="underline">';
                         esc_html_e('getting lost', 'lamixtape');
                         echo '</a>';
-                    endwhile;
-                    wp_reset_postdata(); ?>
+                    endif;
+                    ?>
                     <?php esc_html_e('can be a good thing.', 'lamixtape'); ?></p>
                 <small>PS: we’re not on social media, but you can reach us <a class="underline" data-toggle="modal" data-target="#contactmodal" href="#">here</a>.</small>
             </div>

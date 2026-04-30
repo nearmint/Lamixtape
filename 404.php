@@ -6,9 +6,9 @@
         <p><?php esc_html_e('Sorry, the page you are looking for has moved', 'lamixtape'); ?></p>
         <a class="btn text-uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'lamixtape'); ?></a>&nbsp;
         <?php
-        $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => '1' ) );
-        while ( $the_query->have_posts() ) : $the_query->the_post();
-            echo '<a class="btn text-uppercase" href="' . esc_url( get_permalink() ) . '">';
+        $random = lmt_get_random_mixtape( '404_fallback' );
+        if ( $random ) :
+            echo '<a class="btn text-uppercase" href="' . esc_url( get_permalink( $random ) ) . '">';
             // SVG icon for shuffle
             echo '<svg class="bi bi-shuffle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M12.646 1.146a.5.5 0 01.708 0l2.5 2.5a.5.5 0 010 .708l-2.5 2.5a.5.5 0 01-.708-.708L14.793 4l-2.147-2.146a.5.5 0 010-.708zm0 8a.5.5 0 01.708 0l2.5 2.5a.5.5 0 010 .708l-2.5 2.5a.5.5 0 01-.708-.708L14.793 12l-2.147-2.146a.5.5 0 010-.708z" clip-rule="evenodd"/>
@@ -17,8 +17,8 @@
 </svg> ';
             esc_html_e('Random Mixtape', 'lamixtape');
             echo '</a>';
-        endwhile;
-        wp_reset_postdata(); ?>
+        endif;
+        ?>
     </section>
     <img src="<?php echo esc_url( get_template_directory_uri() );?>/img/404.gif" class="travolta img-fluid d-none d-sm-none d-md-none d-lg-block" alt="404" loading="lazy" decoding="async">
 </div>

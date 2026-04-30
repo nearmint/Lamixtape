@@ -76,14 +76,12 @@
         <div class="row" style="margin-left: 0;">
             <div class="action-buttons fade-in delay-6 visible">
                     <?php
-                        // Show a random mixtape link
-                        $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => 1 ) );
-                        while ( $the_query->have_posts() ) : $the_query->the_post();
-                            echo '<a href="' . esc_url( get_permalink() ) . '">';
+                        $random = lmt_get_random_mixtape( 'single_random_button' );
+                        if ( $random ) :
+                            echo '<a href="' . esc_url( get_permalink( $random ) ) . '">';
                             esc_html_e( '🔀 Random Mixtape', 'lamixtape' );
                             echo '</a>';
-                        endwhile;
-                        wp_reset_postdata();
+                        endif;
                         ?>
                     <a data-toggle="modal" data-target="#contactmodal" href="#" class="middle">💌 Send feedback</a>
                     <a data-toggle="modal" data-target="#donatemodal" href="#">⚡️ Support us</a>

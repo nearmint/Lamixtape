@@ -97,6 +97,69 @@ function lmt_get_curators() {
 }
 
 /**
+ * Return one random published mixtape, cached per call site.
+ *
+ * `ORDER BY RAND()` MySQL is O(n) on the full posts table and is
+ * called from 4 templates (header mobile menu, home about section,
+ * single "Random Mixtape" button, 404 fallback). Caching the
+ * resulting post ID in a transient lets all 4 spots share their
+ * cost across visitors instead of running ORDER BY RAND() on every
+ * page view.
+ *
+ * Each call site passes a unique cache_key suffix so different
+ * "random" picks remain independent (the home random and the 404
+ * random can point at different posts within the same cache window).
+ *
+ * Trade-off (acknowledged): for the duration of the transient, every
+ * visitor sees the same "random" pick for a given call site. Default
+ * TTL is HOUR_IN_SECONDS (cf. D8 in prompt-phase-3.md). Lower the TTL
+ * if you need fresher randomness; raise it if BDD load is the
+ * concern.
+ *
+ * @param  string $cache_key  Unique suffix per call site (e.g.
+ *                            'header_mobile_menu', 'home_about',
+ *                            'single_random_button', '404_fallback').
+ * @param  int    $ttl        Cache duration in seconds. Default
+ *                            HOUR_IN_SECONDS.
+ * @return WP_Post|null       The cached or freshly-picked post, or
+ *                            null if the site has no published posts.
+ */
+function lmt_get_random_mixtape( $cache_key, $ttl = null ) {
+    if ( null === $ttl ) {
+        $ttl = HOUR_IN_SECONDS;
+    }
+
+    $transient_key = 'lmt_random_mixtape_' . sanitize_key( $cache_key );
+    $cached_id     = get_transient( $transient_key );
+
+    if ( false !== $cached_id ) {
+        $post = get_post( (int) $cached_id );
+        if ( $post && 'publish' === $post->post_status ) {
+            return $post;
+        }
+        // Cached post got unpublished/deleted; fall through to a fresh pick.
+    }
+
+    $query = new WP_Query( array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'orderby'        => 'rand',
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    ) );
+
+    if ( empty( $query->posts ) ) {
+        return null;
+    }
+
+    $id = (int) $query->posts[0];
+    set_transient( $transient_key, $id, $ttl );
+
+    return get_post( $id );
+}
+
+/**
  * Return every published mixtape, grouped by author ID.
  *
  * Replaces the per-author WP_Query loop in guests.php (PERF-008 N+1):
