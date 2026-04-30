@@ -35,21 +35,37 @@ $the_query = new WP_Query( array(
     </div>
 </section>
 <section class="mixtape-list" id="mixtapes">
-    <?php 
-    // Query all published posts (mixtapes)
-    $wpb_all_query = new WP_Query(array('post_type'=>'post', 'post_status'=>'publish', 'posts_per_page'=>-1)); 
+    <?php
+    // First batch rendered server-side; the rest is loaded by
+    // js/infinite-scroll.js via /wp-json/lamixtape/v1/posts.
+    $batch_size    = defined( 'LMT_INFINITE_SCROLL_BATCH_SIZE' ) ? LMT_INFINITE_SCROLL_BATCH_SIZE : 30;
+    $wpb_all_query = new WP_Query( array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => $batch_size,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ) );
     ?>
     <?php if ( $wpb_all_query->have_posts() ) : ?>
-        <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
-            <?php get_template_part( 'template-parts/card-mixtape', null, array(
-                'delay'                 => 3,
-                'h2_extra_classes'      => 'font-smoothing',
-                'highlight_mode'        => 'always_span',
-                'hide_curator_on_small' => true,
-                'tag_link_attr'         => 'alt',
-            ) ); ?>
-        <?php endwhile; ?>
+        <div id="lmt-mixtapes-container">
+            <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
+                <?php get_template_part( 'template-parts/card-mixtape', null, array(
+                    'delay'                 => 3,
+                    'h2_extra_classes'      => 'font-smoothing',
+                    'highlight_mode'        => 'always_span',
+                    'hide_curator_on_small' => true,
+                    'tag_link_attr'         => 'alt',
+                ) ); ?>
+            <?php endwhile; ?>
+        </div>
         <?php wp_reset_postdata(); ?>
+        <?php if ( $wpb_all_query->found_posts > $batch_size ) : ?>
+            <div id="lmt-infinite-sentinel"
+                 data-context="home"
+                 data-initial-offset="<?php echo (int) $batch_size; ?>"
+                 aria-hidden="true"></div>
+        <?php endif; ?>
     <?php else : ?>
         <p><?php esc_html_e( 'Sorry, no posts matched your criteria.', 'lamixtape' ); ?></p>
     <?php endif; ?>
