@@ -672,6 +672,20 @@
 
 ---
 
+## <a id="business"></a>Décisions business — résolues
+
+### [Q9] Suppression du module commentaires
+- **Statut** : Résolu Phase 2.5 (`9f24105` templates + `3cb6aad` callbacks/hooks + `50d490d` CSS/enqueue + `339330b` BDD cleanup doc + `[SHA-CLOSURE]` closure)
+- **Décision** : Suppression définitive complète (Q1 = suppression code intégrale, Q2 = suppression BDD irréversible via WP-CLI, Q3 = badge 💬 supprimé pour cohérence UI, Q4 = pas d'annonce utilisateurs).
+- **Périmètre traité** :
+  - Code thème : `comments.php` supprimé (template orphelin), bouton 💬 + écosystème Bootstrap collapse / multi-collapse / `id=image|comments` retirés de `single.php` (Option C — image figée en HTML/CSS pur, plus aucun toggle JS BS4), 3 callbacks `lmt_comment_*` + leurs `add_filter` supprimés de `functions.php`, `'comment-form'` et `'comment-list'` retirés du tableau `add_theme_support('html5', ...)`, fichier `css/comment-form.css` (60 l.) supprimé, entrée enqueue `lmt-comment-form` retirée du map `$theme_css`.
+  - BDD : `wp_comments` / `wp_commentmeta` confirmées vides post-suppression (Local n'avait jamais eu de commentaires), `comment_status` / `ping_status` forcés à `closed` sur tous les posts existants (~370+) via boucle bash, `default_comment_status` / `default_ping_status` confirmés à `closed` (déjà fixés par config Local antérieure).
+  - Documentation : `_docs/phase-2.5-bdd-cleanup.md` posée pour traçabilité de la séquence WP-CLI (à répliquer en prod le jour du déploiement).
+- **Diagnostic critique posé en 2.5.0** : le module commentaires côté **affichage** était déjà mort dans le thème — aucun appel à `comments_template()` ni `comment_form()` nulle part. Les filtres `comment_form_default_fields` / `comment_form_field_comment` ne firent jamais. L'altération visuelle effective de Phase 2.5 s'est donc limitée à : disparition du bouton 💬 sur `single.php` + disparition de la sidebar statique "Comments are now closed.". Pattern Phase 1 confirmé (*"decluttering reveals what was always there"*).
+- **Backup pré-suppression** : conservé hors repo, cf. `_docs/phase-2.5-bdd-cleanup.md` pour le chemin absolu et la taille.
+
+---
+
 ## 8. Synthèse chiffrée
 
 ### Findings par sévérité

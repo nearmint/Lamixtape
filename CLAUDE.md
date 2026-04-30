@@ -81,7 +81,7 @@ lamixtape/
 | **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
 | **TOTAL** | **72** | **31** | **2** | **12** | |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 31 résolus à fin Phase 2 (3 P0 + 16 P1 + 12 P2). 41 restants pour Phases 2.5-6. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 31 résolus à fin Phase 2.5 (3 P0 + 16 P1 + 12 P2). 41 restants pour Phase 3 et au-delà. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
 Critiques restants (cibles Phase 3) :
 1. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`).
@@ -149,6 +149,37 @@ Toujours ouvert et déféré conjointement à Phase 3 (même problème UX = pagi
 **Validation finale Phase 2 (à charge utilisateur)** :
 - 8 captures post-Phase-2 vs `_docs/captures-post-phase-1/` (= captures pre-Phase-2 par construction — la Phase 1 garantissait no-visual-change). Diff attendu : **0 différence visuelle** sur les 8 templates de référence (`/`, single mixtape, `/category/<une-cat>/`, `/search/<terme>`, `/explore/`, `/guests/`, `/colophon` ou `/legal-notice`, 404). Un diff non-zéro = à investiguer avant clôture officielle Phase 2 côté product.
 - Test Rank Math `<title>` (test 1, Rank Math actif) : view source sur 5 templates (home, single, category, search, 404) → 1 seul `<title>` attendu, généré par Rank Math. Test 2 (fallback Rank Math désactivé) skippé en marathon.
+
+### Phase 2.5 close — récap (30 avril 2026)
+
+**Métriques globales** :
+- **5 commits** depuis fin Phase 2 (`484848e`), tous pushés sur `origin/main` : `583fd61` docs prompt + `9f24105` templates + `3cb6aad` callbacks/hooks + `50d490d` CSS/enqueue + `339330b` BDD cleanup doc + `[SHA-CLOSURE]` closure (ce commit).
+- 7 fichiers modifiés / supprimés (`comments.php` supprimé, `css/comment-form.css` supprimé, `functions.php` allégé, `single.php` allégé, `_docs/prompt-phase-2.5.md` créé, `_docs/phase-2.5-bdd-cleanup.md` créé, `_docs/AUDIT.md` + `CLAUDE.md` mis à jour ; `_docs/prompt-phase-3.md` également entré dans le repo via slip `git add -A` — emplacement correct, hors périmètre Phase 2.5).
+- Net code (hors docs) : **-163 lignes** environ (phase à dominante suppression, comme attendu).
+- Findings résolus comptables : **0** (Q9 = décision business, hors taxonomie audit). Tableau dette inchangé : 31/72 résolus, 41 restants.
+
+**Décision business actée** :
+- Q1 = suppression code intégrale ; Q2 = suppression BDD irréversible ; Q3 = badge 💬 supprimé ; Q4 = pas d'annonce.
+- **Option C** validée pour le bouton 💬 dans `single.php` : suppression du bouton + des classes Bootstrap collapse / multi-collapse + des `id="image"` / `id="comments"`. L'image (pochette mixtape) est figée en HTML/CSS pur, sans état JS Bootstrap. Bénéfice secondaire : moins de dette BS4 à porter en Phase 4 Tailwind.
+
+**Bonus business surprise (diagnostic 2.5.0)** : le **module commentaires côté affichage était déjà mort** dans le thème — aucun appel à `comments_template()` ni `comment_form()` nulle part. Les filtres `comment_form_default_fields` / `comment_form_field_comment` ne firent jamais. La règle "Exception explicite Phase 2.5 : disparition contrôlée du formulaire" anticipée par le prompt s'est réduite en pratique à : disparition du bouton 💬 + de la sidebar statique "Comments are now closed.". 3 fonctions PHP étaient du code mort, 1 fichier CSS un orphelin downloaded mais jamais matché. L'écart entre "le module commentaires existe" et "le module commentaires est actif" était total. Pattern Phase 1 confirmé : **decluttering reveals what was always there**.
+
+**Apprentissages clés** :
+1. **Toujours faire l'inventaire grep avant de toucher.** Le diagnostic 2.5.0 a transformé une suppression "à risque visuel" en cleanup pur de code mort — moins de risque, moins d'altération visuelle attendue, et signal fort sur la santé réelle du module.
+2. **Slip `git add -A`** : `prompt-phase-3.md` s'est retrouvé bundlé dans le commit 2.5.2 (`3cb6aad`), comme `prompt-phase-1.md` à la racine en début de Phase 2 (corrigé à l'époque par `git mv` + commit dédié). Ici l'emplacement final est correct (`_docs/`), donc pas de force-push, juste le bundle inopportun. **Discipline à renforcer** : `git add <fichier>` explicite plutôt que `git add -A` quand un fichier non lié est en `?? untracked`.
+3. **WP-CLI `xargs` "command line too long" sur 370+ posts** : remplacé par boucle bash `for/do/done`. À mémoriser pour la réplication prod.
+4. **Phase à dominante suppression** = bilan ligne net négatif sain. Phase 1 = -12 net (suppression + ajout structure), Phase 2 = +561 net (extraction structurelle), Phase 2.5 = -163 net (suppression de code mort). Les 3 phases ensemble = **+386 net seulement** pour ~50 commits ; le code thème reste dimensionnellement contrôlé.
+
+**Pointeur Phase 3 — perf bloquante** :
+- 3 axes (cf. `_docs/prompt-phase-3.md`) : Axe A = pagination catalogue (PERF-001/002/007) via infinite scroll par lots de 30 + endpoint REST `lamixtape/v1/posts` ; Axe B = perf images & assets (PERF-003/004/006/010/011/012/014) ; Axe C = sécurité durcissement (SEC-004/005/008/009).
+- Mode marathon validé pour Phase 3 (Q4).
+- Discipline diagnostic-d'abord MAINTENUE.
+- WebP reporté infrastructure (Q3, plugin Performance Lab côté admin WP).
+
+**Validation finale Phase 2.5 (à charge utilisateur)** :
+- 7 templates non-single inchangés visuellement vs `_docs/captures-post-phase-2/`.
+- 1 template (single mixtape) avec altération validée : disparition du bouton 💬 uniquement, l'image (pochette) reste à sa place.
+- Tests fonctionnels rapides : single charge sans erreur PHP, admin Comments vide, formulaire d'éditeur "comments off" par défaut.
 
 ## 5. Recommandations stratégiques
 
@@ -218,7 +249,7 @@ Si tu rencontres encore un nom qui sent le boilerplate générique (préfixe non
 | 6 | **Newsletter** | Suppression confirmée (code mort) | Aucun (rien à faire côté contenu) |
 | 7 | **`fbq` Pixel** | Suppression confirmée (résidu) | Aucun |
 | 8 | **Cookies / RGPD** | Définir si Umami suffit (sans bandeau, car analyse anonyme), ou si un bandeau est requis par politique éditoriale | Conformité RGPD/CNIL |
-| 9 | **Suppression du module de commentaires** | À confirmer (probable suppression complète). À planifier dans une phase dédiée après le refacto structurel — **Phase 2.5** ou **Phase 6** | `comments.php`, callback `tape_comment`, customisations via `comment_form_default_fields` / `comment_form_field_comment` dans `functions.php`, `css/comment-form.css`, hook éventuel `pre_get_comments`. Vérifier aussi : `comments_open()` / `pings_open()` dans la BDD (à fermer côté admin), `wp_list_comments` callback dans `comments.php` |
+| ~~9~~ | ~~Suppression du module de commentaires~~ | **Résolu Phase 2.5 (30 avril 2026) — suppression définitive complète**, cf. `_docs/AUDIT.md#business` | — |
 
 ## 8. Règles pour les futures sessions Claude Code
 
