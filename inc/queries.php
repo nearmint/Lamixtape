@@ -17,23 +17,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Fetch every mixtape published strictly before the given post.
+ * Fetch the mixtapes published strictly before the given post.
  *
- * Used by single.php to render the "previous mixtapes" archive list
- * underneath the current mixtape. The `posts_where` filter is applied
- * via a closure (no global function) so it cannot leak into other
- * queries even on exception paths — fixes PERF-009.
+ * Used by single.php to render the "previous mixtapes" block. Phase 3
+ * (PERF-002) bounds the initial render to LMT_INFINITE_SCROLL_BATCH_SIZE
+ * (default 30) — the rest is fetched on demand by the infinite-scroll
+ * JS via /wp-json/lamixtape/v1/posts?context=single_previous.
  *
- * PERF-002 tracked, pagination strategy in Phase 3 with PERF-001.
- * Keeping posts_per_page = -1 here preserves the historical visual
- * (the entire back-catalogue is rendered) which is the no-visual-change
- * contract of Phase 2.
+ * The `posts_where` filter is applied via a closure (no global
+ * function) so it cannot leak into other queries even on exception
+ * paths — fixes PERF-009.
  *
  * @param  int $current_post_id  Reference post; only posts older than
  *                               this one's publish date are returned.
- * @return WP_Post[]             Array of WP_Post objects (possibly empty).
+ * @param  int $limit            -1 for all (legacy default), or a
+ *                               positive integer to cap the batch.
+ * @param  int $offset           Number of rows to skip (pagination).
+ * @return WP_Query              Full WP_Query so callers can read
+ *                               ->posts, ->found_posts, etc.
  */
-function lmt_get_previous_mixtapes( $current_post_id ) {
+function lmt_get_previous_mixtapes( $current_post_id, $limit = -1, $offset = 0 ) {
     $publish_date = get_the_date( 'Y-m-d', $current_post_id );
 
     $where_filter = function ( $where ) use ( $publish_date ) {
@@ -42,16 +45,15 @@ function lmt_get_previous_mixtapes( $current_post_id ) {
     };
     add_filter( 'posts_where', $where_filter );
 
-    $paged = get_query_var( 'paged' ) ? (int) get_query_var( 'paged' ) : 1;
     $query = new WP_Query( array(
-        'paged'          => $paged,
         'order'          => 'DESC',
-        'posts_per_page' => -1, // PERF-002 tracked, pagination strategy in Phase 3
+        'posts_per_page' => $limit,
+        'offset'         => $offset,
     ) );
 
     remove_filter( 'posts_where', $where_filter );
 
-    return $query->posts;
+    return $query;
 }
 
 /**

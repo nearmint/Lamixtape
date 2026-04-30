@@ -88,23 +88,33 @@
 </article>
 <section class="mixtape-list">
     <?php
-    $pageposts = lmt_get_previous_mixtapes( get_the_ID() );
+    $batch_size  = defined( 'LMT_INFINITE_SCROLL_BATCH_SIZE' ) ? LMT_INFINITE_SCROLL_BATCH_SIZE : 30;
+    $previous_q  = lmt_get_previous_mixtapes( get_the_ID(), $batch_size, 0 );
+    $pageposts   = $previous_q->posts;
+    $has_more    = (int) $previous_q->found_posts > count( $pageposts );
     if ($pageposts):
         global $post;
-        foreach ($pageposts as $post):
-            setup_postdata($post);
-            get_template_part( 'template-parts/card-mixtape', null, array(
-                'delay'                 => 7,
-                'article_extra_classes' => 'font-smoothing',
-                'highlight_mode'        => 'conditional',
-                'hide_curator_on_small' => false,
-                'tag_link_attr'         => 'alt',
-            ) );
-        endforeach;
-        wp_reset_postdata();
-    else : ?>
-        <?php // No output for else, as before ?>
-    <?php endif;?>
+        ?>
+        <div id="lmt-mixtapes-container">
+            <?php foreach ($pageposts as $post): setup_postdata($post); ?>
+                <?php get_template_part( 'template-parts/card-mixtape', null, array(
+                    'delay'                 => 7,
+                    'article_extra_classes' => 'font-smoothing',
+                    'highlight_mode'        => 'conditional',
+                    'hide_curator_on_small' => false,
+                    'tag_link_attr'         => 'alt',
+                ) ); ?>
+            <?php endforeach; ?>
+        </div>
+        <?php wp_reset_postdata(); ?>
+        <?php if ( $has_more ) : ?>
+            <div id="lmt-infinite-sentinel"
+                 data-context="single_previous"
+                 data-initial-offset="<?php echo (int) count( $pageposts ); ?>"
+                 data-exclude="<?php echo (int) get_the_ID(); ?>"
+                 aria-hidden="true"></div>
+        <?php endif; ?>
+    <?php endif; ?>
 </section>
 <footer>
 </footer>
