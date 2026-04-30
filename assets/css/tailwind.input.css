@@ -77,6 +77,30 @@
 }
 
 /*
+ * @layer base override — Phase 4 CP2 regression #4.
+ *
+ * TW v4 preflight sets `svg, img, video, canvas, audio, iframe,
+ * embed, object { display: block }`. Lamixtape relies on inline
+ * SVGs in buttons and links throughout (burger header, close
+ * header, shuffle 404, search explore, X search/category, Discogs
+ * player button, etc.). The block default forces a line break
+ * between the surrounding text and the SVG.
+ *
+ * Restore inline-block (strictly equivalent to the browser-default
+ * `inline` for SVG icons) and keep vertical-align: middle so the
+ * SVG stays baseline-aligned with the adjacent text.
+ *
+ * Within @layer base, this rule comes AFTER the imported preflight
+ * (later declaration in the same layer) so it wins the cascade.
+ */
+@layer base {
+    svg {
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
+
+/*
  * @layer components — reserved for theme-specific reusable classes
  * (lmt-dialog, etc.). Populated during Axe C (modals → <dialog>).
  */
