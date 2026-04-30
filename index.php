@@ -7,10 +7,10 @@ $the_query = new WP_Query( array(
 ));
 ?>
 <section class="about font-smoothing">
-    <div class="container">
+    <div class="tw:container tw:mx-auto tw:px-4">
         <hr>
-        <article class="row pt-4 pb-5 fade-in delay-1">
-            <div class="col-lg-8 col-md-12">
+        <article class="tw:flex tw:flex-wrap tw:pt-6 tw:pb-12 fade-in delay-1">
+            <div class="tw:w-full tw:lg:w-2/3">
                 <p><?php esc_html_e('Hi and welcome to Lamixtape.', 'lamixtape'); ?></p>
 				<p><?php esc_html_e('Between', 'lamixtape'); ?> <a class="underline" href="https://web.archive.org/web/20130612232050/http://lamixtape.fr/" target="_blank"><?php esc_html_e('2011', 'lamixtape'); ?></a> <?php esc_html_e('and 2022, we released mixtapes every month, curated by our roster of curators and', 'lamixtape'); ?> <a class="underline" href="https://lamixtape.fr/guests/"><?php esc_html_e('incredible guests', 'lamixtape'); ?></a>. <?php esc_html_e("Our foundational reason for building Lamixtape was that we're really excited about sharing music. If we had a central goal, it was to feed your ears and curiosity with as much quality and diversity as possible.", 'lamixtape'); ?></p>
                 <p><?php esc_html_e('Lamixtape has no bullshit, no ads, no sponsored posts, and no paywalls. If you enjoy our mixtapes, please consider', 'lamixtape'); ?> <a class="underline" data-toggle="modal" data-target="#donatemodal" href="#"><?php esc_html_e('supporting', 'lamixtape'); ?></a> <?php esc_html_e('what we do.', 'lamixtape'); ?></p>
@@ -27,8 +27,8 @@ $the_query = new WP_Query( array(
                     <?php esc_html_e('can be a good thing.', 'lamixtape'); ?></p>
                 <small>PS: we’re not on social media, but you can reach us <a class="underline" data-toggle="modal" data-target="#contactmodal" href="#">here</a>.</small>
             </div>
-            <div class="col d-none d-sm-none d-md-none d-lg-block fade-in delay-2 pt-5">
-                <a class="" data-toggle="modal" data-target="#donatemodal" href="#"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="img-fluid illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>" loading="lazy" decoding="async"></a>
+            <div class="tw:flex-1 tw:hidden tw:lg:block fade-in delay-2 tw:pt-12">
+                <a data-toggle="modal" data-target="#donatemodal" href="#"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="tw:max-w-full tw:h-auto illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>" loading="lazy" decoding="async"></a>
             </div>
         </article>
     </div>
