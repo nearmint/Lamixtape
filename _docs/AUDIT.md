@@ -46,6 +46,7 @@
 - **Description** : Le filtre `posts_where` réécrit la clause SQL via une regex pour ajouter une condition `OR (postmeta.meta_value LIKE ...)`. Le `$1` capturé est directement réinjecté dans la chaîne. WP nettoie la requête en amont, mais ce pattern (réécriture SQL par regex) est fragile : le moindre changement de moteur SQL côté WP casse le filtre, et toute future modification du filtre peut introduire une injection.
 - **Impact** : Code fragile + surface d'attaque latente (médiocre, pas exploitable en l'état).
 - **Recommandation** : Remplacer par une **meta_query** native sur le `pre_get_posts` ou par un index plein-texte sur `postmeta.meta_value`. Voir le pattern documenté par WP Engine / Yoast pour étendre `s=` aux postmeta.
+- **Statut** : Reporté avec PERF-006 (Q10 search rewrite, post-Phase-6). SEC-004 et PERF-006 ciblent le même mécanisme (`lmt_search_postmeta_where` ex-`cf_search_where`) sous deux angles différents (sécurité du `preg_replace` / coût du `LEFT JOIN postmeta`). La refonte de la stratégie de recherche les fermera ensemble — cf. CLAUDE.md section 7 Q10 pour les options (FT MySQL, Relevanssi, etc.).
 
 ### [SEC-005] Aucune vérification de capability sur les actions REST
 - **Sévérité** : Moyenne
@@ -54,6 +55,7 @@
 - **Description** : Les endpoints REST `likes/dislikes` ne contrôlent aucune capability. C'est un choix volontaire (anonymes), mais aucun garde-fou (nonce, transient, captcha) ne vient compenser.
 - **Impact** : Cf. SEC-001 — pollution facile des métriques.
 - **Recommandation** : Au minimum, exiger un nonce REST `X-WP-Nonce` envoyé par le JS, et limiter les requêtes à 1 par IP par heure par post via transient.
+- **Statut** : Résolu Phase 0 + Phase 3 (Phase 0 `f8107e0` `lmt_social_like_permission` avec nonce REST `X-WP-Nonce` + rate-limit transient 1/h/IP/post sur `social/v2/likes` ; Phase 3 `8bd0588` même pattern appliqué au nouveau endpoint `lamixtape/v1/posts` via `lmt_rest_pagination_permission` — nonce + rate-limit transient 100/h/IP. Les deux endpoints REST custom du thème sont maintenant nonce-gardés et rate-limited).
 
 ### [SEC-006] `wp_localize_script` attaché au handle `'jquery'`
 - **Sévérité** : Moyenne
@@ -80,6 +82,7 @@
 - **Description** : Le thème ne pose pas `X-Frame-Options`, `Content-Security-Policy`, `Referrer-Policy`, `Permissions-Policy`. Le filtre `login_errors` masque les erreurs de login (functions.php:151-154) — c'est bien — mais les headers HTTP de sécurité de base sont absents.
 - **Impact** : Site cliquable en iframe (clickjacking), pas de CSP pour limiter les CDN tiers.
 - **Recommandation** : Ajouter via `send_headers` (ou côté serveur Nginx/Apache, plus propre) : `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=()`. CSP plus complexe, à définir après l'inventaire des CDN.
+- **Statut** : Résolu Phase 3 (`2d10728` `lmt_send_security_headers` hooké sur `send_headers` pose les 5 headers baseline — `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()` — et `header_remove('X-Powered-By')` pour ne plus exposer la version PHP. Vérifié pré-déploiement par `curl -I https://lamixtape.fr` que ni OVH ni Cloudflare ne posaient déjà ces headers, donc 0 risque de doublon. Content-Security-Policy intentionnellement reporté en Q11/CLAUDE.md vu la matrice non-triviale (Bootstrap inline, YouTube iframe, MediaElement, Cloudflare Turnstile, Umami, ACF dynamic style="...") — à finaliser Phase 5/6 après Tailwind v4).
 
 ### [SEC-009] iframes YouTube créées sans `referrerpolicy` ni `sandbox`
 - **Sévérité** : Basse
@@ -88,6 +91,7 @@
 - **Description** : L'iframe YouTube est créée par l'API YT.Player qui ne pose pas par défaut de `referrerpolicy` ni de `sandbox`. Le referrer Lamixtape fuit vers Google.
 - **Impact** : Faible (analytics tiers), mais améliorable.
 - **Recommandation** : Après `youtubePlayer = new YT.Player(...)`, manipuler l'iframe via `youtubePlayer.getIframe().setAttribute('referrerpolicy', 'no-referrer-when-downgrade')`. Pour `sandbox`, attention : rompt l'API JS YouTube.
+- **Statut** : Résolu Phase 3 (`780c463` dans `js/player.js`, `onPlayerReady` ajoute `referrerpolicy="strict-origin-when-cross-origin"` sur l'iframe YouTube via `youtubePlayer.getIframe().setAttribute(...)`. Effet : YouTube reçoit uniquement l'origine `https://lamixtape.fr` au lieu de l'URL complète de la mixtape. `sandbox` intentionnellement non appliqué — il rompt le canal `postMessage` que l'API YT JS utilise pour play/pause/seek. Idempotent (hasAttribute guard) + try/catch défensif pour ne jamais bloquer la lecture sur ce hardening).
 
 ---
 
@@ -100,6 +104,7 @@
 - **Description** : `new WP_Query(['post_type'=>'post','post_status'=>'publish','posts_per_page'=>-1])` rend l'intégralité du catalogue (≥ 360 mixtapes d'après le copy de la home) en HTML, dans une `<section>` unique, sans pagination, sans virtualisation, sans lazy.
 - **Impact** : LCP catastrophique sur la home, payload HTML > 200 Ko, parsing CSS/DOM long sur mobile, INP dégradé. Croît linéairement avec la BDD.
 - **Recommandation** : Paginer (50/page) avec `paginate_links`, OU implémenter un défilement infini AJAX (REST API custom + intersection observer), OU charger 30 articles puis "Load more" (pattern déjà suggéré par le nom `loadmore_enqueue` — fonctionnalité jamais finie).
+- **Statut** : Résolu Phase 3 (Axe A — `c34a332` `index.php` rend les 30 premières mixtapes server-side + sentinel `#lmt-infinite-sentinel` + endpoint REST `lamixtape/v1/posts` `8bd0588` + JS IntersectionObserver `b7f9f18`. Payload HTML initial passe de 370+ cards à 30 cards ; les suivantes se chargent par lots de 30 sur scroll. LCP au load préservé. Aucune card visible n'est perdue : l'utilisateur voit toujours toutes les mixtapes en scrollant).
 
 ### [PERF-002] `single.php` exécute une `WP_Query` sur 1 000 000 posts filtrés par date
 - **Sévérité** : Critique
@@ -108,6 +113,7 @@
 - **Description** : Le bloc "anciennes mixtapes" sous l'article courant utilise `posts_per_page=1000000` + un filtre `posts_where` qui injecte une comparaison `post_date < '...'`. Effets : (1) `OFFSET 0 LIMIT 1000000` dans la requête, (2) load complet en mémoire de tous les posts antérieurs à chaque vue de mixtape.
 - **Impact** : TTFB qui croît avec la BDD, RAM PHP saturée sur les mixtapes anciennes (peu d'antérieurs) vs. récentes (300+ antérieurs). À terme : timeout PHP ou erreur 500.
 - **Recommandation** : Limiter à 20-30 entrées avec `posts_per_page => 30` et `paginate_links`. Mieux : remplacer par `get_adjacent_post()` côté navigation, et déplacer la liste complète sur la home (avec pagination). Supprimer entièrement le filtre `posts_where` global (cf. PERF-009).
+- **Statut** : Résolu Phase 3 (Axe A — `071e4e1` `lmt_get_previous_mixtapes()` accepte désormais `$limit`/`$offset` ; `single.php` rend les 30 premières en server-side, les suivantes via AJAX vers le même endpoint REST `lamixtape/v1/posts` (context `single_previous` + `data-exclude=<post_id>`). Le commentaire `// PERF-002 tracked, pagination strategy in Phase 3` posé en Phase 2 a été retiré).
 
 ### [PERF-003] Bootstrap CSS chargé via `@import` dans `style.css`
 - **Sévérité** : Haute
@@ -134,6 +140,7 @@
 - **Description** : 4 endroits exécutent `new WP_Query(['orderby' => 'rand', 'posts_per_page' => 1])`. `ORDER BY RAND()` MySQL est **O(n)** sur la table `wp_posts` complète : sur 360+ posts c'est encore tolérable, sur 1 000+ c'est lourd. Et la home en exécute **2** (header + index), single en exécute 2 aussi (header + bouton random).
 - **Impact** : Charge BDD inutile, TTFB augmenté.
 - **Recommandation** : Cacher l'ID aléatoire en transient courte durée (`set_transient('lmt_random_post', $id, 5 * MINUTE_IN_SECONDS)`) ou pré-calculer un pool de 50 IDs aléatoires en cache. Variante : sélectionner `MAX(ID)`, tirer un random PHP, refaire un `get_post()`.
+- **Statut** : Résolu Phase 3 (`ad294a6` helper `lmt_get_random_mixtape($cache_key, $ttl = HOUR_IN_SECONDS)` créé dans `inc/queries.php`. Les 4 sites d'appel (`header.php` mobile menu, `index.php` about inline, `single.php` random button, `404.php` fallback) consomment le helper avec un `cache_key` unique chacun (`header_mobile_menu`, `home_about_inline`, `single_random_button`, `404_fallback`) — 4 transients indépendants, TTL 1h par défaut conformément à D8. Le seul `orderby=rand` restant dans le codebase est dans le helper lui-même).
 
 ### [PERF-006] `cf_search_join` LEFT JOIN systématique sur `postmeta`
 - **Sévérité** : Haute
@@ -150,6 +157,7 @@
 - **Description** : `posts_per_page => -1` charge tous les posts de la catégorie. La pagination est même *codée puis commentée* (`category.php:64-67`). Une catégorie populaire (ex. "House", "Hip-hop") peut contenir > 100 posts.
 - **Impact** : LCP dégradé sur les pages catégories populaires.
 - **Recommandation** : Décommenter la pagination, fixer `posts_per_page => 30`, ou laisser `-1` mais avec un cache complet de la page (page cache).
+- **Statut** : Résolu Phase 3 (Axe A — `e8c8b86` `category.php` rend les 30 premières mixtapes server-side via `posts_per_page = LMT_INFINITE_SCROLL_BATCH_SIZE` + sentinel `data-context="category" data-category="<cat_id>"`. Cards 31+ chargées via le même endpoint REST `lamixtape/v1/posts` consommé par PERF-001/002. La pagination commentée legacy + le `$paged = max(1, get_query_var('paged'))` mort ont été retirés).
 
 ### [PERF-008] `guests.php` exécute une `WP_Query` par utilisateur (N+1)
 - **Sévérité** : Moyenne
@@ -185,6 +193,7 @@
 - **Description** : `the_post_thumbnail_url()` est utilisée seule (sans `the_post_thumbnail($size, $attrs)`), donc pas de `srcset` automatique WP. Aucune balise n'a `loading="lazy"` explicite (WP en pose certaines depuis 5.5 mais pas systématiquement quand on construit le `<img>` à la main).
 - **Impact** : Téléchargement d'images haute résolution sur mobile, bytes inutiles, LCP dégradé.
 - **Recommandation** : Remplacer `the_post_thumbnail_url()` par `the_post_thumbnail('large', ['class' => 'img-fluid mt-4 illustration', 'loading' => 'lazy', 'alt' => ...])`. Forcer `loading="lazy"` sur toutes les `<img>` non-LCP.
+- **Statut** : Résolu Phase 3 (`e6081ad` partie 1/2 : `loading="lazy" decoding="async"` ajoutés sur les 3 `<img>` statiques de `404.php`, `index.php` et `player.php`. `3a29def` partie 2/2 : `<img src="<?php the_post_thumbnail_url(); ?>">` de `single.php` remplacé par `the_post_thumbnail('large', ['class' => ..., 'alt' => esc_attr(get_the_title()), 'loading' => 'lazy', 'decoding' => 'async'])` — WP génère désormais `srcset` + `sizes` automatiquement, et le mobile pull une variante 'large' (~1024px) au lieu du fichier original. `alt` est aussi proprement échappé via `esc_attr` au passage. Header logo = SVG inline, pas d'`<img>` à protéger).
 
 ### [PERF-012] Polices Google sans `preconnect` ni `font-display=swap` propre
 - **Sévérité** : Basse
@@ -193,7 +202,7 @@
 - **Description** : `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap')` — l'URL contient bien `display=swap`, mais l'`@import` empêche les pre-resolve DNS. Pas de `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` non plus.
 - **Impact** : FOIT/FOUT mal géré, ~100 ms perdus sur la connexion DNS+TLS.
 - **Recommandation** : Auto-héberger la police (variable font Outfit, ~50 Ko woff2), ou ajouter `preconnect` dans `header.php`.
-- **Statut** : Partiel Phase 1, finalisation Phase 3 (`57404c9` Outfit variable woff2 auto-hébergé dans `assets/vendor/outfit/` + chaîne `@import` Google Fonts éliminée — le besoin de `preconnect` vers `fonts.googleapis.com` / `fonts.gstatic.com` disparaît avec l'auto-hébergement. Reste à ajouter `<link rel="preload" as="font" type="font/woff2" crossorigin>` sur le woff2 local pour optimiser le LCP — finalisation Phase 3 Axe B).
+- **Statut** : Résolu Phase 1 + Phase 3 (`57404c9` Phase 1 : Outfit variable woff2 auto-hébergé dans `assets/vendor/outfit/`, chaîne `@import` Google Fonts éliminée → besoin de `preconnect` vers `fonts.googleapis.com`/`fonts.gstatic.com` disparu. `614a886` Phase 3 : `<link rel="preload" as="font" type="font/woff2" href="…/outfit-latin.woff2" crossorigin="anonymous">` posé en `<head>` priorité 1 via `lmt_preload_outfit_font()` → optimisation LCP, le browser commence à fetcher la police avant même de parser le CSS qui la déclare. Subset `latin-ext` non préchargé (rare, fetché à la demande)).
 
 ### [PERF-013] `console.log` de diagnostic en production (`player.php`)
 - **Sévérité** : Basse

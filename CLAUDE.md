@@ -70,25 +70,26 @@ lamixtape/
 
 ## 4. Dette technique priorisée
 
-| Axe | Total | Résolus (P0+P1+P2) | Critique restant | Haute restant | Référence |
+| Axe | Total | Résolus (P0+P1+P2+P2.5+P3) | Critique restant | Haute restant | Référence |
 |---|:-:|:-:|:-:|:-:|---|
 | **Process / Qualité** | 16 | 15 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
-| **Sécurité** | 9 | 5 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
-| **Performance** | 14 | 3 | 2 | 4 | `_docs/AUDIT.md#performance` |
+| **Sécurité** | 9 | 8 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
+| **Performance** | 14 | 13 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#performance` |
 | **Accessibilité** | 11 | 0 | 0 | 4 | `_docs/AUDIT.md#a11y` |
 | **WP best practices** | 9 | 7 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#wp` |
 | **Migration Tailwind** | 5 | 0 | 0 | 2 | `_docs/AUDIT.md#tailwind` |
 | **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
-| **TOTAL** | **72** | **31** | **2** | **12** | |
+| **TOTAL** | **72** | **44** | **0** ✅ | **9** | |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 31 résolus à fin Phase 2.5 (3 P0 + 16 P1 + 12 P2). 41 restants pour Phase 3 et au-delà. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 44 résolus à fin Phase 3 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3). 28 restants pour Phases 4-6+. **Aucun finding Critique restant** ✅ (PERF-001/002 fermés Phase 3 via infinite scroll). **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
-Critiques restants (cibles Phase 3) :
-1. **PERF-001** — `index.php` rend 360+ articles d'un coup (`posts_per_page => -1`).
-2. **PERF-002** — `single.php` exécute une `WP_Query` sur 1 000 000 lignes filtrées par date.
-
-Toujours ouvert et déféré conjointement à Phase 3 (même problème UX = pagination catalogue) :
-- **PERF-007** — `category.php` `posts_per_page => -1`. Trois Critiques/Moyennes liées (PERF-001, PERF-002, PERF-007) seront traitées en bloc Phase 3 avec une stratégie unique (load-more / paginate_links / infinite, à arbitrer).
+Reste ouvert (cibles Phases 4-6+) :
+- **A11Y-001 à 011** : 11 findings (focus visible, skip-link, landmarks, contrastes, modals…) → Phase 5
+- **TW-001 à 005** : 5 findings → Phase 4 (migration Bootstrap → Tailwind v4)
+- **PERF-006** (Haute, search LEFT JOIN postmeta) → Q10 search rewrite, post-Phase-6
+- **WP-005** / **WP-006** : 2 Moyennes (renommage Posts → Playlist sur le post type natif ; WP_POST_REVISIONS) → Phase 6 outillage
+- **OTHER-001 à 008** : 7 findings (RGPD, SEO/OG, monitoring) → Phase 6
+- **2 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy → post-Phase-4 minimum
 
 ### Phase 0 close — récap
 - 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
@@ -180,6 +181,43 @@ Toujours ouvert et déféré conjointement à Phase 3 (même problème UX = pagi
 - 7 templates non-single inchangés visuellement vs `_docs/captures-post-phase-2/`.
 - 1 template (single mixtape) avec altération validée : disparition du bouton 💬 uniquement, l'image (pochette) reste à sa place.
 - Tests fonctionnels rapides : single charge sans erreur PHP, admin Comments vide, formulaire d'éditeur "comments off" par défaut.
+
+### Phase 3 close — récap (30 avril 2026)
+
+**Métriques globales** :
+- **17 commits** depuis fin Phase 2.5 (`35bd235`), tous pushés sur `origin/main`. Découpage : 3 prep (`845ca42` backfill / `04692f5` Q10 / `abf5527` IDs prompt) + 5 Axe A (REST endpoint, home, single, category, JS+CSS) + 6 Axe B (lazy x2, random transients, object cache, preload Outfit, defer/async) + 3 Axe C (headers + Q11 doc + iframe YouTube) + closure (ce commit).
+- 15 fichiers modifiés / 4 nouveaux (`inc/rest.php`, `js/infinite-scroll.js`, `css/infinite-scroll.css`, `_docs/prompt-phase-3.md` déjà entré Phase 2.5).
+- **+799 / −119 lignes (net +680)** — phase à dominante structurante (endpoint REST + JS infinite scroll + helpers cache + headers sécurité). Aucune suppression majeure.
+- **9 findings audit fermés Phase 3** : PERF-001 + PERF-002 (Critiques fermés ✅), PERF-005, PERF-007, PERF-011 (Hautes/Moyenne/Basse), PERF-012 finalisé (était Partiel Phase 1), SEC-005 finalisé (était Phase 0 pour likes seulement, étendu pagination), SEC-008, SEC-009. Plus **4 backfills Phase 1** appliqués pré-marathon (PERF-003/004/010/012-partiel).
+- **2 enhancements bonus hors audit** : object cache `lmt_posts_grouped_by_author` (transient 24h + invalidation save_post/deleted_post/trashed_post) ; defer/async sur scripts non-critiques (lmt-player, lmt-infinite-scroll) via filter `script_loader_tag`.
+- **Aucun finding Critique restant** ✅ — c'est l'objectif structurant de Phase 3, atteint.
+
+**Bonus business surprises** :
+- **Le commit C5 (JS + CSS infinite scroll) avait été oublié** lors de la première session marathon : 4 commits Axe A poussés + l'utilisateur ferme la machine, et au check post-reprise le sentinel HTML était bien rendu mais le JS qui l'observe et déclenche l'AJAX manquait → infinite scroll cassé en Local. Reprise propre côté repo (working tree clean, pas de WIP perdu) + commit C5 atomique exécuté à la reprise. **Apprentissage : un Axe se compte en commits poussés, pas en sous-étapes annoncées**. La discipline "1 finding = 1 commit pushé immédiatement" reste solide ; le risque c'est l'oubli d'un commit "glue" qui ne ferme pas un finding mais relie plusieurs autres.
+- **Diagnostic IDs PERF avant le marathon** : la rédaction initiale du prompt-phase-3.md mappait PERF-003/004/010/014 sur des sections qui ciblaient en réalité PERF-005/011/012. La discipline diagnostic-d'abord (D-PRE-PHASE-3.1 à 3.5) a évité 3-5 commits avec des IDs erronés, plus 1h de re-doc post-marathon.
+
+**Apprentissages clés** :
+1. **Phase à dominante "addition" = travailler les invariants en ouverture, pas en closure.** Phase 3 ajoute 4 nouveaux fichiers (`inc/rest.php`, `js/infinite-scroll.js`, `css/infinite-scroll.css`, helper `lmt_get_random_mixtape`) et 3 hooks (`wp_head` preload, `script_loader_tag` defer, `send_headers` sécurité). Le risque d'oublier un require/enqueue est plus élevé qu'en phase suppression. Solution : poser l'inventaire des nouveaux fichiers/hooks **avant** d'attaquer les commits, pas après.
+2. **Endpoint REST = double défense indispensable.** Pattern reproduit fidèlement de SEC-001/Phase 0 : nonce X-WP-Nonce + rate-limit transient hashé wp_hash. C'est ce qui rend l'endpoint `lamixtape/v1/posts` aussi sûr que `social/v2/likes` même s'il est public et lisible (READABLE/GET).
+3. **Cache + invalidation = couple indissociable.** Le commit B4 (object cache `lmt_posts_grouped_by_author`) inclut son hook d'invalidation (save_post/deleted/trashed) dans le même commit. Sans invalidation, un cache 24h devient un bug. À internaliser pour toute future couche de cache.
+4. **`curl -I` côté user a tout débloqué pour Axe C.** 30 secondes de curl ont remplacé 1h d'investigation hypothétique sur "qu'est-ce que Cloudflare/OVH posent déjà". Diagnostic-d'abord = ne pas hésiter à demander à l'humain de fournir l'info qu'il a sous la main plutôt que de spéculer.
+5. **Q10 (PERF-006 search) + Q11 (CSP) = bloc reporté cohérent.** Les deux relèvent de "refonte fond" plutôt que "patch surface" et ont été tracés comme questions ouvertes structurantes. Phase 4 (Tailwind) bénéficiera des deux : moins de Bootstrap inline → CSP plus simple ; moins de dépendances → search rewrite plus léger.
+
+**Pointeur Phase 4 — Bootstrap → Tailwind v4** :
+- **5 findings TW-001 à 005** + impact transversal sur tous les templates (153 occurrences de classes BS).
+- Phase la plus risquée visuellement : la cohabitation Bootstrap+Tailwind est faisable mais demande discipline (préfixage `tw-` ou désactivation des resets CSS Tailwind).
+- Stratégie itérative par template recommandée — commencer par les plus simples (`404.php`, `text.php`).
+- Setup Tailwind v4 CLI standalone (binaire unique), pas de Node en prod.
+- À l'issue Phase 4, le bouton 💬 disparu de Phase 2.5 + les classes BS éliminées des 4 cards mixtape feront que le markup deviendra purement Tailwind utilities. Le `<div class="tab-content">` résiduel sur `single.php` (laissé Phase 2.5 pour minimiser le diff) pourra aussi disparaître.
+
+**Tests fonctionnels Phase 3 attendus côté utilisateur** (cf. `_docs/prompt-phase-3.md` section "Tests à exécuter en fin de marathon") :
+1. Infinite scroll home : 30 cards au load, scroll jusqu'au bout → toutes les ~370 mixtapes affichées au final.
+2. Infinite scroll single (page d'une mixtape avec 100+ ancestors) : 30 anciennes cards au load, scroll → toutes les anciennes au final.
+3. Infinite scroll category (sur une catégorie populeuse) : 30 cards au load, scroll → toutes les cards de la catégorie au final.
+4. Pas de doublons en infinite scroll (vérifier visuellement).
+5. Sécurité : `curl -I https://lamixtape.local` doit retourner les 5 nouveaux headers + plus de `X-Powered-By`.
+6. Sécurité : tester l'endpoint sans nonce → 403, tester avec mauvais context → 400, hammerer 100+ requêtes → 429.
+7. Performance : DevTools Network home au load → ~30 cards rendues serveur, pas 370 ; Lazy loading images → images hors viewport non chargées au load ; Outfit woff2 visible en preload.
 
 ## 5. Recommandations stratégiques
 
