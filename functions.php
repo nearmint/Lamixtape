@@ -174,6 +174,56 @@ function lmt_defer_scripts( $tag, $handle ) {
 }
 add_filter( 'script_loader_tag', 'lmt_defer_scripts', 10, 2 );
 
+/**
+ * Send baseline security headers on every front-end response.
+ *
+ * Verified via curl -I against prod (lamixtape.fr) before posting:
+ * neither OVH nor Cloudflare set any of these, so no risk of
+ * duplicate headers.
+ *
+ * - X-Content-Type-Options:    nosniff (block MIME sniffing).
+ * - Referrer-Policy:           strict-origin-when-cross-origin
+ *                              (full URL same-origin, only origin
+ *                              cross-origin, nothing on downgrade).
+ * - Strict-Transport-Security: 1y + includeSubDomains (HSTS).
+ * - X-Frame-Options:           SAMEORIGIN (clickjacking guard;
+ *                              CSP frame-ancestors will replace
+ *                              this when we ship CSP, cf. Q11).
+ * - Permissions-Policy:        deny geolocation/microphone/camera/
+ *                              payment/usb (none of these features
+ *                              are used by the theme; explicit deny
+ *                              prevents future iframe abuse).
+ * - X-Powered-By:              removed (PHP version leak).
+ *
+ * Content-Security-Policy is intentionally NOT posted here — the
+ * matrix (Bootstrap inline, YouTube iframe, MediaElement, Cloudflare
+ * Turnstile, Umami SaaS, ACF dynamic style="...") is non-trivial.
+ * Tracked as Q11 in CLAUDE.md, scheduled for Phase 5/6 after the
+ * Tailwind migration eliminates Bootstrap-driven inline behaviour.
+ *
+ * Skipped on the admin side: WP / plugins set their own headers
+ * there and the trade-offs (e.g. iframe previews, framed media
+ * uploaders) are different.
+ *
+ * Side note on X-Powered-By: PHP can also set it server-side via
+ * expose_php in php.ini. If the prod check after deploy still
+ * shows an X-Powered-By, ask the host to set expose_php = Off.
+ *
+ * @return void
+ */
+function lmt_send_security_headers() {
+    if ( is_admin() ) {
+        return;
+    }
+    header_remove( 'X-Powered-By' );
+    header( 'X-Content-Type-Options: nosniff' );
+    header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+    header( 'Strict-Transport-Security: max-age=31536000; includeSubDomains' );
+    header( 'X-Frame-Options: SAMEORIGIN' );
+    header( 'Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()' );
+}
+add_action( 'send_headers', 'lmt_send_security_headers' );
+
 // -----------------------------------------------------
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
