@@ -301,16 +301,26 @@ add_filter( 'login_errors', 'lmt_obfuscate_login_errors' );
 // -----------------------------------------------------
 // --------------- Next and Previous links -------------
 // -----------------------------------------------------
-add_filter('next_posts_link_attributes', 'posts_link_attributes_1');
-add_filter('previous_posts_link_attributes', 'posts_link_attributes_2');
-add_filter('next_post_link_attributes', 'posts_link_attributes_1');
-add_filter('previous_post_link_attributes', 'posts_link_attributes_2');
+add_filter( 'next_posts_link_attributes',     'lmt_post_link_class_prev' );
+add_filter( 'previous_posts_link_attributes', 'lmt_post_link_class_next' );
+add_filter( 'next_post_link_attributes',      'lmt_post_link_class_prev' );
+add_filter( 'previous_post_link_attributes',  'lmt_post_link_class_next' );
 
-function posts_link_attributes_1() {
+/**
+ * Class attribute applied to the "next/previous posts" link (older).
+ *
+ * @return string
+ */
+function lmt_post_link_class_prev() {
     return 'class="prev-post"';
 }
 
-function posts_link_attributes_2() {
+/**
+ * Class attribute applied to the "previous/next post" link (newer).
+ *
+ * @return string
+ */
+function lmt_post_link_class_next() {
     return 'class="next-post"';
 }
 
@@ -408,16 +418,21 @@ add_filter( 'comment_form_field_comment', 'lmt_comment_form_textarea' );
 // -----------------------------------------------------
 // ------------------- Images on RSS -------------------
 // -----------------------------------------------------
-// Add post thumbnails to RSS feeds
-function wcs_post_thumbnails_in_feeds( $content ) {
+/**
+ * Prepend the post thumbnail to the RSS excerpt and content feeds.
+ *
+ * @param  string $content  Existing feed content.
+ * @return string
+ */
+function lmt_rss_post_thumbnail( $content ) {
     global $post;
-    if( has_post_thumbnail( $post->ID ) ) {
+    if ( has_post_thumbnail( $post->ID ) ) {
         $content = '<p>' . get_the_post_thumbnail( $post->ID ) . '</p>' . $content;
     }
     return $content;
 }
-add_filter( 'the_excerpt_rss', 'wcs_post_thumbnails_in_feeds' );
-add_filter( 'the_content_feed', 'wcs_post_thumbnails_in_feeds' );
+add_filter( 'the_excerpt_rss',  'lmt_rss_post_thumbnail' );
+add_filter( 'the_content_feed', 'lmt_rss_post_thumbnail' );
 
 // -----------------------------------------------------
 // ----------- Likes — REST endpoint -------------------
