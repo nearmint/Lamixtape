@@ -21,5 +21,12 @@ Thumbs.db
 dist/
 build/
 
+# Tailwind CLI standalone binary (Phase 4 Axe A.1)
+# Each developer downloads their own platform binary into
+# assets/build/ and runs it locally; the generated CSS
+# (assets/css/tailwind.css) IS tracked.
+assets/build/tailwindcss
+assets/build/tailwindcss.exe
+
 # WordPress
 wp-config.php
