@@ -129,7 +129,7 @@ add_filter('pre_get_posts','SearchFilter');
 // -----------------------------------------------------
 function wp_change_search_url() {
     if ( is_search() && ! empty( $_GET['s'] ) ) {
-        wp_safe_redirect( get_home_url( null, "/search/" ) . urlencode( get_query_var( 's' ) ) );
+        wp_safe_redirect( get_home_url( null, "/search/" ) . rawurlencode( get_query_var( 's' ) ) );
         exit();
     }
 }
