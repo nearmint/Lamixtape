@@ -114,3 +114,37 @@
  * fully migrated. Each shim must carry a `/* MIGRATE TO: ... */`
  * comment so it cannot be forgotten at Axe D cleanup.
  */
+
+/*
+ * Phase 4 CP2 regression #1 — override WP wp-block-library link
+ * underline injection.
+ *
+ * theme.json (v2) added in Phase 2 made WordPress emit a global
+ * stylesheet via <style id="global-styles-inline-css"> in <head>
+ * containing:
+ *     a:where(:not(.wp-element-button)) { text-decoration: underline }
+ *
+ * This rule has specificity (0,0,1) because :where() contributes 0.
+ * Pre-Phase-4, Bootstrap 4 reset (a { text-decoration: none },
+ * also (0,0,1)) won the cascade — but WP global-styles is printed
+ * AFTER bootstrap.min.css in <head>, so source order should
+ * theoretically have favored WP since Phase 2. The user reports
+ * pre-Phase-4 had no underline, so something else (BS reset
+ * via different selector? legacy CSS?) was winning silently. Phase 4
+ * cohabitation surfaced the issue.
+ *
+ * Fix: same selector but unlayered + minus the :where() wrapper, so
+ * specificity becomes (0,1,1) and beats WP regardless of source
+ * order. Preserves the wp-element-button exclusion so Gutenberg
+ * block buttons keep their decoration.
+ *
+ * Risk: paragraph-style links in body content (text.php colophon,
+ * legal-notice) lose their underline. If a missing underline is
+ * reported in review, switch to a SCOPED override targeting only
+ * navigation/cards (e.g. `header a, .navbar a, .mixtape-list a`).
+ * For now, trust the diagnostic that pre-Phase-4 had NO underline
+ * globally per user inspection of captures-post-phase-3.
+ */
+a:not(.wp-element-button) {
+    text-decoration: none;
+}
