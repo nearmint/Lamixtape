@@ -317,7 +317,16 @@ function posts_link_attributes_2() {
 // -----------------------------------------------------
 // -------------  Comments on Mixtapes  ----------------
 // -----------------------------------------------------
-function tape_comment($comment, $args, $depth) {
+/**
+ * Custom callback for wp_list_comments() — renders a single comment
+ * as <div> or <li> depending on $args['style'].
+ *
+ * @param  WP_Comment $comment
+ * @param  array      $args
+ * @param  int        $depth
+ * @return void
+ */
+function lmt_comment_callback( $comment, $args, $depth ) {
     if ( 'div' === $args['style'] ) {
         $tag       = 'div';
         $add_below = 'comment';
@@ -345,8 +354,14 @@ function tape_comment($comment, $args, $depth) {
         endif;
 }
 
-// Customize comment form fields
-function my_update_comment_fields( $fields ) {
+/**
+ * Customize the default comment form fields (author / email / url) to
+ * use placeholders only and our own markup.
+ *
+ * @param  array $fields  Default comment form fields.
+ * @return array
+ */
+function lmt_comment_form_fields( $fields ) {
     $commenter = wp_get_current_commenter();
     $req       = get_option( 'require_name_email' );
     $label     = $req ? '*' : ' ' . __( '(optional)', 'lamixtape' );
@@ -372,17 +387,23 @@ function my_update_comment_fields( $fields ) {
 
     return $fields;
 }
-add_filter( 'comment_form_default_fields', 'my_update_comment_fields' );
+add_filter( 'comment_form_default_fields', 'lmt_comment_form_fields' );
 
-// Customize the comment textarea field
-function my_update_comment_field( $comment_field ) {
+/**
+ * Customize the comment textarea markup (replace the default <p>
+ * wrapper with our own).
+ *
+ * @param  string $comment_field  Default textarea HTML.
+ * @return string
+ */
+function lmt_comment_form_textarea( $comment_field ) {
     $comment_field =
         '<p class="comment-form-comment">
             <textarea required id="comment" name="comment" placeholder="' . esc_attr__( "Comment...", "lamixtape" ) . '" cols="45" rows="8" aria-required="true"></textarea>
         </p>';
     return $comment_field;
 }
-add_filter( 'comment_form_field_comment', 'my_update_comment_field' );
+add_filter( 'comment_form_field_comment', 'lmt_comment_form_textarea' );
 
 // -----------------------------------------------------
 // ------------------- Images on RSS -------------------
