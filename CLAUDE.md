@@ -247,6 +247,16 @@ Au moment où Axe B s'est terminé (10 templates migrés avec utilities `tw:*`),
 
 **Coût du diagnostic** : ~5 min (vérif rapide grep `tw:` dans le build après migration). **Bénéfice évité** : 4h+ de chasse aux régressions visuelles en CHECKPOINT 2 (rendu non-stylé, hypothèses fausses sur la cascade BS↔TW, etc.). Pattern Phase 1+ confirmé : *toujours vérifier le build artefact après une migration, pas seulement le code source.*
 
+**Apprentissage TW-VERIFY — Ne pas se fier à `grep` avec backslash escaping en bash pour vérifier les classes Tailwind v4** (validé fin Axe B, pré-CHECKPOINT 2)
+
+Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` retournait `1` alors que le CSS contenait visuellement 50+ utilities `tw:*` (`.tw\:container`, `.tw\:mx-auto`, `.tw\:flex`, `.tw\:hidden`, `.tw\:lg\:block`, etc.). Cause : double-escaping bash + single quotes — le pattern transmis à grep n'était pas celui attendu, donc 0 match réel et le `1` provient d'un faux positif dans un commentaire CSS Tailwind.
+
+**Vérification fiable** :
+- Visuel : `head -100 assets/css/tailwind.css | less` ou `head -3` (le header v4.1.18 affiche les premiers sélecteurs).
+- Compteur correct (avec triple-escape pour le CSS qui contient `\:` littéral) : `grep -oE '\.tw\\\\:[a-zA-Z0-9_./-]+' file.css | sort -u | wc -l`.
+
+**Coût du faux positif** : ~30 min (proposition de stratégie diagnostic 3-variantes A/B/C, commit `c4f4331` "test variant A" qui s'est révélé inutile mais reste en place car équivalent fonctionnel à la version récursive). **Bénéfice retenu** : la discipline diagnostic-d'abord a contenu le coût (pas de fix spéculatif sur autre chose, juste 1 commit "test" non destructeur). Mais leçon : **toujours valider le grep par un check visuel (head/less) avant de conclure que le build est cassé.**
+
 ## 5. Recommandations stratégiques
 
 ### Stack cible recommandée
