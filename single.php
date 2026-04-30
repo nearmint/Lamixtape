@@ -131,6 +131,7 @@
             </article>
             <?php
         endforeach;
+        wp_reset_postdata();
     else : ?>
         <?php // No output for else, as before ?>
     <?php endif;?>
