@@ -5,7 +5,7 @@
 	  		<div class="col-3 d-none d-sm-block">
 	  			<div style="display: flex; align-items: center; gap: 10px;">
 	  				<a id="yt-thumb-link" href="#" target="_blank" rel="noopener" style="display:none;" class="no--border">
-            <img id="yt-thumb" src="" alt="Track thumbnail" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">
+            <img id="yt-thumb" src="" alt="Track thumbnail" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" loading="lazy" decoding="async">
           </a>
 	  				<div id="title" style="white-space:nowrap;overflow:hidden;"></div>
 	  			</div>

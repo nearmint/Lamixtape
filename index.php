@@ -29,7 +29,7 @@ $the_query = new WP_Query( array(
                 <small>PS: we’re not on social media, but you can reach us <a class="underline" data-toggle="modal" data-target="#contactmodal" href="#">here</a>.</small>
             </div>
             <div class="col d-none d-sm-none d-md-none d-lg-block fade-in delay-2 pt-5">
-                <a class="" data-toggle="modal" data-target="#donatemodal" href="#"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="img-fluid illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>"></a>
+                <a class="" data-toggle="modal" data-target="#donatemodal" href="#"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="img-fluid illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>" loading="lazy" decoding="async"></a>
             </div>
         </article>
     </div>

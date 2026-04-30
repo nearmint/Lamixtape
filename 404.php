@@ -20,6 +20,6 @@
         endwhile;
         wp_reset_postdata(); ?>
     </section>
-    <img src="<?php echo esc_url( get_template_directory_uri() );?>/img/404.gif" class="travolta img-fluid d-none d-sm-none d-md-none d-lg-block" alt="404">
+    <img src="<?php echo esc_url( get_template_directory_uri() );?>/img/404.gif" class="travolta img-fluid d-none d-sm-none d-md-none d-lg-block" alt="404" loading="lazy" decoding="async">
 </div>
 <?php get_footer(); ?>
