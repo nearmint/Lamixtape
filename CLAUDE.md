@@ -237,6 +237,16 @@ Diagnostic-d'abord avant le premier enqueue Tailwind cohabité a détecté que B
 
 **Coût du diagnostic** : ~10 min (lecture cascade @layer + analyse !important + benchmark options). **Bénéfice évité** : potentiellement plusieurs heures de chasse aux régressions visuelles entre Axe B et CHECKPOINT 2, plus risque d'accepter à tort un visuel régressé comme "acceptable".
 
+**Apprentissage TW-SCAN — Tailwind v4 ne scanne pas les `*.php` par défaut** (validé pré-CHECKPOINT 2)
+
+Au moment où Axe B s'est terminé (10 templates migrés avec utilities `tw:*`), le rebuild Tailwind a généré un fichier de seulement 9.3 KB (vs 8.4 KB baseline) — `grep -c 'tw:' assets/css/tailwind.css` = 0. Cause : Tailwind v4 auto-scanne par défaut HTML / JS / JSX / TS / TSX / MD(X), mais **pas les `*.php`**. Les classes `tw:*` étaient bien dans les templates (vérifié par `grep -rh 'class="[^"]*tw:' --include="*.php" .`), mais le scanner les ignorait → build minuscule, rendu cassé en cohabitation.
+
+**Solution** : ajouter `@source "../../**/*.php";` dans `tailwind.input.css` (path relatif au fichier d'entrée → remonte à la racine du thème puis match récursif des `.php`). Le scanner v4 détecte les class strings dans les attributs HTML ET dans les littéraux PHP (concaténations type `$h2_classes = '... tw:mb-0 ...'` dans `card-mixtape.php`).
+
+**À retenir** : pour tout projet WordPress / framework PHP migré vers Tailwind v4, le `@source` PHP est obligatoire. Le défaut v4 a été conçu pour les stacks Node modernes (Next, Astro, etc.), pas pour le CMS PHP.
+
+**Coût du diagnostic** : ~5 min (vérif rapide grep `tw:` dans le build après migration). **Bénéfice évité** : 4h+ de chasse aux régressions visuelles en CHECKPOINT 2 (rendu non-stylé, hypothèses fausses sur la cascade BS↔TW, etc.). Pattern Phase 1+ confirmé : *toujours vérifier le build artefact après une migration, pas seulement le code source.*
+
 ## 5. Recommandations stratégiques
 
 ### Stack cible recommandée

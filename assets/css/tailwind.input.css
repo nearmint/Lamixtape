@@ -14,8 +14,9 @@
  *         -o assets/css/tailwind.css \
  *         --watch
  *
- * The CLI auto-scans the theme for utility classes; no @source
- * directive needed (v4 default heuristic catches *.php).
+ * The CLI auto-scans HTML/JS/JSX/TS by default but NOT *.php — we
+ * therefore add an explicit @source directive (see below) to
+ * include every PHP template under the theme root.
  *
  * @theme tokens here generate matching utilities (e.g. --color-bg
  * → bg-bg) and CSS custom properties (--color-bg) that components
@@ -38,6 +39,26 @@
  * final markup (post-Axe-D) is prefix-less Tailwind.
  */
 @import "tailwindcss" prefix(tw);
+
+/*
+ * Source detection — Phase 4 Apprentissage TW-SCAN.
+ *
+ * Tailwind v4 default heuristic auto-scans HTML, JS, JSX, TS, TSX,
+ * MD(X) and a few others — but NOT *.php. Without this directive,
+ * the build comes out near-empty even though the templates are full
+ * of tw:* utilities, and the page renders unstyled in cohabitation.
+ *
+ * Path is relative to this file (assets/css/) — `../../` reaches the
+ * theme root (lamixtape/), then `**\/*.php` recursively captures every
+ * .php template, partial, include and helper.
+ *
+ * Required for: every *.php template (root + template-parts/) plus
+ * any class-string built in PHP code (e.g. card-mixtape.php composes
+ * h2_classes via string concatenation; the literal tokens `tw:mb-0`
+ * etc. are still detected by the v4 scanner because it operates on
+ * raw text, not AST).
+ */
+@source "../../**/*.php";
 
 @theme {
     /*
