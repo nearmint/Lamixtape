@@ -1,9 +1,26 @@
 <?php
 
 // -----------------------------------------------------
-// ------  Enable Support for Post Thumbnails ----------
+// ------------------- Theme setup ---------------------
 // -----------------------------------------------------
-add_theme_support( 'post-thumbnails' );
+/**
+ * Register theme features (post-thumbnails, title-tag, html5,
+ * automatic-feed-links, responsive-embeds, editor-styles).
+ *
+ * @return void
+ */
+function lmt_setup_theme() {
+    add_theme_support( 'post-thumbnails' );
+    add_theme_support( 'title-tag' );
+    add_theme_support(
+        'html5',
+        array( 'comment-form', 'comment-list', 'gallery', 'caption', 'search-form', 'style', 'script' )
+    );
+    add_theme_support( 'automatic-feed-links' );
+    add_theme_support( 'responsive-embeds' );
+    add_theme_support( 'editor-styles' );
+}
+add_action( 'after_setup_theme', 'lmt_setup_theme' );
 
 // -----------------------------------------------------
 // ------------ Frontend assets (CSS only) -------------
