@@ -43,8 +43,18 @@ add_action( 'after_setup_theme', 'lmt_setup_theme' );
 function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
+    // Tailwind v4 — Phase 4 Axe A. Loaded BEFORE Bootstrap so any
+    // collision (in case prefix(tw) ever leaks an unprefixed rule)
+    // resolves in BS's favor during cohabitation. Templates use only
+    // `tw:*` utilities until C19.5 strips the prefix in Axe D.
+    // Version bound to file mtime for free cache busting on every
+    // rebuild of the CLI output.
+    $tailwind_path = get_template_directory() . '/assets/css/tailwind.css';
+    $tailwind_ver  = file_exists( $tailwind_path ) ? filemtime( $tailwind_path ) : null;
+    wp_enqueue_style( 'lmt-tailwind', $theme_uri . '/assets/css/tailwind.css', array(), $tailwind_ver );
+
     // Vendor CSS — load before theme CSS to preserve override semantics.
-    wp_enqueue_style( 'lmt-bootstrap', $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css', array(), '4.4.1' );
+    wp_enqueue_style( 'lmt-bootstrap', $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css', array( 'lmt-tailwind' ), '4.4.1' );
     wp_enqueue_style( 'lmt-outfit',    $theme_uri . '/assets/vendor/outfit/outfit.css',          array( 'lmt-bootstrap' ), '1.0' );
 
     // MediaElement.js — use the WP-bundled version (matches our 4.2.16 target).
