@@ -93,20 +93,7 @@
 </article>
 <section class="mixtape-list">
     <?php
-    // Query previous mixtapes (posts published before this one)
-    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-    $query_string = "paged=" . $paged . "&order=DESC&posts_per_page=1000000";
-    function filter_where($where = '') {
-        $postid = get_the_ID();
-        $format = 'Y-m-d';
-        $publish_date = get_the_date( $format, $postid);
-        $where .= " AND post_date < '" . $publish_date . "'";
-        return $where;
-    }
-    add_filter( 'posts_where', 'filter_where' );
-    $custom_query = new WP_Query( $query_string );
-    remove_filter( 'posts_where', 'filter_where' );
-    $pageposts = $custom_query->posts;
+    $pageposts = lmt_get_previous_mixtapes( get_the_ID() );
     if ($pageposts):
         global $post;
         foreach ($pageposts as $post):
