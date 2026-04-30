@@ -11,27 +11,20 @@
     </header>
     <section class="text-center font-smoothing">
         <?php
-        global $wpdb;
-        $site_admin = "";
-        // Query all users except the site admin, ordered by nickname
-        $query = "SELECT ID, user_nicename from $wpdb->users WHERE ID != '$site_admin' ORDER BY user_nicename";
-        $author_ids = $wpdb->get_results($query);
-        $delay = 2;
-        foreach($author_ids as $author) :
-            $curauth = get_userdata($author->ID);
-            $user_link = get_author_posts_url($curauth->ID);
+        $curators       = lmt_get_curators();
+        $posts_by_author = lmt_get_posts_grouped_by_author();
+        $delay          = 2;
+        foreach ( $curators as $author ) :
+            $curauth = get_userdata( $author->ID );
+            $author_posts = isset( $posts_by_author[ (int) $curauth->ID ] ) ? $posts_by_author[ (int) $curauth->ID ] : array();
         ?>
             <span class="<?php echo esc_attr($curauth->nickname); ?> fade-in delay-<?php echo $delay; ?>">
                 <header>
                     <h2 class="pt-2 pb-0 mb-0 text-truncate"><?php echo esc_html($curauth->nickname); ?></h2>
                     <span class="d-none d-sm-none d-md-none d-lg-block">
-                        <?php 
-                        // List all posts by this author
-                        $author_query = new WP_Query( 'author='.$curauth->ID.'&posts_per_page=-1&' );
-                        while ( $author_query->have_posts() ) : $author_query->the_post();
-                        ?>
-                            <a href="<?php the_permalink(); ?>" class="mr-2"><?php the_title(); ?></a>
-                        <?php endwhile; wp_reset_postdata(); ?>
+                        <?php foreach ( $author_posts as $author_post ) : ?>
+                            <a href="<?php echo esc_url( get_permalink( $author_post ) ); ?>" class="mr-2"><?php echo esc_html( get_the_title( $author_post ) ); ?></a>
+                        <?php endforeach; ?>
                     </span>
                 </header>
             </span>

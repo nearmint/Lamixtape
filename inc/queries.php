@@ -72,3 +72,47 @@ function lmt_get_search_results() {
         'posts_per_page' => -1, // PERF-002 / PERF-007 tracked, pagination strategy in Phase 3
     ) );
 }
+
+/**
+ * List the curators (= every WP user) shown on the /guests/ page,
+ * excluding the site admin (user ID 1).
+ *
+ * Replaces a raw $wpdb->get_results() with string interpolation
+ * (SEC-003 in AUDIT.md) by the WP-native get_users() API. ID 1 is
+ * the historical admin account hidden from the curator list (the
+ * legacy SQL also tried to filter via a $site_admin variable that
+ * was always an empty string, so the practical filter was never
+ * applied — switching to exclude => [1] is the correct fix).
+ *
+ * @return WP_User[]
+ */
+function lmt_get_curators() {
+    return get_users( array(
+        'exclude' => array( 1 ),
+        'orderby' => 'nicename',
+        'fields'  => array( 'ID', 'user_nicename' ),
+    ) );
+}
+
+/**
+ * Return every published mixtape, grouped by author ID.
+ *
+ * Replaces the per-author WP_Query loop in guests.php (PERF-008 N+1):
+ * one query for all posts, then bucket them in PHP by post_author so
+ * the template can render each curator's titles without re-querying.
+ *
+ * @return array<int, WP_Post[]>  Map of author_id => array of WP_Post.
+ */
+function lmt_get_posts_grouped_by_author() {
+    $posts   = get_posts( array(
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ) );
+    $grouped = array();
+    foreach ( $posts as $post ) {
+        $grouped[ (int) $post->post_author ][] = $post;
+    }
+    return $grouped;
+}
