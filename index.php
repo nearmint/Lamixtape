@@ -41,23 +41,13 @@ $the_query = new WP_Query( array(
     ?>
     <?php if ( $wpb_all_query->have_posts() ) : ?>
         <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
-            <article style="background-color:<?php echo esc_attr( get_field('color') ); ?>;" class="fade-in delay-3">
-                <div class="container">
-                    <span class="highlight float-left mr-n3"><?php if(!get_field('highlight')) { echo ""; } else { echo "🔥"; } ?></span>
-                    <a href="<?php the_permalink(); ?>"><h2 class="font-smoothing mb-0 pt-2 text-truncate"><?php the_title(); ?><span class="d-none d-sm-none d-md-none d-lg-block float-right curator author-<?php the_author_meta('ID') ?>"><?php esc_html_e('Curated by', 'lamixtape'); ?> <?php the_author(); ?></span></h2></a>
-                    <div class="tags pb-2"><?php
-                        $categories = get_the_category();
-                        $separator = ' ';
-                        $output = '';
-                        if ( ! empty( $categories ) ) {
-                            foreach( $categories as $category ) {
-                                $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
-                            }
-                            echo trim( $output, $separator );
-                        }
-                    ?></div>
-                </div>
-            </article>
+            <?php get_template_part( 'template-parts/card-mixtape', null, array(
+                'delay'                 => 3,
+                'h2_extra_classes'      => 'font-smoothing',
+                'highlight_mode'        => 'always_span',
+                'hide_curator_on_small' => true,
+                'tag_link_attr'         => 'alt',
+            ) ); ?>
         <?php endwhile; ?>
         <?php wp_reset_postdata(); ?>
     <?php else : ?>

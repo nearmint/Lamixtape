@@ -30,34 +30,13 @@
 
         if ( $mixtape_query->have_posts() ) :
             while ( $mixtape_query->have_posts() ) : $mixtape_query->the_post();
-        ?>
-            <article style="background-color:<?php echo esc_attr( get_field('color') ); ?>;" class="font-smoothing fade-in delay-2">
-                <div class="container">
-                    <a href="<?php the_permalink(); ?>">
-                        <h2 class="mb-0 pt-2 text-truncate">
-                            <?php the_title(); ?>
-                            <span class="d-none d-sm-none d-md-none d-lg-block float-right curator author-<?php the_author_meta('ID') ?>">
-                                <?php esc_html_e('Curated by', 'lamixtape'); ?> <?php the_author(); ?>
-                            </span>
-                        </h2>
-                    </a>
-
-                    <div class="tags pb-2">
-                        <?php
-                        $categories = get_the_category();
-                        if ( ! empty( $categories ) ) {
-                            foreach ( $categories as $category ) {
-                                echo '<a class="mr-1" href="'. esc_url( get_category_link( $category->term_id ) ) .'" '
-                                    . 'title="'. esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) .'">'
-                                    . esc_html( $category->name )
-                                    . '</a> ';
-                            }
-                        }
-                        ?>
-                    </div>
-                </div>
-            </article>
-        <?php
+                get_template_part( 'template-parts/card-mixtape', null, array(
+                    'delay'                 => 2,
+                    'article_extra_classes' => 'font-smoothing',
+                    'highlight_mode'        => 'none',
+                    'hide_curator_on_small' => true,
+                    'tag_link_attr'         => 'title',
+                ) );
             endwhile;
 
             // Optional: Pagination

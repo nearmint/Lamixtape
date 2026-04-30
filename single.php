@@ -98,25 +98,13 @@
         global $post;
         foreach ($pageposts as $post):
             setup_postdata($post);
-            ?>
-            <article style="background-color:<?php echo esc_attr( get_field('color') ); ?>;" class="font-smoothing fade-in delay-7">
-                <div class="container">
-                    <?php if(!get_field('highlight')) { echo ""; } else { echo '<span class="highlight float-left mr-n3">🔥</span>'; } ?>
-                    <a href="<?php the_permalink(); ?>"><h2 class="mb-0 pt-2 text-truncate"><?php the_title(); ?><span class="float-right curator author-<?php the_author_meta('ID') ?>"><?php esc_html_e('Curated by', 'lamixtape'); ?> <?php the_author(); ?></span></h2></a>
-                    <div class="tags pb-2"><?php
-                        $categories = get_the_category();
-                        $separator = ' ';
-                        $output = '';
-                        if ( ! empty( $categories ) ) {
-                            foreach( $categories as $category ) {
-                                $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
-                            }
-                            echo trim( $output, $separator );
-                        }
-                    ?></div>
-                </div>
-            </article>
-            <?php
+            get_template_part( 'template-parts/card-mixtape', null, array(
+                'delay'                 => 7,
+                'article_extra_classes' => 'font-smoothing',
+                'highlight_mode'        => 'conditional',
+                'hide_curator_on_small' => false,
+                'tag_link_attr'         => 'alt',
+            ) );
         endforeach;
         wp_reset_postdata();
     else : ?>
