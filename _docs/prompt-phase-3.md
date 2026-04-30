@@ -22,7 +22,7 @@ Décisions actées par l'utilisateur :
 |---|---|---|
 | Q1 | Stratégie pagination catalogue | **Infinite scroll par lots de 30** (illusion "tout afficher" sans charger 370+ posts d'un coup) |
 | Q2 | Lazy loading images | `loading="lazy"` HTML natif (support universel sur navigateurs modernes) |
-| Q3 | WebP conversion | **Reportée** — installation du plugin Performance Lab côté infrastructure (hors scope thème). PERF-005 reste tracé dans AUDIT.md comme "infrastructure todo". |
+| Q3 | WebP conversion | **Reportée** — installation du plugin Performance Lab côté infrastructure (hors scope thème). WebP n'est pas un finding numéroté dans AUDIT.md, c'est une amélioration infrastructure pure. |
 | Q4 | Mode | **Marathon** (pas de validation intermédiaire entre sous-étapes, tests à la fin) |
 
 ## Objectif Phase 3
@@ -35,13 +35,13 @@ Trois axes structurants, simultanés en marathon :
 - IntersectionObserver côté JS (pas de scroll listener, perf moderne)
 - Préservation totale du rendu visuel des cards mixtape (template-parts/card-mixtape.php créé Phase 2)
 
-### Axe B — Performance images & assets (PERF-003, PERF-004, PERF-006, PERF-010, PERF-011, PERF-012, PERF-014)
-- `loading="lazy"` natif sur toutes les `<img>` non-critiques (hors logo header)
-- `srcset`/`sizes` via `wp_get_attachment_image()` ou helpers natifs WP
-- Transients sur les WP_Query random (header.php aléatoire, etc.)
-- Object cache utilisable (clés cohérentes via `wp_cache_*`)
-- Préchargement Outfit en `<link rel="preload">` (PERF-014 si encore applicable post-Phase-1)
-- Defer/async sur scripts non-critiques (PERF-011/012)
+### Axe B — Performance images & assets (PERF-005, PERF-011, PERF-012 résiduel + 3 enhancements hors audit)
+- `loading="lazy"` natif sur toutes les `<img>` non-critiques (hors logo header) — PERF-011 partie 1/2
+- `srcset`/`sizes` via `wp_get_attachment_image()` ou helpers natifs WP — PERF-011 partie 2/2
+- Transients sur les WP_Query random (header.php aléatoire, etc.) — PERF-005
+- Object cache utilisable (clés cohérentes via `wp_cache_*`) — enhancement hors audit
+- Préchargement Outfit en `<link rel="preload">` — PERF-012 résiduel (Outfit auto-hébergé Phase 1, preload manquant)
+- Defer/async sur scripts non-critiques — enhancement hors audit
 
 ### Axe C — Sécurité durcissement (SEC-004, SEC-005, SEC-008, SEC-009)
 - Renforcement des capabilities sur tous les endpoints REST custom
@@ -57,7 +57,8 @@ Trois axes structurants, simultanés en marathon :
 - 8 templates visuellement identiques aux captures `_docs/captures-post-phase-2.5/` (modulo l'apparition progressive des cards en infinite scroll)
 
 **Findings explicitement HORS périmètre Phase 3** :
-- **PERF-005 (WebP)** → reporté infrastructure (plugin Performance Lab)
+- **WebP** (pas un finding numéroté, amélioration infrastructure) → reporté infrastructure (plugin Performance Lab côté admin WP)
+- **PERF-006** (search LEFT JOIN postmeta) → skip Phase 3, tracé Q10 dans CLAUDE.md, post-Phase-6
 - **A11y, Tailwind, OTHER (RGPD/SEO/monitoring)** → Phases 4-6
 - **Plugins custom** (`chckr-yt`, `allow-multiple-accounts`) → hors périmètre thème
 
@@ -309,9 +310,13 @@ Ajouter dans `css/list-of-mixtapes.css` (ou créer `css/infinite-scroll.css` enq
 
 ---
 
-## Axe B — Performance images & assets (PERF-003, PERF-004, PERF-006, PERF-010, PERF-011, PERF-012, PERF-014)
+## Axe B — Performance images & assets (PERF-005, PERF-011, PERF-012 résiduel + 3 enhancements hors audit)
 
-### 3.B.1 Lazy loading natif (PERF-003)
+> **Mapping IDs corrigé post-diagnostic D-PRE-PHASE-3.1** (cf. CLAUDE.md & AUDIT.md). La rédaction initiale référençait PERF-003/004/010/014 qui sont en réalité tous résolus Phase 1 (statuts backfilled dans AUDIT.md, commit `845ca42`). Les IDs canoniques pour Phase 3 Axe B sont : **PERF-005** (random queries), **PERF-011** (lazy/srcset), **PERF-012** résiduel (preload woff2 Outfit). Object cache, defer/async et headers sécurité sont des **améliorations bonus hors audit** — pas de Statut AUDIT.md à poser pour ceux-là, juste mention dans le récap CLAUDE.md à la closure.
+>
+> **PERF-006** (search LEFT JOIN postmeta) est explicitement skip Phase 3 — tracé Q10 dans CLAUDE.md, à planifier post-Phase-6 (search rewrite dédié).
+
+### 3.B.1 Lazy loading natif (PERF-011 lazy partie 1/2)
 
 Pour toutes les `<img>` du thème **hors logo header** :
 - Ajouter `loading="lazy"` + `decoding="async"`
@@ -324,9 +329,9 @@ grep -rn "<img" --include="*.php" .
 
 Lister chaque occurrence et appliquer `loading="lazy"` partout sauf logo header. Templates concernés : index.php, single.php, category.php, search.php, 404.php, explore.php, guests.php, text.php, header.php (logo seulement = pas de lazy), footer.php, template-parts/card-mixtape.php.
 
-Commit : `perf(images): add native lazy loading + async decoding (PERF-003)`.
+Commit : `perf(images): add native lazy loading + async decoding (PERF-011)`.
 
-### 3.B.2 Srcset/sizes via helpers WP (PERF-004)
+### 3.B.2 Srcset/sizes via helpers WP (PERF-011 srcset partie 2/2)
 
 Remplacer les `<img src="..." />` en dur par `wp_get_attachment_image()` ou `the_post_thumbnail()` quand l'image vient d'un attachment WP. Bénéfice : srcset/sizes générés automatiquement par WP.
 
@@ -345,9 +350,9 @@ echo wp_get_attachment_image( $image['ID'], 'medium', false, array(
 
 Inventaire avant modif : grep `<img` + grep `get_field` ciblant les champs image.
 
-Commit : `perf(images): use wp_get_attachment_image for srcset/sizes (PERF-004)`.
+Commit : `perf(images): use wp_get_attachment_image for srcset/sizes (PERF-011)`.
 
-### 3.B.3 Transients sur queries random (PERF-006)
+### 3.B.3 Transients sur queries random (PERF-005)
 
 Si `header.php` (ou autre template) contient une `WP_Query` avec `orderby=rand`, l'envelopper dans un transient (durée 1h cf. D8) :
 
@@ -368,9 +373,9 @@ Inventaire : grep `orderby.*rand` dans tous les templates.
 
 Note : `orderby=rand` + transient = la "random" devient la même pendant 1h pour un même cache hit. C'est acceptable (et c'est le comportement attendu d'un cache). Si tu veux du vrai random à chaque page load, le transient ne sert à rien — discuter avant.
 
-Commit : `perf(queries): cache random WP_Query results in transients (PERF-006)`.
+Commit : `perf(queries): cache random WP_Query results in transients (PERF-005)`.
 
-### 3.B.4 Object cache cohérent (PERF-010)
+### 3.B.4 Object cache cohérent (Phase 3 enhancement, not from audit)
 
 Vérifier si des queries lourdes sont réutilisées plusieurs fois dans la même requête HTTP. Si oui, cacher en mémoire via `wp_cache_get` / `wp_cache_set` avec un groupe `lamixtape` :
 
@@ -384,9 +389,9 @@ if ( false === $cached ) {
 
 Cible primaire : `lmt_get_posts_grouped_by_author()` (créée Phase 2 pour PERF-008). Si appelée plusieurs fois → cache.
 
-Commit : `perf(cache): use object cache for heavy grouped queries (PERF-010)`.
+Commit : `perf(cache): use object cache for heavy grouped queries (Phase 3 enhancement, not from audit)`.
 
-### 3.B.5 Preload Outfit (PERF-014 si applicable)
+### 3.B.5 Preload Outfit (PERF-012 résiduel)
 
 Vérifier si `assets/vendor/outfit/outfit.css` est déjà préchargé dans `<head>`. Sinon, ajouter dans `header.php` ou via filter `wp_resource_hints` :
 
@@ -405,9 +410,9 @@ function lmt_preload_outfit_font( $urls, $relation_type ) {
 add_filter( 'wp_resource_hints', 'lmt_preload_outfit_font', 10, 2 );
 ```
 
-Commit : `perf(fonts): preload Outfit woff2 in head (PERF-014)`.
+Commit : `perf(fonts): preload Outfit woff2 in head (PERF-012 résiduel)`.
 
-### 3.B.6 Defer/async scripts non-critiques (PERF-011, PERF-012)
+### 3.B.6 Defer/async scripts non-critiques (Phase 3 enhancement, not from audit)
 
 Audit des scripts enqueued dans `lmt_enqueue_assets()` :
 - `lmt-main` : à garder normal (handler like)
@@ -429,7 +434,7 @@ function lmt_defer_scripts( $tag, $handle ) {
 add_filter( 'script_loader_tag', 'lmt_defer_scripts', 10, 2 );
 ```
 
-Commit : `perf(scripts): defer non-critical scripts (PERF-011, PERF-012)`.
+Commit : `perf(scripts): defer non-critical scripts (Phase 3 enhancement, not from audit)`.
 
 ### 3.B.7 Commits Axe B
 
@@ -474,9 +479,13 @@ Commit : `feat(security): add basic security headers from theme (SEC-008?)`.
 
 ### 3.10.1 Mise à jour `_docs/AUDIT.md`
 
-Pour chaque finding fermé en Phase 3, ajouter `**Statut** : Résolu Phase 3 (SHA + ...)`. Findings concernés : PERF-001, PERF-002, PERF-003, PERF-004, PERF-006, PERF-007, PERF-010, PERF-011, PERF-012, PERF-014, SEC-004, SEC-005, SEC-008, SEC-009 (selon ce qui est réellement traité).
+Pour chaque finding fermé en Phase 3, ajouter `**Statut** : Résolu Phase 3 (SHA + ...)`. Findings canoniques concernés (post-D-PRE-PHASE-3.1) : **PERF-001, PERF-002, PERF-005, PERF-007, PERF-011, PERF-012** (finalisation, partiel Phase 1 → résolu Phase 3) + **SEC-004, SEC-005, SEC-008, SEC-009** (selon ce qui est réellement traité).
 
-PERF-005 (WebP) reste **non résolu** dans le thème — ajouter une note spécifique : "Reporté infrastructure (plugin Performance Lab à activer côté admin WP, hors scope thème)".
+**PERF-006** (search LEFT JOIN postmeta) reste explicitement **non résolu** Phase 3 — tracé Q10 dans CLAUDE.md (Q-DEC-PRE-PHASE-3.3), à planifier post-Phase-6.
+
+**PERF-003, PERF-004, PERF-010** ne sont PAS des findings Phase 3 — ils ont été fonctionnellement résolus en Phase 1 et leur **Statut** est posé dans AUDIT.md depuis le commit `845ca42` (backfill pré-Phase-3).
+
+**WebP** = pas un finding numéroté audit. Reste hors scope thème (plugin Performance Lab côté admin WP, Q3 acté pré-Phase-3).
 
 ### 3.10.2 Mise à jour `CLAUDE.md`
 
@@ -553,7 +562,7 @@ Confirmer Phase 3 close, **attendre GO avant Phase 4** (Bootstrap → Tailwind v
 | Élément | Statut |
 |---|---|
 | Axe A (PERF-001/002/007 + endpoint REST) | Liste SHA + résultat tests |
-| Axe B (PERF-003/004/006/010/011/012/014) | Liste SHA + résultat tests |
+| Axe B (PERF-005/011/012 résiduel + enhancements object cache, defer/async) | Liste SHA + résultat tests |
 | Axe C (SEC-004/005/008/009) | Liste SHA |
 | `CLAUDE.md` mis à jour ? | Oui/Non |
 | `_docs/AUDIT.md` Statuts ajoutés ? | Oui/Non + liste IDs |
