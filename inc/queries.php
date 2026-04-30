@@ -166,9 +166,18 @@ function lmt_get_random_mixtape( $cache_key, $ttl = null ) {
  * one query for all posts, then bucket them in PHP by post_author so
  * the template can render each curator's titles without re-querying.
  *
+ * Result is cached in a 24h transient (D8 "structures lentes type
+ * curators count"). The cache is invalidated automatically on
+ * save_post / deleted_post via lmt_invalidate_posts_grouped_cache.
+ *
  * @return array<int, WP_Post[]>  Map of author_id => array of WP_Post.
  */
 function lmt_get_posts_grouped_by_author() {
+    $cached = get_transient( 'lmt_posts_grouped_by_author' );
+    if ( false !== $cached && is_array( $cached ) ) {
+        return $cached;
+    }
+
     $posts   = get_posts( array(
         'posts_per_page' => -1,
         'post_status'    => 'publish',
@@ -179,5 +188,25 @@ function lmt_get_posts_grouped_by_author() {
     foreach ( $posts as $post ) {
         $grouped[ (int) $post->post_author ][] = $post;
     }
+
+    set_transient( 'lmt_posts_grouped_by_author', $grouped, DAY_IN_SECONDS );
+
     return $grouped;
 }
+
+/**
+ * Invalidate cached query results when a post is saved or deleted,
+ * so the /guests/ page picks up newly published mixtapes (or removes
+ * just-trashed ones) without waiting for the 24h TTL to expire.
+ *
+ * Hooked on save_post + deleted_post + trashed_post.
+ *
+ * @param  int $post_id
+ * @return void
+ */
+function lmt_invalidate_posts_grouped_cache( $post_id ) {
+    delete_transient( 'lmt_posts_grouped_by_author' );
+}
+add_action( 'save_post',     'lmt_invalidate_posts_grouped_cache' );
+add_action( 'deleted_post',  'lmt_invalidate_posts_grouped_cache' );
+add_action( 'trashed_post',  'lmt_invalidate_posts_grouped_cache' );
