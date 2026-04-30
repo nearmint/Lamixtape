@@ -10,6 +10,7 @@
  * @return void
  */
 function lmt_setup_theme() {
+    load_theme_textdomain( 'lamixtape', get_template_directory() . '/languages' );
     add_theme_support( 'post-thumbnails' );
     add_theme_support( 'title-tag' );
     add_theme_support(
@@ -289,24 +290,24 @@ function tape_comment($comment, $args, $depth) {
 function my_update_comment_fields( $fields ) {
     $commenter = wp_get_current_commenter();
     $req       = get_option( 'require_name_email' );
-    $label     = $req ? '*' : ' ' . __( '(optional)', 'text-domain' );
+    $label     = $req ? '*' : ' ' . __( '(optional)', 'lamixtape' );
     $aria_req  = $req ? "aria-required='true'" : '';
 
     $fields['author'] =
         '<p class="comment-form-author">
-            <input id="author" name="author" type="text" placeholder="' . esc_attr__( "Name", "text-domain" ) . '" value="' . esc_attr( $commenter['comment_author'] ) .
+            <input id="author" name="author" type="text" placeholder="' . esc_attr__( "Name", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author'] ) .
         '" size="30" ' . $aria_req . ' />
         </p>';
 
     $fields['email'] =
         '<p class="comment-form-email">
-            <input id="email" name="email" type="email" placeholder="' . esc_attr__( "name@email.com", "text-domain" ) . '" value="' . esc_attr( $commenter['comment_author_email'] ) .
+            <input id="email" name="email" type="email" placeholder="' . esc_attr__( "name@email.com", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author_email'] ) .
         '" size="30" ' . $aria_req . ' />
         </p>';
 
     $fields['url'] =
         '<p class="comment-form-url">
-            <input id="url" name="url" type="url"  placeholder="' . esc_attr__( "http://google.com", "text-domain" ) . '" value="' . esc_attr( $commenter['comment_author_url'] ) .
+            <input id="url" name="url" type="url"  placeholder="' . esc_attr__( "http://google.com", "lamixtape" ) . '" value="' . esc_attr( $commenter['comment_author_url'] ) .
         '" size="30" />
         </p>';
 
@@ -318,7 +319,7 @@ add_filter( 'comment_form_default_fields', 'my_update_comment_fields' );
 function my_update_comment_field( $comment_field ) {
     $comment_field =
         '<p class="comment-form-comment">
-            <textarea required id="comment" name="comment" placeholder="' . esc_attr__( "Comment...", "text-domain" ) . '" cols="45" rows="8" aria-required="true"></textarea>
+            <textarea required id="comment" name="comment" placeholder="' . esc_attr__( "Comment...", "lamixtape" ) . '" cols="45" rows="8" aria-required="true"></textarea>
         </p>';
     return $comment_field;
 }

@@ -5,7 +5,7 @@
         <div class="container">
             <hr class="mb-4 pb-1">
             <h4>
-                <?php esc_html_e('Genre :', 'text-domain'); ?> <?php single_cat_title(); ?>
+                <?php esc_html_e('Genre :', 'lamixtape'); ?> <?php single_cat_title(); ?>
                 <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover">
                     <!-- “X” icon -->
                 </a>
@@ -37,7 +37,7 @@
                         <h2 class="mb-0 pt-2 text-truncate">
                             <?php the_title(); ?>
                             <span class="d-none d-sm-none d-md-none d-lg-block float-right curator author-<?php the_author_meta('ID') ?>">
-                                <?php esc_html_e('Curated by', 'text-domain'); ?> <?php the_author(); ?>
+                                <?php esc_html_e('Curated by', 'lamixtape'); ?> <?php the_author(); ?>
                             </span>
                         </h2>
                     </a>
@@ -48,7 +48,7 @@
                         if ( ! empty( $categories ) ) {
                             foreach ( $categories as $category ) {
                                 echo '<a class="mr-1" href="'. esc_url( get_category_link( $category->term_id ) ) .'" '
-                                    . 'title="'. esc_attr( sprintf( __( 'View all posts in %s', 'text-domain' ), $category->name ) ) .'">'
+                                    . 'title="'. esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) .'">'
                                     . esc_html( $category->name )
                                     . '</a> ';
                             }
@@ -69,8 +69,8 @@
         else :
         ?>
             <div class="container nothing--found">
-                <h2 class="font-smoothing"><?php esc_html_e('No playlist found', 'text-domain'); ?><br>
-                    <small><?php esc_html_e('Let us know if you want a specific genre or artist', 'text-domain'); ?><br>
+                <h2 class="font-smoothing"><?php esc_html_e('No playlist found', 'lamixtape'); ?><br>
+                    <small><?php esc_html_e('Let us know if you want a specific genre or artist', 'lamixtape'); ?><br>
                     → <a href="mailto:hello@lamixtape.fr">hello@lamixtape.fr</a></small>
                 </h2>
             </div>

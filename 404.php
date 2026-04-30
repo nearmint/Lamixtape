@@ -2,9 +2,9 @@
 <div class="container">
     <hr>
     <section class="text-right font-smoothing pb-5">
-        <h2 class="mt-5 pt-5"><?php esc_html_e('Looks like you got lost', 'text-domain'); ?></h2>
-        <p><?php esc_html_e('Sorry, the page you are looking for has moved', 'text-domain'); ?></p>
-        <a class="btn text-uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'text-domain'); ?></a>&nbsp;
+        <h2 class="mt-5 pt-5"><?php esc_html_e('Looks like you got lost', 'lamixtape'); ?></h2>
+        <p><?php esc_html_e('Sorry, the page you are looking for has moved', 'lamixtape'); ?></p>
+        <a class="btn text-uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'lamixtape'); ?></a>&nbsp;
         <?php
         $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => '1' ) );
         while ( $the_query->have_posts() ) : $the_query->the_post();
@@ -15,7 +15,7 @@
 <path fill-rule="evenodd" d="M0 4a.5.5 0 01.5-.5h2c3.053 0 4.564 2.258 5.856 4.226l.08.123c.636.97 1.224 1.865 1.932 2.539.718.682 1.538 1.112 2.632 1.112h2a.5.5 0 010 1h-2c-1.406 0-2.461-.57-3.321-1.388-.795-.755-1.441-1.742-2.055-2.679l-.105-.159C6.186 6.242 4.947 4.5 2.5 4.5h-2A.5.5 0 010 4z" clip-rule="evenodd"/>
 <path fill-rule="evenodd" d="M0 12a.5.5 0 00.5.5h2c3.053 0 4.564-2.258 5.856-4.226l.08-.123c.636-.97 1.224-1.865 1.932-2.539C11.086 4.93 11.906 4.5 13 4.5h2a.5.5 0 000-1h-2c-1.406 0-2.461.57-3.321 1.388-.795.755-1.441 1.742-2.055 2.679l-.105.159C6.186 9.758 4.947 11.5 2.5 11.5h-2a.5.5 0 00-.5.5z" clip-rule="evenodd"/>
 </svg> ';
-            esc_html_e('Random Mixtape', 'text-domain');
+            esc_html_e('Random Mixtape', 'lamixtape');
             echo '</a>';
         endwhile;
         wp_reset_postdata(); ?>

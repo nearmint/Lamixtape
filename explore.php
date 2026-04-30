@@ -12,7 +12,7 @@
                     </svg>
                 </div>
                 <div class="col-lg-10 col-10">
-                    <input type="text" value="<?php the_search_query(); ?>" name="s" id="s" class="form-control" placeholder="<?php esc_attr_e('Search artists and more...', 'text-domain'); ?>">
+                    <input type="text" value="<?php the_search_query(); ?>" name="s" id="s" class="form-control" placeholder="<?php esc_attr_e('Search artists and more...', 'lamixtape'); ?>">
                 </div>
             </form>
         </div>

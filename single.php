@@ -11,7 +11,7 @@
                 $output = '';
                 if ( ! empty( $categories ) ) {
                     foreach( $categories as $category ) {
-                        $output .= '<a class="tag" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'text-domain' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
+                        $output .= '<a class="tag" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
                     }
                     echo trim( $output, $separator );
                 }
@@ -23,14 +23,14 @@
                     🔥&nbsp;
                     <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
                 </button>
-                <button class="like-btn" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="image comments">💬&nbsp;&nbsp;<?php printf( _nx( '1', '%1$s', get_comments_number(), 'comments title', 'text-domain' ), number_format_i18n(get_comments_number() ) ); ?></button>
+                <button class="like-btn" type="button" data-toggle="collapse" data-target=".multi-collapse" aria-expanded="false" aria-controls="image comments">💬&nbsp;&nbsp;<?php printf( _nx( '1', '%1$s', get_comments_number(), 'comments title', 'lamixtape' ), number_format_i18n(get_comments_number() ) ); ?></button>
             </div>
         </div>
         <hr class="my-4">
         <div class="row tracklist fade-in delay-4">
             <div class="col-md-8 col-xs fade-in delay-5">
                 <p class="mb-4 curated author-<?php the_author_meta('ID') ?>">
-                    <?php esc_html_e('This mixtape has been curated by our guest,', 'text-domain'); ?>
+                    <?php esc_html_e('This mixtape has been curated by our guest,', 'lamixtape'); ?>
                     <?php
                     // Get author URL or fallback to author archive
                     if ( get_the_author_meta('url') ) {
@@ -62,7 +62,7 @@
                     </div>
                     <div class="collapse multi-collapse" id="comments">
                         <!-- Comments are intentionally closed -->
-                        <p><?php esc_html_e('Comments are now closed.', 'text-domain'); ?></p>
+                        <p><?php esc_html_e('Comments are now closed.', 'lamixtape'); ?></p>
                     </div>
                     <!-- Container for player iframes -->
                     <div id="player-container"></div>
@@ -80,7 +80,7 @@
                         $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => 1 ) );
                         while ( $the_query->have_posts() ) : $the_query->the_post();
                             echo '<a href="' . esc_url( get_permalink() ) . '">';
-                            esc_html_e( '🔀 Random Mixtape', 'text-domain' );
+                            esc_html_e( '🔀 Random Mixtape', 'lamixtape' );
                             echo '</a>';
                         endwhile;
                         wp_reset_postdata();
@@ -115,14 +115,14 @@
             <article style="background-color:<?php echo esc_attr( get_field('color') ); ?>;" class="font-smoothing fade-in delay-7">
                 <div class="container">
                     <?php if(!get_field('highlight')) { echo ""; } else { echo '<span class="highlight float-left mr-n3">🔥</span>'; } ?>
-                    <a href="<?php the_permalink(); ?>"><h2 class="mb-0 pt-2 text-truncate"><?php the_title(); ?><span class="float-right curator author-<?php the_author_meta('ID') ?>"><?php esc_html_e('Curated by', 'text-domain'); ?> <?php the_author(); ?></span></h2></a>
+                    <a href="<?php the_permalink(); ?>"><h2 class="mb-0 pt-2 text-truncate"><?php the_title(); ?><span class="float-right curator author-<?php the_author_meta('ID') ?>"><?php esc_html_e('Curated by', 'lamixtape'); ?> <?php the_author(); ?></span></h2></a>
                     <div class="tags pb-2"><?php
                         $categories = get_the_category();
                         $separator = ' ';
                         $output = '';
                         if ( ! empty( $categories ) ) {
                             foreach( $categories as $category ) {
-                                $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'text-domain' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
+                                $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" alt="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">' . esc_html( $category->name ) . '</a>' . $separator;
                             }
                             echo trim( $output, $separator );
                         }

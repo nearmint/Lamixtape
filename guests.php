@@ -5,7 +5,7 @@
         <div class="container">
             <hr style="margin-bottom:0">
 			<div style="height: 85px;display: flex;align-items: center;justify-content: center;">
-				<h1 class="font-smoothing"><?php esc_html_e('Alongside our roaster of curators, we occasionally invite guest artists, DJs, and labels...', 'text-domain'); ?></h1>
+				<h1 class="font-smoothing"><?php esc_html_e('Alongside our roaster of curators, we occasionally invite guest artists, DJs, and labels...', 'lamixtape'); ?></h1>
 			</div>
         </div>
     </header>

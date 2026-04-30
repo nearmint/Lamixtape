@@ -17,7 +17,7 @@
     <nav class="navbar">
         <div class="container">
             <a class="no--hover pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
-                <h1><?php esc_html_e( 'Lamixtape', 'text-domain' ); ?></h1>
+                <h1><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></h1>
             </a>
             <span class="text-right">
                 <ul class="list-inline text-uppercase" style="margin-bottom:0;">
@@ -51,7 +51,7 @@
                     $the_query = new WP_Query( array ( 'orderby' => 'rand', 'posts_per_page' => 1 ) );
                     while ( $the_query->have_posts() ) : $the_query->the_post();
                         echo '<a href="' . esc_url( get_permalink() ) . '" style="color:#fff;font-size:2rem;">';
-                        esc_html_e( 'Random mixtape', 'text-domain' );
+                        esc_html_e( 'Random mixtape', 'lamixtape' );
                         echo '</a>';
                     endwhile;
                     wp_reset_postdata();
