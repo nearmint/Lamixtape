@@ -212,7 +212,12 @@ add_action( 'wp_print_styles', 'wps_deregister_styles', 100 );
 // -----------------------------------------
 // ---- Backoffice : rename "Posts" --------
 // -----------------------------------------
-function revcon_change_post_label() {
+/**
+ * Relabel the admin "Posts" menu/submenu entries to "Playlist(s)".
+ *
+ * @return void
+ */
+function lmt_relabel_post_menu() {
     global $menu;
     global $submenu;
     $menu[5][0] = 'Playlist';
@@ -221,7 +226,13 @@ function revcon_change_post_label() {
     $submenu['edit.php'][16][0] = 'Playlist Tags';
 }
 
-function revcon_change_post_object() {
+/**
+ * Relabel the 'post' post type object so all admin strings read as
+ * "Playlist(s)" rather than "Post(s)".
+ *
+ * @return void
+ */
+function lmt_relabel_post_object() {
     global $wp_post_types;
     $labels = &$wp_post_types['post']->labels;
     $labels->name = 'Playlists';
@@ -238,8 +249,8 @@ function revcon_change_post_object() {
     $labels->menu_name = 'Playlists';
     $labels->name_admin_bar = 'Playlists';
 }
-add_action( 'admin_menu', 'revcon_change_post_label' );
-add_action( 'init', 'revcon_change_post_object' );
+add_action( 'admin_menu', 'lmt_relabel_post_menu' );
+add_action( 'init', 'lmt_relabel_post_object' );
 
 // -----------------------------------------------------
 // ------------- Reduce Post Revisions -----------------
@@ -261,11 +272,16 @@ add_filter('the_generator', 'wpb_remove_version');
 // -----------------------------------------------------
 // --------------- Secure WP Admin ---------------------
 // -----------------------------------------------------
-// Hide Login Errors in WordPress
-function no_wordpress_errors(){
+/**
+ * Replace the (verbose) login error message with a generic one to
+ * avoid leaking whether a username exists.
+ *
+ * @return string
+ */
+function lmt_obfuscate_login_errors() {
     return 'Something is wrong!';
 }
-add_filter( 'login_errors', 'no_wordpress_errors' );
+add_filter( 'login_errors', 'lmt_obfuscate_login_errors' );
 
 // -----------------------------------------------------
 // --------------- Next and Previous links -------------
