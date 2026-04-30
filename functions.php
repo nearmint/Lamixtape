@@ -62,7 +62,6 @@ function lmt_enqueue_assets() {
         'general'              => 'css/general.css',
         'navbar'               => 'css/navbar.css',
         'mixtape-page'         => 'css/mixtape-page.css',
-        'comment-form'         => 'css/comment-form.css',
         'mixtape-of-the-month' => 'css/mixtape-of-the-month.css',
         // 'newsletter' was removed in Phase 1.3 (commit 370eec3).
         'donation'             => 'css/donation.css',
