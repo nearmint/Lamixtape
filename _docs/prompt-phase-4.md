@@ -510,8 +510,9 @@ Section 5 (recommandations stratégiques) : retirer la mention "Tailwind v4 + CL
 | # | Commit | Détail |
 |---|---|---|
 | C19 | `chore(assets): remove Bootstrap CSS enqueue and local files (TW-001)` | Suppression enqueue + dossier `assets/vendor/bootstrap/` |
+| C19.5 | `refactor(css): strip tw: prefix from utilities (post Bootstrap removal)` | Reconfigure `tailwind.input.css` sans `prefix(tw)` + rebuild + find/replace `tw:` → `` dans tous les templates *.php. Vérification : `grep -rn "tw:" --include="*.php" .` retourne 0 (sauf `_docs/` historique acceptable). Cf. D-COHAB-1 dans CLAUDE.md section 4 "Phase 4 en cours". |
 | C20 | `perf(assets): dequeue mediaelementplayer.css unused (TW-005)` | `wp_dequeue_style('wp-mediaelement')` ou suppression `wp_enqueue_style('wp-mediaelement')` ; `wp_enqueue_script('wp-mediaelement')` conservé |
-| C21 | `docs: update AUDIT statuses and CLAUDE.md for Phase 4 close` | Closure docs (TW-001/002/003/004/005 + QC-007 résiduel) |
+| C21 | `docs: update AUDIT statuses and CLAUDE.md for Phase 4 close` | Closure docs (TW-001/002/003/004/005 + QC-007 résiduel) ; consolide la subsection "Phase 4 en cours" en "Phase 4 close — récap" |
 
 ### 4.D.9 ⚠️ CHECKPOINT 4 — Validation finale + merge
 

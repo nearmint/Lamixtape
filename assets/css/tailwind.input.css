@@ -22,7 +22,22 @@
  * can reference directly.
  */
 
-@import "tailwindcss";
+/*
+ * Phase 4 cohabitation — `prefix(tw)` namespace.
+ *
+ * BS 4 and TW v4 share class names (mb-3, mb-4, text-center, etc.)
+ * with diverging values on the spacing scale. Without a prefix, the
+ * BS rules (loaded later, with !important) silently override the
+ * Tailwind ones during cohabitation. The `tw:` prefix moves every
+ * generated utility to a non-colliding namespace
+ * (`tw:mb-4`, `tw:hidden`, etc.).
+ *
+ * The prefix will be stripped in Axe D, immediately after Bootstrap
+ * CSS is removed (cf. prompt-phase-4.md commit C19.5). Templates
+ * use `tw:*` only during the lifespan of the cohabitation; the
+ * final markup (post-Axe-D) is prefix-less Tailwind.
+ */
+@import "tailwindcss" prefix(tw);
 
 @theme {
     /*

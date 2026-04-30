@@ -219,6 +219,24 @@ Reste ouvert (cibles Phases 4-6+) :
 6. Sécurité : tester l'endpoint sans nonce → 403, tester avec mauvais context → 400, hammerer 100+ requêtes → 429.
 7. Performance : DevTools Network home au load → ~30 cards rendues serveur, pas 370 ; Lazy loading images → images hors viewport non chargées au load ; Outfit woff2 visible en preload.
 
+### Phase 4 en cours — apprentissages techniques (à consolider à la closure)
+
+> Section vivante consolidée à la fin de Phase 4. Les apprentissages
+> ci-dessous sont posés au fil des Axes pour éviter qu'ils se perdent
+> avant le récap final.
+
+**D-COHAB-1 — Préfixe `tw:` pour éviter les collisions BS↔TW pendant la cohabitation** (validé Axe A pré-C4)
+
+Diagnostic-d'abord avant le premier enqueue Tailwind cohabité a détecté que BS 4 et TW v4 partagent les mêmes noms de classes (`mb-3`, `mb-4`, `mb-5`, `text-center`, `d-flex`, etc.) avec des **valeurs différentes** sur le scaling spacing (BS-3 = 1rem, TW-3 = 0.75rem) et avec `!important` sur la plupart des utilities BS. Sans préfixe :
+- Migration `mb-3 → mb-4` dans un template aurait fait gagner la rule BS `.mb-4 { 1.5rem !important }` sur la rule TW `.mb-4 { 1rem }` (BS unlayered > TW @layer utilities, et `!important` BS bat la cascade)
+- Régressions visuelles **silencieuses** au CHECKPOINT 2, qui ne se résolvent qu'après suppression Bootstrap CSS en Axe D — sauf qu'elles auraient été interprétées comme "écarts visuels acceptables" et acceptées à tort.
+
+**Solution choisie (Option A2)** : `@import "tailwindcss" prefix(tw);` dans `tailwind.input.css`. Toutes les utilities générées sont préfixées `tw:` (variant-style v4 syntax) → zéro collision avec BS pendant la cohabitation. Strip du préfixe en commit C19.5 dédié après la suppression Bootstrap CSS en C19. Reconfiguration `tailwind.input.css` sans `prefix(tw)` + rebuild + find/replace mécanique `tw:` → `` dans tous les templates. Vérification finale par `grep -rn "tw:" --include="*.php"` = 0.
+
+**Apprentissage généralisable** : *quand on cohabite deux frameworks CSS qui partagent un namespace, ne pas se contenter de "loaded order" pour résoudre les conflits — vérifier `!important` et `@layer` priorities. Préfixer le challenger pendant la transition est un pattern propre et réversible.*
+
+**Coût du diagnostic** : ~10 min (lecture cascade @layer + analyse !important + benchmark options). **Bénéfice évité** : potentiellement plusieurs heures de chasse aux régressions visuelles entre Axe B et CHECKPOINT 2, plus risque d'accepter à tort un visuel régressé comme "acceptable".
+
 ## 5. Recommandations stratégiques
 
 ### Stack cible recommandée
