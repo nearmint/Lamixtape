@@ -198,16 +198,26 @@ remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
 remove_action( 'wp_head',      'rest_output_link_wp_head'              );
 remove_action( 'wp_head',      'wp_oembed_add_discovery_links'         );
 remove_action( 'template_redirect', 'rest_output_link_header', 11, 0 );
-function my_deregister_scripts(){
+/**
+ * Deregister the wp-embed script (oEmbed JS not used on the frontend).
+ *
+ * @return void
+ */
+function lmt_deregister_wp_embed() {
     wp_deregister_script( 'wp-embed' );
 }
-add_action( 'wp_footer', 'my_deregister_scripts' );
+add_action( 'wp_footer', 'lmt_deregister_wp_embed' );
 
-// Disable Gutenberg style in Front
-function wps_deregister_styles() {
+/**
+ * Dequeue the Gutenberg block library stylesheet on the frontend
+ * (theme has no block-based templates).
+ *
+ * @return void
+ */
+function lmt_deregister_block_library_css() {
     wp_dequeue_style( 'wp-block-library' );
 }
-add_action( 'wp_print_styles', 'wps_deregister_styles', 100 );
+add_action( 'wp_print_styles', 'lmt_deregister_block_library_css', 100 );
 
 // -----------------------------------------
 // ---- Backoffice : rename "Posts" --------
@@ -264,10 +274,15 @@ if ( ! defined( 'WP_POST_REVISIONS' ) ) {
 // -----------------------------------------------------
 // ------------- Remove WP version # -------------------
 // -----------------------------------------------------
-function wpb_remove_version() {
+/**
+ * Strip the WordPress version from the generator meta tag.
+ *
+ * @return string
+ */
+function lmt_remove_generator_version() {
     return '';
 }
-add_filter('the_generator', 'wpb_remove_version');
+add_filter( 'the_generator', 'lmt_remove_generator_version' );
 
 // -----------------------------------------------------
 // --------------- Secure WP Admin ---------------------
