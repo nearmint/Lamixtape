@@ -1,0 +1,58 @@
+/*
+ * Tailwind v4 input file — scanned by the standalone CLI to produce
+ * assets/css/tailwind.css.
+ *
+ * Build (locally):
+ *     ./assets/build/tailwindcss \
+ *         -i assets/css/tailwind.input.css \
+ *         -o assets/css/tailwind.css \
+ *         --minify
+ *
+ * Watch mode (during template migration):
+ *     ./assets/build/tailwindcss \
+ *         -i assets/css/tailwind.input.css \
+ *         -o assets/css/tailwind.css \
+ *         --watch
+ *
+ * The CLI auto-scans the theme for utility classes; no @source
+ * directive needed (v4 default heuristic catches *.php).
+ *
+ * @theme tokens here generate matching utilities (e.g. --color-bg
+ * → bg-bg) and CSS custom properties (--color-bg) that components
+ * can reference directly.
+ */
+
+@import "tailwindcss";
+
+@theme {
+    /*
+     * Base palette — extracted from existing CSS (Phase 1+).
+     * Refined as templates migrate; treat as initial baseline.
+     */
+    --color-bg:     #333;   /* body / article fallback */
+    --color-text:   #fff;   /* primary text */
+    --color-accent: #e74c3c; /* red, most-used non-bg/text color */
+    --color-muted:  #2a2a2a; /* skeleton placeholder, deep gray */
+
+    /*
+     * Typography — Outfit variable, self-hosted (Phase 1 commit
+     * 57404c9). Stack ends with system-ui as a safety net before
+     * sans-serif so a missing woff2 doesn't fall back to Times.
+     */
+    --font-sans: "Outfit", system-ui, sans-serif;
+}
+
+/*
+ * @layer components — reserved for theme-specific reusable classes
+ * (lmt-dialog, etc.). Populated during Axe C (modals → <dialog>).
+ */
+@layer components {
+    /* lmt-dialog styles will land here in Axe C (commit C17). */
+}
+
+/*
+ * Legacy compatibility shims — to be added at the moment a template
+ * needs them and removed as the corresponding template gets
+ * fully migrated. Each shim must carry a `/* MIGRATE TO: ... */`
+ * comment so it cannot be forgotten at Axe D cleanup.
+ */
