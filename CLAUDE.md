@@ -250,6 +250,7 @@ Si tu rencontres encore un nom qui sent le boilerplate générique (préfixe non
 | 7 | **`fbq` Pixel** | Suppression confirmée (résidu) | Aucun |
 | 8 | **Cookies / RGPD** | Définir si Umami suffit (sans bandeau, car analyse anonyme), ou si un bandeau est requis par politique éditoriale | Conformité RGPD/CNIL |
 | ~~9~~ | ~~Suppression du module de commentaires~~ | **Résolu Phase 2.5 (30 avril 2026) — suppression définitive complète**, cf. `_docs/AUDIT.md#business` | — |
+| 10 | **PERF-006 search performance — refonte stratégie** | À planifier (probablement après Phase 6, post-refacto thème complet). Options : (1) index FT MySQL (`MATCH ... AGAINST` + `wp_postmeta` indexé), (2) plugin Relevanssi ou SearchWP, (3) Algolia / Meilisearch (overkill pour ce volume), (4) status quo accepté | Recherche fonctionne post-fix QC-005 (Phase 1) mais reste lente sur termes complexes à cause du `LEFT JOIN postmeta` systématique (`lmt_search_postmeta_join`). Tolérable < 1k posts ; à ré-évaluer si la BDD croît. Décision business potentielle (qualité résultats vs perf vs dépendance externe) |
 
 ## 8. Règles pour les futures sessions Claude Code
 
