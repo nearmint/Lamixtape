@@ -74,6 +74,25 @@
      * sans-serif so a missing woff2 doesn't fall back to Times.
      */
     --font-sans: "Outfit", system-ui, sans-serif;
+
+    /*
+     * Phase 4 CP2 regression #3 — align lg breakpoint with Bootstrap 4.
+     *
+     * BS 4 lg breakpoint = 992px. TW v4 default lg = 1024px (64rem).
+     * The 32px gap meant viewports between 992px and 1023px showed:
+     * - pre-Phase-4: BS lg active → side-by-side flex layout
+     * - post-Phase-4: TW lg not yet active → tw:lg:* dormant, child
+     *   columns collapsed (hidden image col, full-width text col)
+     *
+     * Override --breakpoint-lg to 62rem (= 992px) to match BS lg.
+     * This shifts ALL tw:lg:* utilities globally — no template-side
+     * change needed, the migration markup stays as-is.
+     *
+     * Other breakpoints (sm 640, md 768, xl 1280, 2xl 1536) are kept
+     * at TW defaults: BS uses sm=576/xl=1200 but the templates only
+     * use the lg breakpoint extensively (cf. d-lg-block, col-lg-X).
+     */
+    --breakpoint-lg: 62rem;
 }
 
 /*
