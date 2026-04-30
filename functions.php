@@ -99,6 +99,27 @@ function lmt_enqueue_assets() {
     if ( is_singular( 'post' ) ) {
         wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
     }
+
+    // Infinite scroll — home, single (previous mixtapes), category.
+    // The script early-returns if no #lmt-infinite-sentinel is present,
+    // so the conditional is mainly a network-payload optimisation.
+    // Depends on lmt-main so the lmtData global (nonce + site_url) is
+    // available when the script runs.
+    if ( is_front_page() || is_home() || is_page_template( 'index.php' ) || is_singular( 'post' ) || is_category() ) {
+        wp_enqueue_style(
+            'lmt-infinite-scroll',
+            $theme_uri . '/css/infinite-scroll.css',
+            array( 'lmt-bootstrap' ),
+            '1.0'
+        );
+        wp_enqueue_script(
+            'lmt-infinite-scroll',
+            $theme_uri . '/js/infinite-scroll.js',
+            array( 'jquery', 'lmt-main' ),
+            null,
+            true
+        );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 

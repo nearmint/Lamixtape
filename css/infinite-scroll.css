@@ -1,0 +1,33 @@
+/*
+ * Infinite scroll skeleton placeholder.
+ *
+ * Rendered by js/infinite-scroll.js while a batch is being fetched
+ * from /wp-json/lamixtape/v1/posts. Removed as soon as the response
+ * arrives. Sized to match .mixtape-list article (min-height 85px in
+ * css/list-of-mixtapes.css) so the layout shift is minimal.
+ */
+
+#lmt-infinite-sentinel {
+    height: 1px;
+    width: 100%;
+    pointer-events: none;
+}
+
+.lmt-card-skeleton {
+    min-height: 85px;
+    margin-bottom: 0;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: lmt-skeleton-shimmer 1.5s linear infinite;
+}
+
+@keyframes lmt-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lmt-card-skeleton {
+        animation: none;
+    }
+}
