@@ -153,7 +153,7 @@ Toujours ouvert et déféré conjointement à Phase 3 (même problème UX = pagi
 ### Phase 2.5 close — récap (30 avril 2026)
 
 **Métriques globales** :
-- **5 commits** depuis fin Phase 2 (`484848e`), tous pushés sur `origin/main` : `583fd61` docs prompt + `9f24105` templates + `3cb6aad` callbacks/hooks + `50d490d` CSS/enqueue + `339330b` BDD cleanup doc + `[SHA-CLOSURE]` closure (ce commit).
+- **6 commits** depuis fin Phase 2 (`484848e`), tous pushés sur `origin/main` : `583fd61` docs prompt + `9f24105` templates + `3cb6aad` callbacks/hooks + `50d490d` CSS/enqueue + `339330b` BDD cleanup doc + `d844b33` closure.
 - 7 fichiers modifiés / supprimés (`comments.php` supprimé, `css/comment-form.css` supprimé, `functions.php` allégé, `single.php` allégé, `_docs/prompt-phase-2.5.md` créé, `_docs/phase-2.5-bdd-cleanup.md` créé, `_docs/AUDIT.md` + `CLAUDE.md` mis à jour ; `_docs/prompt-phase-3.md` également entré dans le repo via slip `git add -A` — emplacement correct, hors périmètre Phase 2.5).
 - Net code (hors docs) : **-163 lignes** environ (phase à dominante suppression, comme attendu).
 - Findings résolus comptables : **0** (Q9 = décision business, hors taxonomie audit). Tableau dette inchangé : 31/72 résolus, 41 restants.
