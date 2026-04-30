@@ -101,18 +101,30 @@ add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
 
-// Join posts and postmeta tables for search
-function cf_search_join( $join ) {
+/**
+ * Join wp_posts and wp_postmeta on search queries so meta_value can be
+ * searched alongside post_title (cf. lmt_search_postmeta_where).
+ *
+ * @param  string $join  Existing JOIN clause built by WP.
+ * @return string
+ */
+function lmt_search_postmeta_join( $join ) {
     global $wpdb;
     if ( is_search() ) {
         $join .=' LEFT JOIN '.$wpdb->postmeta. ' ON '. $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id ';
     }
     return $join;
 }
-add_filter('posts_join', 'cf_search_join' );
+add_filter( 'posts_join', 'lmt_search_postmeta_join' );
 
-// Modify the search query to include custom fields
-function cf_search_where( $where ) {
+/**
+ * Extend the WHERE clause so search matches against postmeta.meta_value
+ * in addition to post_title (relies on the JOIN added above).
+ *
+ * @param  string $where  Existing WHERE clause.
+ * @return string
+ */
+function lmt_search_postmeta_where( $where ) {
     global $pagenow, $wpdb;
     if ( is_search() ) {
         $where = preg_replace(
@@ -121,37 +133,53 @@ function cf_search_where( $where ) {
     }
     return $where;
 }
-add_filter( 'posts_where', 'cf_search_where' );
+add_filter( 'posts_where', 'lmt_search_postmeta_where' );
 
-// Prevent duplicate results in search
-function cf_search_distinct( $where ) {
+/**
+ * Force DISTINCT on search queries to avoid duplicates introduced by
+ * the postmeta JOIN.
+ *
+ * @param  string $where  Existing DISTINCT clause.
+ * @return string
+ */
+function lmt_search_distinct( $where ) {
     global $wpdb;
     if ( is_search() ) {
         return "DISTINCT";
     }
     return $where;
 }
-add_filter( 'posts_distinct', 'cf_search_distinct' );
+add_filter( 'posts_distinct', 'lmt_search_distinct' );
 
-// Exclude Pages from search results
-function SearchFilter($query) {
-    if ($query->is_search) {
-        $query->set('post_type', 'post');
+/**
+ * Restrict search results to the 'post' post type (excludes pages).
+ *
+ * @param  WP_Query $query
+ * @return WP_Query
+ */
+function lmt_search_post_type_filter( $query ) {
+    if ( $query->is_search ) {
+        $query->set( 'post_type', 'post' );
     }
     return $query;
 }
-add_filter('pre_get_posts','SearchFilter');
+add_filter( 'pre_get_posts', 'lmt_search_post_type_filter' );
 
 // -----------------------------------------------------
 // ------------- Change Search page URL ----------------
 // -----------------------------------------------------
-function wp_change_search_url() {
+/**
+ * Redirect /?s=... to the pretty /search/<term>/ URL on search hits.
+ *
+ * @return void
+ */
+function lmt_search_url_redirect() {
     if ( is_search() && ! empty( $_GET['s'] ) ) {
         wp_safe_redirect( get_home_url( null, "/search/" ) . rawurlencode( get_query_var( 's' ) ) );
         exit();
     }
 }
-add_action( 'template_redirect', 'wp_change_search_url' );
+add_action( 'template_redirect', 'lmt_search_url_redirect' );
 
 // -----------------------------------------
 // ---------- Clean up the <head> ----------
