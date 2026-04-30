@@ -5,12 +5,12 @@ global $wp_query;
 ?>
 <div id="search">
     <header class="font-smoothing fade-in delay-1">
-        <form role="search" method="get" id="" class="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
-            <div class="container">
-                <hr class="mb-4">
+        <form role="search" method="get" id="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
+            <div class="tw:container tw:mx-auto tw:px-4">
+                <hr class="tw:mb-6">
                 <h4><?php esc_html_e('Search:', 'lamixtape'); ?>
                     <?php the_search_query(); ?>
-                    <a href="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>/explore" class="float-right no--hover">
+                    <a href="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>/explore" class="tw:float-right no--hover">
                         <svg class="bi bi-x" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/>
                             <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/>
@@ -32,7 +32,7 @@ global $wp_query;
                     'tag_link_attr'         => 'alt',
                 ) ); ?>
             <?php endwhile; else: ?>
-            <?php echo '<div class="container nothing--found"><h2 class="font-smoothing">' . esc_html__('Nothing found', 'lamixtape') . '</h2></div>'; ?>
+            <?php echo '<div class="tw:container tw:mx-auto tw:px-4 nothing--found"><h2 class="font-smoothing">' . esc_html__('Nothing found', 'lamixtape') . '</h2></div>'; ?>
         <?php endif; ?>
     </section>
 </div>
