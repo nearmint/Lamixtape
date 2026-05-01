@@ -1,0 +1,90 @@
+# GitHub Actions — PHP lint workflow
+#
+# Triggers : push sur main + pull_requests vers main + manual dispatch.
+# Steps :
+#   1. PHP syntax check (`php -l`) sur tous les *.php du theme — rapide,
+#      catch les erreurs de syntaxe avant tout autre lint.
+#   2. PHPCS via composer install + composer lint:summary — applique
+#      WordPress-Core + WordPress-Docs (cf. phpcs.xml.dist).
+#
+# Lighthouse / Pa11y NOT included in CI (Option A choisie post-Phase-7) :
+# - Necessitent un site WordPress live, complexe a bootstraper en CI
+#   (wp-env / Docker WordPress ephemere = ~30min par run).
+# - L'audit Phase 7 a livre la baseline Local. Re-audits prod a refaire
+#   manuellement post-deploiement (cf. CLAUDE.md Q14).
+# - Si Q12 (validation runtime CI) devient prioritaire plus tard,
+#   etendre ce workflow ou en creer un dedie (audit.yml).
+
+name: PHP Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          tools: none
+
+      - name: Run php -l on all theme PHP files
+        run: |
+          # Find all .php files except in excluded paths, run php -l on each.
+          # `xargs -I {}` to invoke per-file (php -l only takes 1 file).
+          # Fail fast on first syntax error via `set -e`.
+          set -e
+          find . \
+            -type f -name "*.php" \
+            -not -path "./node_modules/*" \
+            -not -path "./vendor/*" \
+            -not -path "./_docs/audit/*" \
+            -not -path "./assets/build/*" \
+            -not -path "./assets/vendor/*" \
+            -print0 \
+            | xargs -0 -I {} php -l {}
+
+  phpcs:
+    name: WPCS (WordPress-Core + WordPress-Docs)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPCS (summary report)
+        run: composer lint:summary
+
+      - name: Run PHPCS (full report on failure)
+        if: failure()
+        run: composer lint
