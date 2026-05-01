@@ -87,10 +87,13 @@ function lmt_enqueue_assets() {
         wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-bootstrap' ), '1.0' );
     }
 
-    // Vendor JS — Bootstrap bundle includes Popper, required for the
-    // data-toggle="tooltip" in index.php and for modal/dropdown plugins.
-    // Loaded in the footer; jQuery is a hard dependency.
-    wp_enqueue_script( 'lmt-bootstrap-bundle', $theme_uri . '/assets/vendor/bootstrap/bootstrap.bundle.min.js', array( 'jquery' ), '4.4.1', true );
+    // Vendor JS — Bootstrap bundle removed Phase 4 Axe C C18 once
+    // the modals were migrated to native <dialog> + js/dialogs.js
+    // (commit 871b11d / 82aa39f). The data-toggle="tooltip" attribute
+    // still present on the home "getting lost" link (index.php) is
+    // now inert; the title attribute provides the native browser
+    // tooltip fallback. data-toggle attributes can be cleaned up in
+    // Axe D when the BS CSS is also removed.
 
     // Theme JS — main.js handles the like button, burger menu, fade-in
     // animations and smooth scroll. Localized with site info + REST nonce
