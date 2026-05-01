@@ -665,6 +665,7 @@
 - **Description** : Pas de `<meta property="og:title">`, `<meta property="og:image">`, `<meta name="twitter:card">` dans le `<head>`. Délégué à Rank Math.
 - **Impact** : Cf. OTHER-002 — dépendance à Rank Math. Si Rank Math échoue, partages sociaux moches.
 - **Recommandation** : Tester avec Rank Math désactivé et confirmer l'OG. Sinon, fallback dans `header.php` (post thumbnail comme `og:image`).
+- **Statut** : Résolu Phase 6 (Axe B). Décision business : **fallback préventif** côté thème (Décision 4 utilisateur), plutôt qu'un audit conditionnel. Nouveau fichier `inc/seo.php` (chargé via `require_once` dans `functions.php`) qui hook `wp_head` priorité 20 et émet OG + Twitter Cards UNIQUEMENT si Rank Math n'est pas actif (détection canonique via `defined( 'RANK_MATH_VERSION' )`). Quand Rank Math est actif (cas par défaut Lamixtape), ce fallback est un no-op — pas de duplication de meta. Quand Rank Math est désactivé/désinstallé/échec, le thème émet par lui-même : `og:type` (article pour single, website pour le reste), `og:title`, `og:description` (excerpt 30 mots ou tagline), `og:url`, `og:site_name`, `og:locale`, `og:image` (post thumbnail si dispo), `twitter:card` (`summary_large_image` si image, `summary` sinon), `twitter:title`, `twitter:description`, `twitter:image`. Coverage des 8 templates (single, home, category, search, 404, page-templates colophon/legal-notice/explore/guests).
 
 ### [OTHER-004] Favicons et webmanifest référencés en `/...` sans garantie d'existence
 - **Sévérité** : Moyenne

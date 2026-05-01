@@ -5,6 +5,7 @@
 // -----------------------------------------------------
 require_once get_template_directory() . '/inc/queries.php';
 require_once get_template_directory() . '/inc/rest.php';
+require_once get_template_directory() . '/inc/seo.php';
 
 // -----------------------------------------------------
 // ------------------- Theme setup ---------------------
