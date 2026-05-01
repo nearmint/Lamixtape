@@ -156,6 +156,39 @@ function lmt_preload_outfit_font() {
 add_action( 'wp_head', 'lmt_preload_outfit_font', 1 );
 
 /**
+ * Preconnect to third-party origins used at runtime.
+ *
+ * Phase 7 audit (audit-post-refacto.md section 1.3) — Lighthouse
+ * reported "Preconnect to required origins" as a 322ms saving on 3
+ * URLs out of 4. The two recurring third-party origins are:
+ *   - Cloudflare Turnstile (challenges.cloudflare.com) — loaded by
+ *     CF7 form on the contact modal, render-blocking on single
+ *     pages
+ *   - YouTube IFrame API (www.youtube.com) — loaded dynamically by
+ *     js/player.js when a YouTube track is selected
+ *
+ * Both `dns-prefetch` (cheaper) and `preconnect` (handshake) are
+ * emitted: `preconnect` is the primary win, `dns-prefetch` is a
+ * fallback for browsers that don't support preconnect.
+ *
+ * Hook priority 2 so the hints are emitted right after the Outfit
+ * preload (priority 1) but before other wp_head emissions.
+ *
+ * @return void
+ */
+function lmt_preconnect_third_party() {
+    $origins = array(
+        'https://challenges.cloudflare.com',
+        'https://www.youtube.com',
+    );
+    foreach ( $origins as $origin ) {
+        echo '<link rel="preconnect" href="' . esc_url( $origin ) . '" crossorigin>' . "\n";
+        echo '<link rel="dns-prefetch" href="' . esc_url( $origin ) . '">' . "\n";
+    }
+}
+add_action( 'wp_head', 'lmt_preconnect_third_party', 2 );
+
+/**
  * Add defer to non-critical theme scripts.
  *
  * lmt-player and lmt-infinite-scroll only run after first paint
