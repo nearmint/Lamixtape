@@ -273,19 +273,15 @@ add_action( 'rest_api_init', function () {
  * REST callback for /lamixtape/v1/random-mixtape.
  *
  * Picks one published post at random and returns a 302 redirect to
- * its permalink. This is the navigation-link counterpart to the
- * legacy lmt_get_random_mixtape() helper which cached one random
- * pick per call site for HOUR_IN_SECONDS — every click on a "Random
- * mixtape" link in templates points to this endpoint, and the server
- * picks a fresh post every time (no transient cache).
+ * its permalink. Every click on a "Random mixtape" link in templates
+ * (header mobile menu, home about section, single "Random Mixtape"
+ * button, 404 fallback) points to this endpoint, and the server picks
+ * a fresh post every time (no transient cache, true random UX).
  *
- * Trade-off vs the legacy cached helper:
- *   - PRO: every click yields a different mixtape (true random
- *     navigation UX, the original spec for the link).
- *   - CON: each click triggers a WP_Query orderby=rand (PERF-005
- *     pattern). Acceptable because the query runs once per user
- *     click, fields=ids + no_found_rows + LIMIT 1 keep it cheap on
- *     the ~370-post catalog.
+ * Performance: each click triggers a WP_Query orderby=rand (PERF-005
+ * pattern). Acceptable because the query runs once per user click
+ * (not per page render), and fields=ids + no_found_rows + LIMIT 1
+ * keep it cheap on the ~370-post catalog.
  *
  * Response:
  *   HTTP 302 Found
