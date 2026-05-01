@@ -391,6 +391,54 @@ Détecté à la review CHECKPOINT 4 par l'utilisateur ("player complètement cas
 - Test view-source 1 page mixtape avec Rank Math désactivé temporairement (admin → Plugins → Deactivate Rank Math, view source, Reactivate) : confirmer le fallback thème s'émet (commentaires `<!-- Phase 6 OTHER-003 fallback -->` + `<!-- Phase 6 OTHER-006 fallback -->` visibles dans la source) avec OG + Twitter + JSON-LD MusicPlaylist correctement formés. Test optionnel mais utile pour valider l'architecture défensive.
 - Captures `_docs/captures-post-phase-6/` : Phase 6 invisible visuellement (theme.json + meta head + JSON-LD = aucun rendu front), donc captures pre-Phase-6 ≡ captures post-Phase-5 ≡ captures post-Phase-6 par construction.
 
+### Phase 7 close — récap audit Local (1er mai 2026)
+
+**Métriques globales** :
+- **3 commits** depuis fin Phase 6 (`b0d95c9`), tous pushés sur `origin/main`. C1 install Lighthouse + Pa11y CLI en `package.json` devDependencies, C2 données audit (`_docs/audit/`) + `pa11y.json` + maj `.gitignore` pour exclure HTML Lighthouse > 5 MB, C3 rapport `_docs/audit-post-refacto.md` + ce récap CLAUDE.md.
+- 13 fichiers ajoutés (4 Lighthouse JSON + 4 Pa11y JSON + 3 view-source HTML + pa11y.json + .gitignore update + package.json + package-lock.json + audit-post-refacto.md + CLAUDE.md).
+- Net repo : ~4 MB de données audit + 3235 lignes `package-lock.json`. Aucune modification de code thème (règle transversale Phase 7 = audit pur).
+
+**Outils installés** :
+- Lighthouse CLI **12.8.2** (devDependency)
+- Pa11y CLI **8.0.0** (devDependency)
+- Scripts npm shorthand : `npm run audit:lighthouse`, `npm run audit:pa11y`
+
+**Scores principaux Local** (cf. rapport complet `_docs/audit-post-refacto.md`) :
+- **Performance** : home 100, single 58 (LCP 9.8s ⚠️), category 90, search 87
+- **Accessibilité Lighthouse** : 91-92 sur les 4 URLs
+- **Accessibilité Pa11y WCAG2AA** : **76-104 erreurs/URL** (contraste 3.82:1 vs 4.5:1 requis sur #fff/#333)
+- **SEO** : home 100, single 100, category 92, search 54 (noindex by design)
+- **Sécurité** : 5 headers Phase 3 OK sur home, leak `X-Powered-By` sur REST endpoints
+
+**Top 3 priorités identifiées** :
+1. **🔴 A11y contraste Pa11y 3.82:1** : 76-104 erreurs WCAG2AA par URL, contraste #fff/#333 reporté à 3.82:1 alors que mathématique = 12.63:1. Cause probable `font-smoothing` antialiased. Investigation manuelle DevTools requise avant déploiement prod.
+2. **🟠 Single LCP 9.8s** : 4582ms render-blocking (Cloudflare Turnstile + jQuery + MediaElement + CF7). Acceptable Local sans Cloudflare cache, à re-mesurer post-déploiement prod.
+3. **🟡 SEO JSON-LD single absent** : Rank Math n'émet AUCUN JSON-LD sur les single mixtapes. Le fallback Phase 6 ne s'émet pas non plus (early return Rank Math actif trop défensif). Architecture à raffiner — soit raffiner la détection (output buffer + check), soit activer module Schema en admin Rank Math.
+
+**Découvertes secondaires** :
+- 3 images thème orphelines : `radio.jpg` (660 KB), `lamixtape-waveform.png` (39 KB), `lamixtape.svg` (663 B) — référencées nulle part. Cleanup ad-hoc post-Phase-7 (~700 KB libérés).
+- `404.gif` 2.6 MB — optimization possible vers WebM ou GIF compressé.
+- 5 utilities arbitraires Tailwind (`gap-[10px]`, `gap-[5px]`, `h-[85px]`, `max-h-[90vh]`, `w-[90vw]`) tokenisables dans `@theme`.
+- `functions.php` 565 LoC — split possible en `inc/setup.php` + `inc/enqueue.php` + `inc/security.php` (pattern D6 flat-file).
+
+**Recommandation Phase 8 — Migration CSS custom → Tailwind ciblée** : OUI, faisable. Périmètre prioritaire : `general.css` + `navbar.css` + `mixtape-page.css` (355 LoC = 41% du CSS custom). Effort estimé 4-6h. À garder en CSS pur : `player.css` (range slider customizations + animations) + `infinite-scroll.css` (keyframes shimmer). Branche feature dédiée `feature/css-tailwind-migration` (pattern Phase 4) pour rollback facile.
+
+**Audits prod différés (à refaire post-déploiement)** :
+- Lighthouse prod (`npm run audit:lighthouse -- https://lamixtape.fr`)
+- Pa11y prod (`npm run audit:pa11y -- https://lamixtape.fr`)
+- PageSpeed Insights mobile + desktop
+- Mozilla Observatory grade (cible A/A+)
+- securityheaders.com grade (cible A/A+)
+- Validator schema.org sur 1 mixtape live
+- Comparaison Core Web Vitals avant / après refacto
+
+**Pointeur Phase 8 (si validée par l'utilisateur)** :
+- Branche `feature/css-tailwind-migration`
+- 3 fichiers prioritaires : `general.css`, `navbar.css`, `mixtape-page.css`
+- Catégorisation par fichier dans `_docs/audit-post-refacto.md` section 5.1
+- 1 commit par fichier migré, vérification visuelle après chaque
+- Marathon avec checkpoints (pattern Phase 4)
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
@@ -512,6 +560,7 @@ Si tu rencontres encore un nom qui sent le boilerplate générique (préfixe non
 | 11 | **Content-Security-Policy header** | À planifier Phase 5/6 (après Tailwind v4 qui élimine le Bootstrap inline). Inventaire des sources externes à autoriser : `'self'`, fonts.gstatic.com (déjà éliminé via auto-host Outfit Phase 1), `https://www.youtube.com` + `https://*.youtube-nocookie.com` (player iframes), `https://cloud.umami.is` + `https://api.umami.is` (analytics), Cloudflare Turnstile si activé, `'unsafe-inline'` style temporaire pour ACF `style="background-color:..."` dynamiques (à supprimer dès qu'on bouge ces inline en classes CSS). | Posté en Phase 3 : 5 headers de sécurité baseline (`X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `Permissions-Policy`) + suppression `X-Powered-By` (cf. `lmt_send_security_headers` `2d10728`). CSP intentionnellement reporté car matrice non-triviale (Bootstrap inline + YouTube iframe + MediaElement + Cloudflare Turnstile + Umami CDN + ACF inline). À reprendre après Phase 4 Tailwind qui aura déjà nettoyé une bonne partie des inline styles. |
 | 12 | **Dette de validation Phase 3** | Re-tester en prod après déploiement Phase 3, OU intégrer aux tests de Phase 6 (outillage CI/lint). Pas de blocker pour Phase 4 (le code est conforme aux findings AUDIT). | **Tests sécurité skippés sur Local** (option "dette acceptée" validée à la closure Phase 3) : `curl -i` rate-limit pagination → 429 attendu après 100 req/h, endpoint sans nonce → 403 attendu, `?context=injection` → 400 attendu, `curl -I https://lamixtape.local` → 5 nouveaux headers attendus + plus de `X-Powered-By`. **Tests perf** non explicitement confirmés (DevTools Network home → ~30 cards rendues serveur ; lazy loading images hors viewport ; transient `lmt_random_mixtape_*` présent ; Outfit woff2 en preload). Site fonctionne en frontal donc dette tolérable, mais le code Phase 3 mérite une vérification runtime au moment du déploiement prod. |
 | 13 | **Petits écarts visuels Phase 4 acceptés en CHECKPOINT 3** | Acceptés en l'état à la closure Phase 4 (1er mai 2026), à corriger plus tard en commits dédiés ad-hoc sur `main` ou en Phase 5 a11y polish. | Périmètre exact à identifier en review post-merge par diff visuel `_docs/captures-post-phase-3/` vs `_docs/captures-post-phase-4/`. La règle no-visual-change a été tenue à 99% (les 4 régressions CHECKPOINT 2 + 4 régressions CHECKPOINT 3 ont été corrigées) ; les écarts résiduels acceptés correspondent au 1% de marge prévu par le prompt-phase-4 ("micro-différences acceptables : font-rendering Tailwind reset, kerning, sub-pixel rounding"). Patterns probables : font-rendering Outfit légèrement différent (TW v4 reset vs Bootstrap reset), spacing ½px sur certains éléments où BS spacing scale et TW spacing scale ne matchent pas exactement, behaviour `data-toggle="tooltip"` legacy sur le lien "getting lost" home (BS Tooltip stylé vs native browser title fallback). Aucun blocker fonctionnel. |
+| 14 | **Audits prod différés (post-déploiement)** | Phase 7 audit a été 100% Local (`https://lamixtape.local`) car le refacto n'est pas encore en prod. Une fois déployé, refaire les audits sur `https://lamixtape.fr` pour valider les gains et compléter le baseline post-refacto. | **Outils en place** (Phase 7) : Lighthouse CLI 12.8.2 + Pa11y CLI 8.0.0 en `package.json` devDependencies, scripts npm shorthand (`npm run audit:lighthouse`, `npm run audit:pa11y`), config `pa11y.json` réutilisable. **Audits à refaire post-déploiement** : (1) Lighthouse prod 4 URLs, (2) Pa11y prod 4 URLs, (3) PageSpeed Insights API mobile + desktop (inutilisable sur Local — Google ne peut pas scanner Local), (4) Mozilla Observatory grade (inutilisable sur Local — URLs publiques requises ; cible A/A+), (5) securityheaders.com grade (cible A/A+), (6) validator.schema.org sur 1 mixtape live, (7) comparaison Core Web Vitals avant / après refacto si baseline pré-refacto disponible. **3 priorités Phase 7 à investiguer avant déploiement** : (a) contraste Pa11y 3.82:1 (cause probable `font-smoothing` antialiased — investigation manuelle DevTools), (b) extension headers sécurité aux REST endpoints (`X-Powered-By` leak sur `/wp-json/...`), (c) JSON-LD single absent côté Rank Math (le fallback Phase 6 `lmt_emit_jsonld_musicplaylist` est trop défensif via `defined('RANK_MATH_VERSION')`). Cf. `_docs/audit-post-refacto.md` pour le rapport complet. |
 
 ## 8. Règles pour les futures sessions Claude Code
 
