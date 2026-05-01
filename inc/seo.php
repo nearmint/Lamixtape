@@ -125,3 +125,117 @@ function lmt_emit_og_twitter_fallback() {
     echo "<!-- /Phase 6 OTHER-003 fallback -->\n";
 }
 add_action( 'wp_head', 'lmt_emit_og_twitter_fallback', 20 );
+
+/**
+ * Emit a `MusicPlaylist` JSON-LD structured data block on single
+ * mixtape pages, as a fallback when Rank Math is not active.
+ *
+ * Decision business utilisateur Phase 6 (Décision 5) :
+ * `MusicPlaylist` retenu plutôt que `Article` car Lamixtape est
+ * sémantiquement une plateforme de playlists curatées par un
+ * curator. Coût : rich results Google plus limités que `Article`
+ * — accepté en échange de la cohérence sémantique. Possibilité
+ * future d'ajouter un schema `Article` en parallèle via @graph
+ * sans rien casser.
+ *
+ * Champs émis :
+ *   - name           : titre de la mixtape
+ *   - description    : excerpt (30 mots, fallback content)
+ *   - url            : permalink
+ *   - datePublished  : date ISO 8601
+ *   - dateModified   : date ISO 8601
+ *   - image          : featured image si dispo
+ *   - author         : Person { name = curator }
+ *   - numTracks      : count des items dans le repeater ACF
+ *   - track[]        : array de MusicRecording { name, url } —
+ *                      uniquement si tracklist non vide
+ *
+ * `track[]` est extrait via `get_field('tracklist')` qui retourne
+ * directement un array (ACF repeater) — coût marginal, pas de
+ * placeholder fake si la donnée manque.
+ *
+ * Hook `wp_head` priorité 20 (cf. lmt_emit_og_twitter_fallback).
+ * Bypass total si Rank Math actif (Rank Math émet son propre
+ * JSON-LD `Article` ou `WebPage` selon configuration ; éviter
+ * double JSON-LD pour ne pas confondre les crawlers).
+ *
+ * @return void
+ */
+function lmt_emit_jsonld_musicplaylist() {
+    if ( lmt_rank_math_active() ) {
+        return;
+    }
+
+    if ( ! is_singular( 'post' ) ) {
+        return;
+    }
+
+    $post_id = get_the_ID();
+    if ( ! $post_id ) {
+        return;
+    }
+
+    $description = wp_trim_words( strip_tags( get_the_excerpt() ?: get_the_content() ), 30, '…' );
+
+    $data = array(
+        '@context'      => 'https://schema.org',
+        '@type'         => 'MusicPlaylist',
+        'name'          => get_the_title(),
+        'url'           => get_permalink(),
+        'datePublished' => get_the_date( 'c' ),
+        'dateModified'  => get_the_modified_date( 'c' ),
+    );
+
+    if ( $description ) {
+        $data['description'] = $description;
+    }
+
+    if ( has_post_thumbnail() ) {
+        $thumb = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
+        if ( $thumb && ! empty( $thumb[0] ) ) {
+            $data['image'] = $thumb[0];
+        }
+    }
+
+    $author_name = get_the_author_meta( 'display_name' );
+    if ( $author_name ) {
+        $data['author'] = array(
+            '@type' => 'Person',
+            'name'  => $author_name,
+        );
+    }
+
+    $tracklist = get_field( 'tracklist', $post_id );
+    if ( is_array( $tracklist ) && ! empty( $tracklist ) ) {
+        $tracks = array();
+        foreach ( $tracklist as $row ) {
+            $name = isset( $row['track'] ) ? trim( (string) $row['track'] ) : '';
+            $url  = isset( $row['url'] ) ? trim( (string) $row['url'] ) : '';
+            if ( $name === '' ) {
+                continue;
+            }
+            $entry = array(
+                '@type' => 'MusicRecording',
+                'name'  => $name,
+            );
+            if ( $url !== '' ) {
+                $entry['url'] = $url;
+            }
+            $tracks[] = $entry;
+        }
+        if ( ! empty( $tracks ) ) {
+            $data['numTracks'] = count( $tracks );
+            $data['track']     = $tracks;
+        }
+    }
+
+    $json = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+    if ( false === $json ) {
+        return;
+    }
+
+    echo "\n<!-- Phase 6 OTHER-006 fallback (Rank Math inactive) -->\n";
+    echo '<script type="application/ld+json">' . $json . '</script>' . "\n";
+    echo "<!-- /Phase 6 OTHER-006 fallback -->\n";
+}
+add_action( 'wp_head', 'lmt_emit_jsonld_musicplaylist', 20 );
