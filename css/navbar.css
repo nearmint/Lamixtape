@@ -86,6 +86,7 @@ nav .lmt-logo {
     color: #fff;
     font-size: 2rem;
     z-index: 10000;
+    cursor: pointer;
 }
 #mobile-menu-overlay[style*="display: none"] {
   pointer-events: none !important;
