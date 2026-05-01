@@ -15,7 +15,7 @@
 </head>
 <body <?php body_class(); ?>>
     <nav class="navbar">
-        <div class="tw:container tw:mx-auto tw:px-4">
+        <div class="tw:container tw:mx-auto tw:px-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between">
             <a class="no--hover tw:pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
                 <h1><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></h1>
             </a>
