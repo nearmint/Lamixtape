@@ -10,7 +10,7 @@
     <link rel="manifest" href="/site.webmanifest">
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#333333">
     <meta name="msapplication-TileColor" content="#333333">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#333333">
     <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
