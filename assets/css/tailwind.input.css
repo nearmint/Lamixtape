@@ -191,6 +191,28 @@
     .lmt-dialog-close:focus {
         opacity: 1;
     }
+
+    /*
+     * Phase 5 A11Y-002 — modal triggers migrated from <a href="#"
+     * data-lmt-dialog> to <button type="button" data-lmt-dialog>.
+     * The <button> brings UA defaults (background, border, font,
+     * padding, color) that don't match an inline link. This class
+     * resets those defaults so the button can sit inline inside a
+     * paragraph (index "supporting", footer "kind words"), inside
+     * a list item (header mobile menu), or wrap an image (booking
+     * illustration, post thumbnail) without visual change vs the
+     * pre-migration <a>. */
+    .lmt-link-button {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+        text-decoration: inherit;
+        text-align: inherit;
+    }
 }
 
 /*

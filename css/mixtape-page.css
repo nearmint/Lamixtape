@@ -71,15 +71,21 @@ article .action-buttons {
     margin-top: 20px;
 }
 
-article .action-buttons a {
+article .action-buttons a,
+article .action-buttons button {
     width: 33%;
     text-align: center;
     border: solid 2px currentColor;
     padding: 10px;
     font-size: 20px;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
 }
 
-article .action-buttons a.middle{
+article .action-buttons a.middle,
+article .action-buttons button.middle {
     border-left: 0;
     border-right: 0;
 }
@@ -91,15 +97,21 @@ article .action-buttons a.middle{
         margin-top: 24px;
     }
 
-    article .action-buttons a {
+    article .action-buttons a,
+    article .action-buttons button {
         width: 100%;
         text-align: center;
         border: solid 2px currentColor;
         padding: 10px;
         font-size: 20px;
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+        cursor: pointer;
     }
 
-    article .action-buttons a.middle{
+    article .action-buttons a.middle,
+    article .action-buttons button.middle {
         border: solid 2px currentColor;
         border-top: 0;
         border-bottom: 0;

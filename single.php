@@ -56,12 +56,12 @@
                 <div>
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
-                            <a href="#" data-lmt-dialog="donatemodal" class="no--hover"><?php the_post_thumbnail( 'large', array(
+                            <button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" aria-haspopup="dialog" aria-controls="donatemodal" aria-label="<?php esc_attr_e('Open the support us dialog', 'lamixtape'); ?>"><?php the_post_thumbnail( 'large', array(
                                 'class'    => 'max-w-full h-auto mt-6 illustration',
                                 'alt'      => esc_attr( get_the_title() ),
                                 'loading'  => 'lazy',
                                 'decoding' => 'async',
-                            ) ); ?></a>
+                            ) ); ?></button>
                         <?php endif; ?>
                     </div>
                     <!-- Container for player iframes -->
@@ -83,8 +83,8 @@
                             echo '</a>';
                         endif;
                         ?>
-                    <a data-lmt-dialog="contactmodal" href="#" class="middle">💌 Send feedback</a>
-                    <a data-lmt-dialog="donatemodal" href="#">⚡️ Support us</a>
+                    <button type="button" class="middle" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">💌 Send feedback</button>
+                    <button type="button" data-lmt-dialog="donatemodal" aria-haspopup="dialog" aria-controls="donatemodal">⚡️ Support us</button>
                 </div>
         </div>
     </div>
