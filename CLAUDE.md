@@ -257,6 +257,8 @@ Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` 
 
 **Coût du faux positif** : ~30 min (proposition de stratégie diagnostic 3-variantes A/B/C, commit `c4f4331` "test variant A" qui s'est révélé inutile mais reste en place car équivalent fonctionnel à la version récursive). **Bénéfice retenu** : la discipline diagnostic-d'abord a contenu le coût (pas de fix spéculatif sur autre chose, juste 1 commit "test" non destructeur). Mais leçon : **toujours valider le grep par un check visuel (head/less) avant de conclure que le build est cassé.**
 
+**Extension TW-VERIFY (CHECKPOINT 2 → C17)** : `grep -c PATTERN file` compte les **lignes** matchantes, pas les occurrences. Sur un CSS Tailwind v4 minifié (qui est sur une SEULE ligne), `grep -c` plafonne à 1 quoi qu'il arrive. La vérification doit utiliser `grep -oE PATTERN file | wc -l` (compte les occurrences) OU le check visuel direct (`grep -oE 'lmt-dialog[^{}, ]*' file | sort -u` pour énumérer les sélecteurs réels). 30 min perdues à C17 sur un faux positif "lmt-dialog absent du build" parce que `grep -c` retournait 1 alors que les 6 sélecteurs étaient bien tous émis. Apprentissage cumulatif : pour valider un build CSS minifié, **énumérer** plutôt que **compter**.
+
 ## 5. Recommandations stratégiques
 
 ### Stack cible recommandée
