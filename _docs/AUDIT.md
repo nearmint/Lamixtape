@@ -382,6 +382,7 @@
 - **Description** : Cf. SEC-006 — handle `'jquery'` au lieu du handle thème. Doublon documentaire pour la traçabilité côté qualité.
 - **Impact** : Variable `bloginfo` non garantie, risque de confusion avec d'autres scripts.
 - **Recommandation** : Cf. SEC-006.
+- **Statut** : Résolu Phase 1 (doublon documentaire de SEC-006 — `83d72cb` rename handle `'ajax-script'` → `'lmt-main'` + `72647ba` rename `bloginfo` → `lmtData` attaché à `'lmt-main'` + déplacement hook `'init'` → `'wp_enqueue_scripts'` + `62457a2` fusion de `loadmore_enqueue` + `push_script` dans `lmt_enqueue_assets()`. Backfill rétroactif Phase 6 prep — le finding parent SEC-006 portait déjà le Statut, QC-006 le tracait sous l'axe qualité sans Statut séparé).
 
 ### [QC-007] Inline `<style>` et `<script>` dispersés dans les templates
 - **Sévérité** : Moyenne
