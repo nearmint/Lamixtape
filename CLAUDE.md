@@ -484,6 +484,55 @@ Apprentissage général : pour chaque `<meta>` / `<link>` WP injectée indésira
 
 **Coût d'investigation** : ~2 min de lecture wp-includes/general-template.php pour identifier le filter `site_icon_meta_tags`, puis 5 lignes de code pour le hook. Vs alternative output buffering qui aurait coûté plusieurs dizaines de lignes + risque de breaker l'ordre d'émission wp_head.
 
+**Apprentissage WPCS-RELAX — Stratégie "strict sécurité, relax cosmétique"** (Phase ad-hoc CI fix, 1er mai 2026)
+
+Symptôme : `phpcs.xml.dist` Phase A2 baseline avec ruleset `WordPress-Core` + `WordPress-Docs` full générait **1501 errors / 46 warnings** au premier run CI sur le thème complet (~1700 LoC PHP). 97 % cosmétique. **0 violation sécurité/correctness** sur les sniffs critiques (`WordPress.Security.*`, `WordPress.DB.PreparedSQL*`, `WordPress.WP.AlternativeFunctions`, `WordPress.WP.GlobalVariablesOverride`, `WordPress.PHP.NoSilencedErrors`, `WordPress.PHP.StrictInArray`, `WordPress.Security.NonceVerification`).
+
+Causes techniques identifiées par diagnostic :
+- (a) **Conflit fondamental WPCS-tabs vs `.editorconfig` thème-spaces** : `Generic.WhiteSpace.DisallowSpaceIndent.SpacesUsed` à elle seule génère 1071 erreurs (71 %). WPCS impose tabs, le thème (et le `.editorconfig` Phase A2) utilise 4-space indent partout. Le thème a la priorité.
+- (b) **`WordPress.NamingConventions.PrefixAllGlobals` family inopérant pour notre prefix `lmt` 3-char** : la constante PHP `MIN_PREFIX_LENGTH = 4` dans `vendor/wp-coding-standards/wpcs/WordPress/Sniffs/NamingConventions/PrefixAllGlobalsSniff.php:69` est non-configurable. Le `continue;` ligne 1252 après `addError ShortPrefixPassed` skip total l'enregistrement du prefix dans `$validated_prefixes` → **TOUS les variants downstream (NonPrefixedFunctionFound / NonPrefixedVariableFound / NonPrefixedHooknameFound / NonPrefixedConstantFound / etc.) consultent un cache vide → 100 % faux positifs sur du code conforme**. À réactiver si rename `lmt_*` → 4+ chars.
+
+Décision : **Stratégie "strict sécurité, relax cosmétique"** pour ce thème personnel solo non-publié. Conservation des sniffs sécurité/correctness, désactivation chirurgicale de **22 sniffs/familles cosmétiques** (1 family Option D + 14 sniffs pass 1 + 7 sniffs pass 3 + 1 `Internal.NoCodeFound` top-level).
+
+Apprentissage technique : **avant de désactiver/garder un sniff WPCS, lire le source du sniff**. Certaines configurations sont non-configurables (constantes PHP) et le sniff peut être inopérant sans l'indiquer explicitement (le user pense "je garde ce check actif" mais en pratique il est skip 100% du temps). Lecture source > hypothèse documentée. Pattern à reproduire pour tout sniff critique avant de juger sa valeur réelle.
+
+Apprentissage organisationnel : **WPCS strict full est conçu pour les contributions core/plugins distribués** (où la cohérence stylistique compte pour des 100s de contributeurs). Pour un thème personnel solo, la stratégie "strict sécurité, relax cosmétique" est pragmatique et tout aussi sûre — les checks sécurité/correctness sont préservés, le bruit cosmétique est éliminé.
+
+Pour les sniffs hors ruleset principal (ex. `Internal.NoCodeFound` qui est sniff PHPCS-internal pas WPCS) : `<exclude name="..."/>` inside `<rule ref="WordPress-Core">` ne fonctionne PAS — il faut un `<rule ref="Internal.NoCodeFound"><severity>0</severity></rule>` au niveau top du ruleset. Pattern PHPCS standard, à connaître.
+
+**Métriques finales** : 1501 errors → **0**, 46 warnings → **0**. Exit code 0. CI verte sur run `ea089d7`. Time PHPCS local : 198ms.
+
+### CI fix WPCS ad-hoc — récap (1er mai 2026)
+
+**Métriques globales** :
+- **9 commits** ad-hoc sur `main` depuis fin Phase 8 head cleanup (`7d06d6d`).
+- 6 fichiers modifiés : `phpcs.xml.dist` (4 itérations), `composer.json` + `composer.lock` (install local), `.gitignore` (composer.phar), `functions.php` (4 modifs : 1 helper + 3 docblocks fix), `single.php` (1 fix ternary + 1 translators), `template-parts/card-mixtape.php` (1 refactor + 1 translators), `inc/seo.php` (2 translators), `.github/workflows/lint.yml` (1 bump Node 24).
+- Net code : ~200 lignes ajoutées (config phpcs.xml.dist + docblocks + translators + helper) — ~10 lignes supprimées.
+
+**9 commits CI fix WPCS ad-hoc** :
+- `48ac7ae` `chore(gitignore): ignore composer.phar` — prep install local
+- `(syntax migration)` — within `a349469` : 2 properties phpcs.xml.dist `<property type="array" value="...">` → `<element value="..."/>` (DEPRECATED notices résolues)
+- `3de322d` `chore(quality): fix WPCS residual docblock and template issues` — 4 fixes ciblés (`lmt_enqueue_assets()` docblock + `/* → /**` typo + `@param/@return` lmt_social_like_permission + ternary refactor likes_number)
+- `a349469` `chore(ci): relax WPCS cosmetic sniffs and fix deprecated property syntax` — 1 family `PrefixAllGlobals` exclude + 22 cosmétiques excludes en 2 passes
+- `c220f57` `chore(quality): add i18n translators comments + disable Internal.NoCodeFound` — 4 commentaires `/* translators: */` + refactor card-mixtape pour placement + sniff Internal.NoCodeFound désactivé via `severity 0` top-level (corrige le bug d'exclude inside `<rule ref="WordPress-Core">`)
+- `ea089d7` `chore(ci): bump GitHub Actions checkout and cache to v5 (Node 24 compatibility)` — actions/checkout@v4→v5 (×2), actions/cache@v4→v5 (×1), shivammathur/setup-php@v2 inchangé
+- (ce commit) `docs:` apprentissage WPCS-RELAX + récap CI fix
+
+**Outillage en place** :
+- ✅ Composer 2.9.7 installé localement (Composer phar dans repo, gitignored)
+- ✅ PHPCS 3.13.5 + WPCS 3.3.0 via `composer install` (vendor/ gitignored, composer.lock gitignored)
+- ✅ `phpcs.xml.dist` config "strict sécurité, relax cosmétique" (22 excludes documentés avec count baseline + rationale)
+- ✅ `.editorconfig` Phase A2 cohérent avec espaces 4
+- ✅ `.github/workflows/lint.yml` Node 24 (checkout + cache v5)
+- ✅ CI workflow verte sur `c220f57` + `ea089d7` confirmé via API GitHub Actions
+
+**Validation finale** :
+- `./vendor/bin/phpcs --standard=phpcs.xml.dist .` → exit 0 / 0 errors / 0 warnings ✅
+- CI run `ea089d7` (PHP Lint workflow) → status `completed`, conclusion `success` ✅
+- 2 jobs CI (`syntax` matrix PHP 8.2/8.3 + `phpcs` WPCS) → both green ✅
+
+**Pointeur** : le repo est dans un état "really really ready for prod deployment". Toutes les phases du refacto + audit + outillage CI sont en place. Le déploiement prod (Q14 audits différés + cf. `_docs/deployment-checklist.md`) reste à charge utilisateur.
+
 ### Phase 8 cleanup ad-hoc head cleanup — récap (1er mai 2026)
 
 **Métriques globales** :
