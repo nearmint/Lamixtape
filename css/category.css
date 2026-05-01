@@ -2,3 +2,14 @@
     background-color: #333;
     height: 85px
 }
+
+/* Phase R.D F-17 — match the home/single h2 size (35px / 500 / 0
+ * letter-spacing) defined in mixtape-page.css `article :is(h1, h2)`.
+ * Same rationale as F-14 (#explore + #guests): index pages render
+ * h1/h2 outside <article>, so the article-scoped rule does not apply
+ * and Tailwind preflight collapses h1 to body size. */
+#category header h1 {
+    font-weight: 500;
+    font-size: 35px;
+    letter-spacing: 0;
+}
