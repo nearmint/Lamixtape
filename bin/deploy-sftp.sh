@@ -108,21 +108,29 @@ echo "════════════════════════�
 # ═══════════════════════════════════════════════════════════════════
 #
 # These files/dirs are dev-only and must NOT land on the prod server :
-# - .git/, .github/    : VCS + CI workflows
-# - node_modules/      : npm dev deps (audit tools)
-# - vendor/            : Composer dev deps (PHPCS / WPCS)
-# - _docs/             : internal documentation
-# - bin/               : dev scripts (this script + check-headers.sh)
-# - .env*              : secrets — JAMAIS sur le serveur
-# - composer.*         : dev tooling configs
-# - phpcs.xml.dist     : lint config
-# - package.*          : npm config
-# - .editorconfig      : editor config
-# - .gitignore         : VCS only
-# - composer.phar      : Composer binary (dev install)
-# - README.md          : dev doc only (WP doesn't read it from theme)
-# - *.log, *.tmp       : transient junk
-# - .DS_Store          : macOS metadata
+# - .git/, .github/         : VCS + CI workflows
+# - node_modules/           : npm dev deps (audit tools)
+# - vendor/                 : Composer dev deps (PHPCS / WPCS)
+# - _docs/                  : internal documentation
+# - bin/                    : dev scripts (this script + check-headers.sh)
+# - .claude/                : Claude Code config (settings.local.json + caches)
+# - .env*                   : secrets — JAMAIS sur le serveur
+# - composer.*              : dev tooling configs
+# - phpcs.xml.dist          : lint config
+# - package.*               : npm config
+# - .editorconfig           : editor config
+# - .gitignore              : VCS only
+# - .gitkeep                : Git placeholders for otherwise-empty dirs
+# - composer.phar           : Composer binary (dev install)
+# - README.md               : dev doc only (WP doesn't read it from theme)
+# - CLAUDE.md               : Claude Code project memory, internal-only
+# - tailwind.input.css      : CSS source — only the compiled tailwind.css
+#                             belongs on prod
+# - assets/build/           : Tailwind v4 standalone binary (30 MB) + .gitkeep,
+#                             rebuilt locally only — production runs the
+#                             pre-built assets/css/tailwind.css
+# - *.log, *.tmp            : transient junk
+# - .DS_Store               : macOS metadata
 #
 
 EXCLUDES=(
@@ -132,8 +140,10 @@ EXCLUDES=(
     "--exclude-glob=vendor/"
     "--exclude-glob=_docs/"
     "--exclude-glob=bin/"
+    "--exclude-glob=.claude/"
     "--exclude-glob=.env*"
     "--exclude-glob=.gitignore"
+    "--exclude-glob=.gitkeep"
     "--exclude-glob=.editorconfig"
     "--exclude-glob=composer.json"
     "--exclude-glob=composer.lock"
@@ -143,6 +153,9 @@ EXCLUDES=(
     "--exclude-glob=package.json"
     "--exclude-glob=package-lock.json"
     "--exclude-glob=README.md"
+    "--exclude-glob=CLAUDE.md"
+    "--exclude-glob=tailwind.input.css"
+    "--exclude=^assets/build/"
     "--exclude-glob=*.log"
     "--exclude-glob=*.tmp"
     "--exclude-glob=.DS_Store"
