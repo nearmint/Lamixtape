@@ -305,6 +305,7 @@
 - **Description** : `my_update_comment_fields()` génère les `<input>` avec `placeholder="Name"` mais sans `<label for="...">`. Le placeholder n'est pas un substitut accessible.
 - **Impact** : Violation WCAG 1.3.1 / 4.1.2.
 - **Recommandation** : Ajouter `<label for="author" class="sr-only">Name</label>` (et idem email/url). Garder le placeholder pour l'usage visuel.
+- **Statut** : Résolu Phase 2.5 (`9f24105` + `3cb6aad` + `50d490d` + `d844b33` — module commentaires entièrement supprimé : `comments.php` retiré, callbacks `lmt_comment_callback` / `lmt_comment_form_fields` / `lmt_comment_form_textarea` supprimés de `functions.php`, `css/comment-form.css` retiré, BDD `comments_open=closed` sur tous les posts. Le formulaire n'existe plus, donc la question des `<label>` manquants devient moot — finding résolu par disparition du composant).
 
 ### [A11Y-011] Player : pas de `<label>` lié au seekbar
 - **Sévérité** : Basse
