@@ -651,6 +651,7 @@
 - **Description** : Pas de `<title>` dans `<head>` de `header.php`, et pas d'`add_theme_support('title-tag')` qui laisserait WP générer le titre via `wp_head`. Rank Math compense en injectant un `<title>` via `wp_head`, mais si Rank Math est désactivé (debug, conflit), **aucun `<title>` n'est généré**.
 - **Impact** : Dépendance forte à Rank Math, fragilité SEO.
 - **Recommandation** : Ajouter `add_theme_support('title-tag')` (cf. WP-003). Rank Math reste compatible et continue de surcharger le `<title>` quand activé.
+- **Statut** : Résolu Phase 2 (`68f406d` `add_theme_support('title-tag')` ajouté dans `lmt_setup_theme()` — voir WP-003 pour la liste complète des supports activés). Vérifié `functions.php:21` post-Phase-5. Backfill rétroactif Phase 6 prep — la résolution était couverte par le fix WP-003 mais le Statut n'avait pas été propagé sur OTHER-002.
 
 ### [OTHER-003] Aucune Open Graph / Twitter Card côté thème
 - **Sévérité** : Moyenne
