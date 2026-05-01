@@ -120,18 +120,83 @@
 }
 
 /*
- * @layer components — reserved for theme-specific reusable classes
- * (lmt-dialog, etc.). Populated during Axe C (modals → <dialog>).
+ * @layer components — theme-specific reusable component classes.
+ *
+ * Populated in Phase 4 Axe C C17 with the lmt-dialog component
+ * styles for the new native <dialog>-based modals (donatemodal,
+ * contactmodal). Plain CSS (no @apply) because the prefix(tw)
+ * mode would require the component to reference tw:* classes
+ * that may not be generated when no template uses them.
+ *
+ * The matching visual properties were extracted from the previous
+ * Bootstrap modal (modal, modal-dialog modal-lg, modal-content,
+ * modal-body, close) so the CHECKPOINT 3 diff stays minimal.
+ * Theme-specific overrides for content (background gradient,
+ * text-shadow, .donate-box, .form-container) continue to live in
+ * css/donation.css, scoped via #donatemodal/#contactmodal +
+ * .modal-content (preserved as an alias class on .lmt-dialog-content).
  */
 @layer components {
-    /* lmt-dialog styles will land here in Axe C (commit C17). */
+    .lmt-dialog {
+        /* Sized to the legacy Bootstrap modal-lg max-width with
+         * responsive shrinking on narrow viewports. */
+        max-width: 800px;
+        width: 90vw;
+        max-height: 90vh;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        overflow: visible;
+    }
+
+    /* Backdrop mirrors the Bootstrap default (50% black, no blur). */
+    .lmt-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .lmt-dialog-content {
+        /* position:relative anchors the close button absolute
+         * positioning when used corner-style, but the default
+         * close button below uses float:right so this is mostly
+         * defensive. padding mirrors BS .modal-body. */
+        position: relative;
+        padding: 2rem;
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+
+    .lmt-dialog-close {
+        /* Mirrors BS .close: float-right + transparent button-look,
+         * baseline opacity 0.7 going to 1 on hover/focus. The 40x40
+         * size matches the inline SVG width/height used in the
+         * markup (footer.php). */
+        float: right;
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        color: #fff;
+        opacity: 0.7;
+        transition: opacity 0.15s ease;
+    }
+
+    .lmt-dialog-close:hover,
+    .lmt-dialog-close:focus {
+        opacity: 1;
+    }
 }
 
 /*
  * Legacy compatibility shims — to be added at the moment a template
  * needs them and removed as the corresponding template gets
- * fully migrated. Each shim must carry a `/* MIGRATE TO: ... */`
- * comment so it cannot be forgotten at Axe D cleanup.
+ * fully migrated. Each shim must carry a "MIGRATE TO" comment line
+ * (not nested CSS comments — CSS does NOT support comment nesting,
+ * the inner close-comment marker would prematurely terminate the
+ * parent block and corrupt every rule that follows; learned the
+ * hard way at C17, see CHECKPOINT 2 fix for regression #1).
  */
 
 /*
