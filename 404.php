@@ -2,7 +2,7 @@
 <div class="container mx-auto px-4">
     <hr>
     <section class="text-right font-smoothing pb-12">
-        <h2 class="mt-12 pt-12"><?php esc_html_e('Looks like you got lost', 'lamixtape'); ?></h2>
+        <h1 class="mt-12 pt-12"><?php esc_html_e('Looks like you got lost', 'lamixtape'); ?></h1>
         <p><?php esc_html_e('Sorry, the page you are looking for has moved', 'lamixtape'); ?></p>
         <a class="inline-flex items-center bg-transparent text-white border-2 border-current rounded-none px-5 py-2.5 text-lg uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'lamixtape'); ?></a>&nbsp;
         <?php

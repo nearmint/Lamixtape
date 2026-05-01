@@ -8,7 +8,7 @@ global $wp_query;
         <form role="search" method="get" id="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
             <div class="container mx-auto px-4">
                 <hr class="mb-6">
-                <h4><?php esc_html_e('Search:', 'lamixtape'); ?>
+                <h1><?php esc_html_e('Search:', 'lamixtape'); ?>
                     <?php the_search_query(); ?>
                     <a href="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>/explore" class="float-right no--hover">
                         <svg class="bi bi-x" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -16,7 +16,7 @@ global $wp_query;
                             <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/>
                         </svg>
                     </a>
-                </h4>
+                </h1>
             </div>
         </form>
     </header>

@@ -6,6 +6,7 @@ $the_query = new WP_Query( array(
     'posts_per_page' => 1,
 ));
 ?>
+<h1 class="sr-only"><?php esc_html_e( 'Lamixtape — monthly curated music mixtapes', 'lamixtape' ); ?></h1>
 <section class="about font-smoothing">
     <div class="container mx-auto px-4">
         <hr>

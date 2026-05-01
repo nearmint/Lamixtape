@@ -4,7 +4,7 @@
     <hr>
     <article class="flex flex-wrap pt-4 pb-12">
         <div class="w-full lg:w-2/3">
-            <h2><?php single_post_title(); ?></h2>
+            <h1><?php single_post_title(); ?></h1>
             <?php the_content() ?>
 			<br>
 			<small>Last updated on <?php echo get_the_date('n/j/Y'); ?></small>

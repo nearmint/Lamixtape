@@ -4,7 +4,11 @@ nav {
     color: #fff;
     height: 85px;
 }
-nav h1 {
+/* Phase 5 A11Y-003: nav title is no longer a <h1> (the global <h1>
+ * on every page broke the heading hierarchy and reduced individual
+ * page titles to <h2>). Replaced by a <span class="lmt-logo">. */
+nav .lmt-logo {
+    display: inline-block;
     font-size: 2.5rem;
     letter-spacing: -1px;
 }

@@ -4,6 +4,7 @@
     <header>
         <div class="container mx-auto px-4">
             <hr class="mb-[5px]">
+            <h1 class="sr-only"><?php esc_html_e( 'Explore mixtapes', 'lamixtape' ); ?></h1>
             <form role="search" method="get" id="" class="mb-4 flex flex-wrap" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
                 <div class="flex-none">
                     <svg class="bi bi-search mt-5" width="30" height="30" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

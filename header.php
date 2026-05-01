@@ -17,7 +17,7 @@
     <nav class="navbar">
         <div class="container mx-auto px-4 flex flex-wrap items-center justify-between">
             <a class="no--hover pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
-                <h1><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></h1>
+                <span class="lmt-logo"><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></span>
             </a>
             <span class="text-right">
                 <ul class="flex gap-x-2 uppercase mb-0">

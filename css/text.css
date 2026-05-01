@@ -12,7 +12,7 @@ body.page-template-text p, body.page-template-text li {
     font-size: 20px;
 }
 
-body.page-template-text h2 {
+body.page-template-text :is(h1, h2) {
     text-shadow: 2px 2px 0 #1c5e8b;
     letter-spacing: 1px;
 }

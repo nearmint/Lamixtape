@@ -4,12 +4,12 @@
     <header class="font-smoothing">
         <div class="container mx-auto px-4">
             <hr class="mb-6 pb-1">
-            <h4>
+            <h1>
                 <?php esc_html_e('Genre :', 'lamixtape'); ?> <?php single_cat_title(); ?>
                 <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover">
                     <!-- “X” icon -->
                 </a>
-            </h4>
+            </h1>
         </div>
     </header>
 

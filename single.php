@@ -3,7 +3,7 @@
     <div class="container mx-auto px-4">
         <div class="flex flex-wrap pt-12">
             <div class="flex-1 md:flex-none md:w-2/3">
-                <h2 class="mb-0"><?php the_title(); ?></h2>
+                <h1 class="mb-0"><?php the_title(); ?></h1>
                 <?php
                 // Display categories for this mixtape
                 $categories = get_the_category();
