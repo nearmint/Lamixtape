@@ -265,6 +265,31 @@ function lmt_send_security_headers() {
 }
 add_action( 'send_headers', 'lmt_send_security_headers' );
 
+/**
+ * Apply the same security headers to REST API responses.
+ *
+ * Phase 7 audit (audit-post-refacto.md section 4.1) detected that
+ * WP_REST_Server doesn't trigger the `send_headers` hook —
+ * `lmt_send_security_headers()` therefore did NOT apply to
+ * `/wp-json/...` responses. Result : `X-Powered-By: PHP/8.2.29`
+ * leak on the 2 custom REST endpoints (`social/v2/likes/{id}` and
+ * `lamixtape/v1/posts`), and the 4 other Phase 3 headers absent.
+ *
+ * `rest_pre_serve_request` is the correct hook : it fires inside
+ * `WP_REST_Server::serve_request()` just before the response body
+ * is echoed, after the REST routing but with `header()` still
+ * settable. Using a filter signature (must return $served) so we
+ * pass it through unchanged.
+ *
+ * @param  bool $served  Whether the request has already been served.
+ * @return bool          Same $served value (filter passthrough).
+ */
+function lmt_rest_security_headers( $served ) {
+    lmt_send_security_headers();
+    return $served;
+}
+add_filter( 'rest_pre_serve_request', 'lmt_rest_security_headers', 10, 1 );
+
 // -----------------------------------------------------
 // ---------- Search on custom fields ------------------
 // -----------------------------------------------------
