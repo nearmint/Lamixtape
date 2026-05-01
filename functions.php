@@ -37,18 +37,36 @@ add_action( 'after_setup_theme', 'lmt_setup_theme' );
 // the theme stylesheets (post-Bootstrap migration Phase 4) and all
 // frontend scripts. Bootstrap CSS + JS bundle were removed in
 // Phase 4 Axe D commits C19 and C18 respectively.
+/**
+ * Compute a cache-busting version string for a theme asset.
+ *
+ * Phase 8 ad-hoc head cleanup F8 — extracts the filemtime() pattern
+ * previously used only for `lmt-tailwind` (ligne historique 47-48)
+ * so all 16 theme CSS enqueues can share the same cohérent cache
+ * busting strategy. Returns the file's mtime as integer when the
+ * file exists, `null` otherwise (which lets WP fall back to the
+ * core version, identique au comportement précédent du tailwind
+ * block).
+ *
+ * @param  string $relative_path  Path relative to the theme root.
+ * @return int|null               Unix timestamp from filemtime(),
+ *                                or null if file missing.
+ */
+function lmt_asset_ver( $relative_path ) {
+    $absolute = get_template_directory() . '/' . ltrim( $relative_path, '/' );
+    return file_exists( $absolute ) ? filemtime( $absolute ) : null;
+}
+
 function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
     // Tailwind v4 — Phase 4 Axe A. Carries the entire utility layer
     // (post-Axe-D, prefix-less). Loaded first so the theme CSS files
     // below can override individual rules if they need to.
-    $tailwind_path = get_template_directory() . '/assets/css/tailwind.css';
-    $tailwind_ver  = file_exists( $tailwind_path ) ? filemtime( $tailwind_path ) : null;
-    wp_enqueue_style( 'lmt-tailwind', $theme_uri . '/assets/css/tailwind.css', array(), $tailwind_ver );
+    wp_enqueue_style( 'lmt-tailwind', $theme_uri . '/assets/css/tailwind.css', array(), lmt_asset_ver( 'assets/css/tailwind.css' ) );
 
     // Outfit variable font — self-hosted Phase 1 commit 57404c9.
-    wp_enqueue_style( 'lmt-outfit', $theme_uri . '/assets/vendor/outfit/outfit.css', array( 'lmt-tailwind' ), '1.0' );
+    wp_enqueue_style( 'lmt-outfit', $theme_uri . '/assets/vendor/outfit/outfit.css', array( 'lmt-tailwind' ), lmt_asset_ver( 'assets/vendor/outfit/outfit.css' ) );
 
     // MediaElement.js — WP-bundled version (matches our 4.2.16 target).
     // The script is needed for MP3/YouTube playback under js/player.js,
@@ -80,7 +98,7 @@ function lmt_enqueue_assets() {
         'text'                 => 'css/text.css',
     );
     foreach ( $theme_css as $slug => $rel ) {
-        wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-tailwind' ), '1.0' );
+        wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-tailwind' ), lmt_asset_ver( $rel ) );
     }
 
     // Theme JS — main.js handles the like button, burger menu, mobile
@@ -118,7 +136,7 @@ function lmt_enqueue_assets() {
             'lmt-infinite-scroll',
             $theme_uri . '/css/infinite-scroll.css',
             array( 'lmt-tailwind' ),
-            '1.0'
+            lmt_asset_ver( 'css/infinite-scroll.css' )
         );
         wp_enqueue_script(
             'lmt-infinite-scroll',
