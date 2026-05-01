@@ -1,0 +1,15 @@
+{
+    "name": "lamixtape-theme",
+    "private": true,
+    "description": "Lamixtape WordPress theme — dev tooling for audits (Phase 7+).",
+    "version": "0.0.0",
+    "license": "UNLICENSED",
+    "scripts": {
+        "audit:lighthouse": "lighthouse https://lamixtape.local --output=html --output=json --chrome-flags=\"--headless --ignore-certificate-errors\" --only-categories=performance,accessibility,best-practices,seo",
+        "audit:pa11y": "pa11y https://lamixtape.local --reporter json --standard WCAG2AA --ignore-ssl-errors"
+    },
+    "devDependencies": {
+        "lighthouse": "^12.2.0",
+        "pa11y": "^8.0.0"
+    }
+}
