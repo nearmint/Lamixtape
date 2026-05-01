@@ -1,8 +1,8 @@
 <?php get_header(); ?>
-<article class="mixtape font-smoothing tw:pb-12 fade-in delay-1" style="background-color:<?php echo esc_attr( get_field('color') ); ?>">
+<article class="mixtape font-smoothing tw:pb-12" style="background-color:<?php echo esc_attr( get_field('color') ); ?>">
     <div class="tw:container tw:mx-auto tw:px-4">
         <div class="tw:flex tw:flex-wrap tw:pt-12">
-            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3 fade-in delay-2">
+            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3">
                 <h2 class="tw:mb-0"><?php the_title(); ?></h2>
                 <?php
                 // Display categories for this mixtape
@@ -18,7 +18,7 @@
                 ?>
                 <span class="tw:ml-1 tw:mr-2">·</span><span class="date"><?php the_time('F Y'); ?></span>
             </div>
-            <div class="tw:hidden tw:lg:block tw:lg:w-1/3 tw:text-right buttons fade-in delay-3">
+            <div class="tw:hidden tw:lg:block tw:lg:w-1/3 tw:text-right buttons">
                 <button class="like__btn animated like-btn">
                     🔥&nbsp;
                     <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
@@ -26,8 +26,8 @@
             </div>
         </div>
         <hr class="tw:my-6">
-        <div class="tw:flex tw:flex-wrap tracklist fade-in delay-4">
-            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3 fade-in delay-5">
+        <div class="tw:flex tw:flex-wrap tracklist">
+            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3">
                 <p class="tw:mb-6 curated author-<?php the_author_meta('ID') ?>">
                     <?php esc_html_e('This mixtape has been curated by our guest,', 'lamixtape'); ?>
                     <?php
@@ -52,7 +52,7 @@
                     <?php endif; ?>
                 </ul>
             </div>
-            <div class="tw:hidden tw:lg:block tw:lg:w-1/3 fade-in delay-6">
+            <div class="tw:hidden tw:lg:block tw:lg:w-1/3">
                 <div>
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
@@ -74,7 +74,7 @@
             </div>
         </div>
         <div class="tw:flex tw:flex-wrap tw:ml-0">
-            <div class="action-buttons fade-in delay-6 visible">
+            <div class="action-buttons">
                     <?php
                         $random = lmt_get_random_mixtape( 'single_random_button' );
                         if ( $random ) :
@@ -101,7 +101,6 @@
         <div id="lmt-mixtapes-container">
             <?php foreach ($pageposts as $post): setup_postdata($post); ?>
                 <?php get_template_part( 'template-parts/card-mixtape', null, array(
-                    'delay'                 => 7,
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'conditional',
                     'hide_curator_on_small' => false,

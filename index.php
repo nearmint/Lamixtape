@@ -9,7 +9,7 @@ $the_query = new WP_Query( array(
 <section class="about font-smoothing">
     <div class="tw:container tw:mx-auto tw:px-4">
         <hr>
-        <article class="tw:flex tw:flex-wrap tw:pt-6 tw:pb-12 fade-in delay-1">
+        <article class="tw:flex tw:flex-wrap tw:pt-6 tw:pb-12">
             <div class="tw:w-full tw:lg:w-2/3">
                 <p><?php esc_html_e('Hi and welcome to Lamixtape.', 'lamixtape'); ?></p>
 				<p><?php esc_html_e('Between', 'lamixtape'); ?> <a class="underline" href="https://web.archive.org/web/20130612232050/http://lamixtape.fr/" target="_blank"><?php esc_html_e('2011', 'lamixtape'); ?></a> <?php esc_html_e('and 2022, we released mixtapes every month, curated by our roster of curators and', 'lamixtape'); ?> <a class="underline" href="https://lamixtape.fr/guests/"><?php esc_html_e('incredible guests', 'lamixtape'); ?></a>. <?php esc_html_e("Our foundational reason for building Lamixtape was that we're really excited about sharing music. If we had a central goal, it was to feed your ears and curiosity with as much quality and diversity as possible.", 'lamixtape'); ?></p>
@@ -50,7 +50,6 @@ $the_query = new WP_Query( array(
         <div id="lmt-mixtapes-container">
             <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
                 <?php get_template_part( 'template-parts/card-mixtape', null, array(
-                    'delay'                 => 3,
                     'h2_extra_classes'      => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,

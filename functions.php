@@ -95,9 +95,10 @@ function lmt_enqueue_assets() {
     // tooltip fallback. data-toggle attributes can be cleaned up in
     // Axe D when the BS CSS is also removed.
 
-    // Theme JS — main.js handles the like button, burger menu, fade-in
-    // animations and smooth scroll. Localized with site info + REST nonce
-    // (consumed as `lmtData` inside the closure in main.js).
+    // Theme JS — main.js handles the like button, burger menu, mobile
+    // menu overlay animation and smooth scroll. Localized with site
+    // info + REST nonce (consumed as `lmtData` inside the closure in
+    // main.js).
     wp_enqueue_script( 'lmt-main', $theme_uri . '/js/main.js', array( 'jquery' ), null, true );
     wp_localize_script( 'lmt-main', 'lmtData', array(
         'template_url' => $theme_uri,

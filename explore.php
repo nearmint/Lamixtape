@@ -1,7 +1,7 @@
 <?php /* Template Name: explore */ ?>
 <?php get_header(); ?>
 <div id="explore" class="font-smoothing">
-    <header class="fade-in delay-1">
+    <header>
         <div class="tw:container tw:mx-auto tw:px-4">
             <hr class="tw:mb-[5px]">
             <form role="search" method="get" id="" class="tw:mb-4 tw:flex tw:flex-wrap" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
@@ -27,10 +27,8 @@
             'hide_empty' => false
         );
         $categories = get_categories( $args );
-        $delay = 2;
         foreach ( $categories as $category ) {
-            echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '"><header><h2 class="tw:pt-6 fade-in delay-' . $delay . '">' . esc_html( $category->name ) . '</h2></header></a>';
-            $delay++;
+            echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '"><header><h2 class="tw:pt-6">' . esc_html( $category->name ) . '</h2></header></a>';
         }
         ?>
     </section>

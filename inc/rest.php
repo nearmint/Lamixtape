@@ -101,7 +101,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'order'          => 'DESC',
                 ),
                 'card_args'    => array(
-                    'delay'                 => 3,
                     'h2_extra_classes'      => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,
@@ -132,7 +131,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'order'          => 'DESC',
                 ),
                 'card_args'    => array(
-                    'delay'                 => 7,
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'conditional',
                     'hide_curator_on_small' => false,
@@ -159,7 +157,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'order'          => 'ASC',
                 ),
                 'card_args'    => array(
-                    'delay'                 => 2,
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'none',
                     'hide_curator_on_small' => true,

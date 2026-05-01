@@ -8,7 +8,6 @@
  *
  * Expected $args (all optional, sensible defaults applied below):
  *
- *   - 'delay'                 int     (1..N) — fade-in delay class
  *   - 'article_extra_classes' string  — extra classes on <article>
  *                                       (e.g. 'font-smoothing')
  *   - 'h2_extra_classes'      string  — extra classes on the <h2>
@@ -39,7 +38,6 @@
 $args = wp_parse_args(
     isset( $args ) && is_array( $args ) ? $args : array(),
     array(
-        'delay'                 => 3,
         'article_extra_classes' => '',
         'h2_extra_classes'      => '',
         'highlight_mode'        => 'always_span',
@@ -48,7 +46,7 @@ $args = wp_parse_args(
     )
 );
 
-$article_classes = trim( $args['article_extra_classes'] . ' fade-in delay-' . (int) $args['delay'] );
+$article_classes = trim( $args['article_extra_classes'] );
 $h2_classes      = trim( $args['h2_extra_classes'] . ' tw:mb-0 tw:pt-2 tw:truncate' );
 $curator_classes = ( $args['hide_curator_on_small'] ? 'tw:hidden tw:lg:block ' : '' )
     . 'tw:float-right curator author-' . get_the_author_meta( 'ID' );

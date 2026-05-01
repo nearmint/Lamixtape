@@ -1,7 +1,7 @@
 <?php get_header(); ?>
 
 <div id="category">
-    <header class="font-smoothing fade-in delay-1">
+    <header class="font-smoothing">
         <div class="tw:container tw:mx-auto tw:px-4">
             <hr class="tw:mb-6 tw:pb-1">
             <h4>
@@ -31,7 +31,6 @@
             <div id="lmt-mixtapes-container">
                 <?php while ( $mixtape_query->have_posts() ) : $mixtape_query->the_post(); ?>
                     <?php get_template_part( 'template-parts/card-mixtape', null, array(
-                        'delay'                 => 2,
                         'article_extra_classes' => 'font-smoothing',
                         'highlight_mode'        => 'none',
                         'hide_curator_on_small' => true,
