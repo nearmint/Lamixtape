@@ -24,7 +24,7 @@
                 <ul class="flex gap-x-2 uppercase mb-0">
                     <li class="burger-menu block">
                         <button id="burger-btn" class="bg-transparent border-0 p-0" aria-label="Open menu">
-                            <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+                            <svg aria-hidden="true" focusable="false" width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
                                 <rect x="0" y="0" width="22" height="1.5" rx="0.75" fill="#ffffff"/>
                                 <rect x="8" y="7" width="14" height="1.5" rx="0.75" fill="#ffffff"/>
                                 <rect x="3" y="14" width="19" height="1.5" rx="0.75" fill="#ffffff"/>
@@ -40,7 +40,7 @@
     <div id="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Mobile navigation', 'lamixtape' ); ?>" aria-hidden="true">
         <div class="container mx-auto px-4">
             <button id="close-mobile-menu" aria-label="Close menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                 </svg>
             </button>

@@ -6,8 +6,11 @@
             <hr class="mb-6 pb-1">
             <h1>
                 <?php esc_html_e('Genre :', 'lamixtape'); ?> <?php single_cat_title(); ?>
-                <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover">
-                    <!-- “X” icon -->
+                <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover" aria-label="<?php esc_attr_e( 'Clear category filter and back to explore', 'lamixtape' ); ?>">
+                    <svg aria-hidden="true" focusable="false" class="bi bi-x" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/>
+                        <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/>
+                    </svg>
                 </a>
             </h1>
         </div>
