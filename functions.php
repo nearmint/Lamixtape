@@ -391,6 +391,23 @@ remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
 remove_action( 'wp_head',      'rest_output_link_wp_head'              );
 remove_action( 'wp_head',      'wp_oembed_add_discovery_links'         );
 remove_action( 'template_redirect', 'rest_output_link_header', 11, 0 );
+
+/*
+ * Phase 8 ad-hoc head cleanup — comments feed link orphan removal.
+ *
+ * WP core's `feed_links_extra()` emits multiple <link rel="alternate"
+ * type="application/rss+xml"> tags including the "Comments Feed"
+ * (`/comments/feed/`). Phase 2.5 removed the comments module
+ * entirely (cf. CLAUDE.md Q9), so the comments feed is orphan and
+ * pollutes <head> on every page.
+ *
+ * Use the chirurgical filter `feed_links_show_comments_feed`
+ * (returns false → skip the comments feed only) rather than
+ * `remove_action('wp_head', 'feed_links_extra', 3)` which would
+ * also strip per-category / per-author / per-search feeds (still
+ * legitimate).
+ */
+add_filter( 'feed_links_show_comments_feed', '__return_false' );
 /**
  * Deregister the wp-embed script (oEmbed JS not used on the frontend).
  *
