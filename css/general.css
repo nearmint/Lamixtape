@@ -81,7 +81,6 @@ a.no--border, a.no--hover:hover {
 
 /* ========== Miscellaneous ========== */
 hr {
-    margin-top: 0!important;
     margin-bottom: 10px;
     border: 0;
     border-top: 2px solid #fff;
