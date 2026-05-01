@@ -464,6 +464,79 @@ Symptôme : A11Y-005 fix Phase 5 (`9ba2f26`) a couvert `template-parts/card-mixt
 
 **Pointeur** : la "vraie" Phase 8 (réécriture markup pour réduire CSS custom de ~280 LoC components) reste possible mais reportée Q15. Cf. section 7.
 
+**Apprentissage BS-RESIDUAL — Phase 4 cleanup incomplet** (révélé Phase 8 ad-hoc head cleanup, 1er mai 2026)
+
+Symptôme : `data-toggle="tooltip"` + `data-placement="top"` résiduels dans `index.php:23` après suppression de Bootstrap en Phase 4. Bootstrap JS Tooltip n'existe plus donc ces attributs sont inertes mais polluent le markup. Détecté à l'audit utilisateur view-source de la home Local.
+
+Conséquence : pollution markup HTML, attributs `data-*` deprecated apparaissent dans le view-source. Aucun impact UX visible (le `title=""` reste, le tooltip natif browser s'affiche). Aucun impact a11y direct. Pollution cosmétique uniquement.
+
+Apprentissage : pour les futures suppressions de framework JS (jQuery, MediaElement, etc.), grep aussi les attributs `data-*` associés au framework (`data-toggle`, `data-target`, `data-dismiss`, `data-ride`, `data-spy`, `data-placement` pour Bootstrap) — pas uniquement les classes CSS. Pattern réplique TW-PARTIAL (Phase 4) et A11Y-PARTIAL (Phase 5/8) : `grep -rn` sur l'ensemble des `*.php` du thème pour détecter les survivants d'un framework supprimé.
+
+**Coût du faux positif** : 1 occurrence cosmétique survivante depuis Phase 4 (1 mois ≈ 1 jour de calendrier refacto), détectée à l'audit utilisateur view-source. Fix trivial (1 ligne, suppression de 2 attributs).
+
+**Apprentissage WP-FILTER chirurgical — `site_icon_meta_tags`** (Phase 8 ad-hoc head cleanup, 1er mai 2026)
+
+Cas d'usage : retirer UNIQUEMENT `<meta name="msapplication-TileImage">` de `wp_site_icon()` tout en gardant `<link rel="icon">` et `<link rel="apple-touch-icon">` (Windows Live Tiles deprecated Windows 11+, mais les icons restent légitimes).
+
+Filter : `site_icon_meta_tags` (wp-includes/general-template.php:3608). Reçoit l'array des meta tags icon comme strings. Pattern : `array_filter` + `strpos('msapplication-TileImage')` pour retirer chirurgicalement uniquement la ligne TileImage.
+
+Apprentissage général : pour chaque `<meta>` / `<link>` WP injectée indésirable, chercher d'abord un filter WP avant d'envisager un output buffer ou un dequeue complet. Les fonctions WP émettrices (wp_site_icon, feed_links, feed_links_extra, wp_oembed_add_discovery_links, etc.) exposent souvent un filter chirurgical qui permet de retirer 1 élément précis sans tout perdre. Lire le code core est plus rapide que d'inventer un workaround.
+
+**Coût d'investigation** : ~2 min de lecture wp-includes/general-template.php pour identifier le filter `site_icon_meta_tags`, puis 5 lignes de code pour le hook. Vs alternative output buffering qui aurait coûté plusieurs dizaines de lignes + risque de breaker l'ordre d'émission wp_head.
+
+### Phase 8 cleanup ad-hoc head cleanup — récap (1er mai 2026)
+
+**Métriques globales** :
+- **8 commits** sur `main` (pas de branche feature, micro-fixes triviaux réversibles).
+- 4 fichiers modifiés : `header.php`, `functions.php`, `index.php`, `inc/seo.php` + AUDIT.md non touché (les findings F1-F8 ne correspondent à aucun finding AUDIT existant — ce sont des trouvailles audit utilisateur view-source post-Phase-7).
+- Net code : ~10 lignes nettes ajoutées (4 filters + 1 helper `lmt_asset_ver`) — 7 lignes nettes supprimées (favicons hardcodes + duplicate a:hover history). Cleanup ad-hoc à dominante structurale.
+
+**8 commits Phase 8 cleanup HTML head** :
+- **MUST (3)** :
+  - `e77ac9d` F1 — Comments feed orphan via `feed_links_show_comments_feed` filter chirurgical
+  - `e4a4d33` F2 — theme-color #ffffff → #333333 (cohérent --color-bg)
+  - `a9d66b6` F3 — Bootstrap residual `data-toggle` / `data-placement` retirés (index.php:23)
+- **SHOULD (3)** :
+  - `e4a093f` F4 — Source WP `wp_site_icon()` SoT (header.php:7-11 hardcodes retirés, **F7 absorbé dans le bloc nettoyé** : mask-icon Safari deprecated retiré aussi)
+  - `09255bc` F5 — fb:app_id obsolète retiré via `rank_math/opengraph/facebook/fb_app_id` filter
+  - `d99bea3` F6 — TileColor (header.php) + TileImage (filter chirurgical `site_icon_meta_tags`) retirés
+- **NICE (1)** :
+  - `bfa71f9` F8 — `filemtime()` cache busting cohérent sur 16 enqueues CSS thème via helper `lmt_asset_ver()`
+- **Closure (1)** :
+  - (ce commit) `docs:` apprentissages BS-RESIDUAL + WP-FILTER + récap
+
+**Apprentissages tracés** :
+- **BS-RESIDUAL** (réplique TW-PARTIAL Phase 4, A11Y-PARTIAL Phase 5/8) : grep large sur les `data-*` attributes pour les futures suppressions de framework JS.
+- **WP-FILTER chirurgical** (`site_icon_meta_tags`) : préférer les filters WP natifs aux output buffers pour les `<meta>` / `<link>` indésirables.
+
+**Post-cleanup** :
+- `<head>` nettoyé de **5 balises obsolètes/dupliquées/orphelines** :
+  - `<link rel="alternate" type="application/rss+xml" title="Lamixtape » Comments Feed">` (orphan Phase 2.5)
+  - `<meta name="msapplication-TileColor">` + `<meta name="msapplication-TileImage">` (Windows Live Tiles deprecated)
+  - `<meta property="fb:app_id">` (deprecated 2021)
+  - `<link rel="mask-icon">` (Safari deprecated 12+)
+- `<head>` nettoyé de **5 hardcodes thème en doublon** avec wp_site_icon (apple-touch + favicon-32 + favicon-16 + manifest + mask-icon).
+- `theme-color` cohérent avec --color-bg (#333) — barre URL mobile correcte.
+- Source unique pour favicons (wp_site_icon Customizer admin) — UX évolution non-développeur facilitée.
+- Cache busting cohérent sur 16 enqueues CSS thème (auparavant seul tailwind avait filemtime).
+- Filter chirurgical WP appliqué pour msapplication-TileImage (préserve les icons légitimes).
+
+**Validation utilisateur (sortie curl post-fix)** :
+| Check | Résultat | Attendu |
+|---|---|---|
+| F1 comments feed | 0 occurrence | 0 ✅ |
+| F2 theme-color | `content="#333333"` | #333333 ✅ |
+| F3 data-toggle | 0 occurrence | 0 ✅ |
+| F4 hardcodes /favicon-* | 0 occurrence | 0 ✅ |
+| F4 WP icons (cropped-) | 3 occurrences | 3 ✅ |
+| F5 fb:app_id | 0 occurrence | 0 ✅ |
+| F6 msapplication-* | 0 occurrence | 0 ✅ |
+| F8 cache busting | 17 ?ver= (16 thème + 1 plugin) | ≥16 ✅ |
+| Sanity main feed kept | 1 | 1 ✅ |
+| Sanity OG meta | 8 occurrences | 5+ ✅ |
+
+**Pointeur** : tous les findings audit utilisateur view-source résolus. Aucune régression sur les éléments à conserver (main feed, OG meta, 3 icons WP). Ready for next chantier ou déploiement prod.
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
