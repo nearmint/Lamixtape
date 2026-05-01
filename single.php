@@ -24,7 +24,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
                 <span class="ml-1 mr-2">·</span><span class="date"><?php the_time('F Y'); ?></span>
             </div>
             <div class="hidden lg:block lg:w-1/3 text-right buttons">
-                <button class="like__btn animated like-btn" aria-label="<?php esc_attr_e( 'Like this mixtape', 'lamixtape' ); ?>">
+                <button class="like__btn like-btn" aria-label="<?php esc_attr_e( 'Like this mixtape', 'lamixtape' ); ?>">
                     <span aria-hidden="true">🔥&nbsp;</span>
                     <span class="like__number"><?php echo (int) ( get_field( 'likes_number' ) ?: 0 ); ?></span>
                 </button>

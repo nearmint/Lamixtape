@@ -3,9 +3,45 @@
 // behaves differently depending on whether a CDN jQuery is loaded
 // alongside the WP-bundled one).
 jQuery(function ($) {
-    // Like button AJAX logic
+    // Like button AJAX logic + persistent liked state via localStorage
+    // + tada animation (restored, was Animate.css leftover from Phase 1).
+    //
+    // Phase Recette F-7 — once a user clicks the like button, the
+    // localStorage key `lmt_liked_<post_id>` is set to '1'. On subsequent
+    // page loads the button renders in a greyed-out "🔥 <count> Already liked"
+    // state to make the persistent like obvious to the same browser.
+    // This is independent of the server-side IP-based 429 rate-limit
+    // (which only catches same-IP repeat clicks within HOUR_IN_SECONDS).
+    var LMT_TADA_DURATION_MS = 600;
+
     $(document).ready(function() {
-        $('.like__btn').on('click', function() {
+        var likedKey = lmtData.post_id ? 'lmt_liked_' + lmtData.post_id : null;
+        var $likeBtn = $('.like__btn');
+
+        // Apply the persistent "already liked" state to a like button. The
+        // markup (🔥 + count span) is preserved untouched — only attributes
+        // and CSS class change. The "Already liked" hint surfaces via the
+        // `title` attribute (native browser tooltip on hover).
+        function applyAlreadyLikedState($btn) {
+            $btn
+                .attr('disabled', true)
+                .attr('aria-pressed', 'true')
+                .attr('title', 'Already liked')
+                .removeClass('tada')
+                .addClass('like__btn--already-liked');
+        }
+
+        // Hydrate persistent liked state on page load. The animation does
+        // NOT play on hydrate — only on a fresh user click.
+        if (likedKey && $likeBtn.length) {
+            try {
+                if (localStorage.getItem(likedKey) === '1') {
+                    applyAlreadyLikedState($likeBtn);
+                }
+            } catch (e) { /* localStorage unavailable (private mode, full quota) — silent fail */ }
+        }
+
+        $likeBtn.on('click', function() {
             var $btn = $(this);
             $.ajax({
                 url: lmtData.site_url + '/wp-json/social/v2/likes/' + lmtData.post_id,
@@ -19,6 +55,12 @@ jQuery(function ($) {
                     $btn.attr('disabled', true).addClass('tada');
                     // Server returns the new count; trust it over optimistic UI.
                     $('.like__number').html(response);
+                    // Persist the liked state across sessions (F-7).
+                    if (likedKey) {
+                        try {
+                            localStorage.setItem(likedKey, '1');
+                        } catch (e) { /* silent fail */ }
+                    }
                     // Phase Tracking v1 — fire like_click after server-confirmed
                     // success. Single-click design (button disables post-success +
                     // 429 rate-limit on subsequent clicks), so each AJAX success
@@ -28,11 +70,25 @@ jQuery(function ($) {
                             mixtape_slug: window.lmtGetMixtapeSlug()
                         });
                     }
+                    // Let the tada animation play before transitioning to
+                    // the persistent "Already liked" greyed-out state.
+                    // Markup (🔥 + count) preserved; only class + title +
+                    // disabled change.
+                    setTimeout(function () {
+                        applyAlreadyLikedState($btn);
+                    }, LMT_TADA_DURATION_MS);
                 },
                 error: function (xhr) {
                     if (xhr.status === 429) {
-                        // Already liked from this IP within the hour.
-                        $btn.attr('disabled', true).attr('title', 'Already liked');
+                        // Already liked from this IP within the hour. Apply
+                        // the persistent state immediately (no animation —
+                        // server didn't accept the click). Markup unchanged.
+                        applyAlreadyLikedState($btn);
+                        if (likedKey) {
+                            try {
+                                localStorage.setItem(likedKey, '1');
+                            } catch (e) { /* silent fail */ }
+                        }
                     } else {
                         console.log('like failed:', xhr.status);
                     }

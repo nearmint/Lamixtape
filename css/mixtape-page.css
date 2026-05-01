@@ -52,6 +52,37 @@ article.mixtape .buttons .like-btn:active {
     transform: translateY(1px)
 }
 
+/* Phase Recette F-7 — restored tada animation (was a leftover
+ * marker class from the Animate.css CDN removed in Phase 1 self-host;
+ * the markup + JS still added the class but no keyframe existed,
+ * making the like a silent operation). 600ms gentle rotate+scale,
+ * synced with the JS setTimeout that delays the "Already liked"
+ * switch until the animation completes. */
+@keyframes lmt-tada {
+    0%                  { transform: scale(1); }
+    10%, 20%            { transform: scale(0.95) rotate(-1.5deg); }
+    30%, 50%, 70%, 90%  { transform: scale(1.05) rotate(1.5deg); }
+    40%, 60%, 80%       { transform: scale(1.05) rotate(-1.5deg); }
+    100%                { transform: scale(1); }
+}
+.like__btn.tada {
+    animation: lmt-tada 600ms ease-in-out;
+}
+
+/* Phase Recette F-7 — persistent "already liked" state. Set client-side
+ * in main.js when localStorage flag lmt_liked_<post_id> is present
+ * (either fresh on AJAX success, or hydrated from a prior session at
+ * page load). Greys out the button so the user sees their previous
+ * like was registered. The count is preserved inside the label. */
+.like__btn--already-liked,
+.like__btn--already-liked:hover {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+    .like__btn.tada { animation: none; }
+}
+
 article.mixtape img.illustration {
     border: solid 1px RGBA(255, 255, 255, .2);
     border-radius: 3px
