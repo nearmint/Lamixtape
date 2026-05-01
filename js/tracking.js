@@ -72,4 +72,24 @@
         var segments = path.replace( /^\/+|\/+$/g, '' ).split( '/' );
         return segments[ segments.length - 1 ] || '';
     };
+
+    /**
+     * Delegated click listener for the PayPal donate button.
+     *
+     * Phase Tracking v1 event 5/6 — fire `donate_paypal_click` when
+     * the user clicks the "Donate via PayPal" button inside
+     * #donatemodal (footer.php:16). Fire-and-forget : `target="_blank"`
+     * opens a new window and the synchronous track() call initiates
+     * the POST before the browser navigates the new tab.
+     *
+     * Delegation on document so the listener stays valid even if
+     * the modal is recreated or moved in the DOM (current setup
+     * doesn't do this, but defensive).
+     */
+    document.addEventListener( 'click', function ( event ) {
+        var paypalBtn = event.target.closest( '.btn-donate' );
+        if ( paypalBtn ) {
+            window.lmtTrack( 'donate_paypal_click' );
+        }
+    } );
 }() );
