@@ -66,6 +66,16 @@ jQuery(function ($) {
     success: function (media, node, instance) {
       player = media;
       player.addEventListener("ended", function () {
+        // Phase Tracking v1 — MediaElement `ended` event fires
+        // only on natural end (not on skip), so no percentage
+        // check needed. Fire play_complete then auto-advance.
+        if (typeof window.lmtTrack === 'function') {
+          window.lmtTrack('play_complete', {
+            mixtape_slug: window.lmtGetMixtapeSlug(),
+            track_index: currentTrack,
+            track_title: trackTitle
+          });
+        }
         playNextSong();
       });
       player.addEventListener("playing", function () {
@@ -164,6 +174,20 @@ const pauseSvg = `
 `;
 
 if (event.data === YT.PlayerState.ENDED) {
+  // Phase Tracking v1 — fire play_complete only if >=95% played
+  // (defensive : avoid false positives if YouTube ENDED fires early
+  // due to network glitch or rapid skip-to-end manipulation).
+  if (typeof window.lmtTrack === 'function') {
+    var ytCurrent = (youtubePlayer && typeof youtubePlayer.getCurrentTime === 'function') ? youtubePlayer.getCurrentTime() : 0;
+    var ytDuration = (youtubePlayer && typeof youtubePlayer.getDuration === 'function') ? youtubePlayer.getDuration() : 0;
+    if (ytDuration > 0 && (ytCurrent / ytDuration) >= 0.95) {
+      window.lmtTrack('play_complete', {
+        mixtape_slug: window.lmtGetMixtapeSlug(),
+        track_index: currentTrack,
+        track_title: trackTitle
+      });
+    }
+  }
   playNextSong();
 } else if (event.data === YT.PlayerState.PLAYING) {
   $playPauseBtn.html(pauseSvg);
