@@ -313,3 +313,31 @@ function lmt_emit_jsonld_musicplaylist() {
     echo "<!-- /Phase 6 OTHER-006 fallback -->\n";
 }
 add_action( 'wp_head', 'lmt_emit_jsonld_musicplaylist', 20 );
+
+/**
+ * Suppress the obsolete `fb:app_id` Open Graph meta tag emitted by
+ * Rank Math.
+ *
+ * Phase 8 ad-hoc cleanup HTML head — finding F5 (audit utilisateur
+ * view-source). Facebook deprecated `fb:app_id` in 2021 (no longer
+ * required for OG sharing, no longer parsed for App Insights since
+ * Marketing API v15.0). Lamixtape doesn't use FB Login or any
+ * App-id-bound integration, so the meta is pure pollution.
+ *
+ * Rank Math emits the tag via `RankMath\OpenGraph\Facebook::app_id()`
+ * which calls `$this->tag( 'fb:app_id', $app_id )` (cf.
+ * `includes/opengraph/class-facebook.php:248`). The shared
+ * `tag()` method (`class-opengraph.php`) runs the value through
+ * `do_filter( "opengraph/{$network}/$og_property", $content )`
+ * — for fb:app_id with network=facebook, the filter is
+ * `rank_math/opengraph/facebook/fb_app_id` (note `:` is replaced
+ * by `_` to form a valid PHP filter name).
+ *
+ * Returning empty string from this filter triggers the early
+ * `if ( empty( $content ) || ! is_scalar( $content ) ) { return false; }`
+ * check in tag(), which skips the meta emission entirely.
+ *
+ * Verified by reading Rank Math source (plugin v1.x ; behavior
+ * confirmed unchanged across recent releases).
+ */
+add_filter( 'rank_math/opengraph/facebook/fb_app_id', '__return_empty_string' );
