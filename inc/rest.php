@@ -261,4 +261,81 @@ add_action( 'rest_api_init', function () {
             ),
         ),
     ) );
+
+    register_rest_route( 'lamixtape/v1', '/random-mixtape', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'lmt_rest_random_mixtape',
+        'permission_callback' => '__return_true',
+    ) );
 } );
+
+/**
+ * REST callback for /lamixtape/v1/random-mixtape.
+ *
+ * Picks one published post at random and returns a 302 redirect to
+ * its permalink. This is the navigation-link counterpart to the
+ * legacy lmt_get_random_mixtape() helper which cached one random
+ * pick per call site for HOUR_IN_SECONDS — every click on a "Random
+ * mixtape" link in templates points to this endpoint, and the server
+ * picks a fresh post every time (no transient cache).
+ *
+ * Trade-off vs the legacy cached helper:
+ *   - PRO: every click yields a different mixtape (true random
+ *     navigation UX, the original spec for the link).
+ *   - CON: each click triggers a WP_Query orderby=rand (PERF-005
+ *     pattern). Acceptable because the query runs once per user
+ *     click, fields=ids + no_found_rows + LIMIT 1 keep it cheap on
+ *     the ~370-post catalog.
+ *
+ * Response:
+ *   HTTP 302 Found
+ *   Location: <permalink>
+ *   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+ *   Pragma: no-cache
+ *
+ * The no-cache headers prevent any CDN / browser cache from serving
+ * a stale Location, which would defeat the "fresh random" UX.
+ *
+ * Public endpoint (no nonce, no rate-limit). The redirect is the
+ * landing target of an <a href> click in templates, so requests come
+ * from real navigation, not XHR. Abuse mitigation can be added later
+ * via a transient rate-limit (cf. lmt_rest_pagination_permission)
+ * if traffic monitoring shows misuse.
+ *
+ * @param  WP_REST_Request $request
+ * @return WP_REST_Response|WP_Error
+ */
+function lmt_rest_random_mixtape( WP_REST_Request $request ) {
+    $query = new WP_Query( array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'orderby'        => 'rand',
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    ) );
+
+    if ( empty( $query->posts ) ) {
+        return new WP_Error(
+            'lmt_no_mixtape',
+            __( 'No mixtape available', 'lamixtape' ),
+            array( 'status' => 404 )
+        );
+    }
+
+    $id  = (int) $query->posts[0];
+    $url = get_permalink( $id );
+    if ( ! $url ) {
+        return new WP_Error(
+            'lmt_invalid_permalink',
+            __( 'Could not resolve permalink', 'lamixtape' ),
+            array( 'status' => 500 )
+        );
+    }
+
+    $response = new WP_REST_Response( null, 302 );
+    $response->header( 'Location', $url );
+    $response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+    $response->header( 'Pragma', 'no-cache' );
+    return $response;
+}
