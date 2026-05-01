@@ -408,6 +408,36 @@ remove_action( 'template_redirect', 'rest_output_link_header', 11, 0 );
  * legitimate).
  */
 add_filter( 'feed_links_show_comments_feed', '__return_false' );
+
+/*
+ * Phase 8 ad-hoc head cleanup — strip msapplication-TileImage meta.
+ *
+ * WP core's `wp_site_icon()` (wp-includes/general-template.php:3596-
+ * 3599) emits `<meta name="msapplication-TileImage" content="...
+ * cropped-lamixtape-square-270x270.png" />` alongside the legitimate
+ * <link rel="icon"> + <link rel="apple-touch-icon">.
+ *
+ * Windows Live Tiles is deprecated since Windows 11 (Microsoft
+ * removed pinned tile support from the Start menu). The TileImage
+ * meta is inert on modern Windows but still pollutes <head>.
+ *
+ * Use the `site_icon_meta_tags` filter (general-template.php:3608)
+ * which receives the array of <link>/<meta> tags as strings — we
+ * can chirurgically remove only the line containing
+ * "msapplication-TileImage" while preserving the legitimate icons.
+ *
+ * Companion to header.php cleanup (F6 commit) which removed the
+ * theme-side `<meta name="msapplication-TileColor">`.
+ *
+ * @param  string[] $meta_tags  Array of site icon meta tag strings.
+ * @return string[]             Same array minus the TileImage line.
+ */
+function lmt_strip_msapplication_tileimage( $meta_tags ) {
+    return array_filter( $meta_tags, static function ( $tag ) {
+        return false === strpos( $tag, 'msapplication-TileImage' );
+    } );
+}
+add_filter( 'site_icon_meta_tags', 'lmt_strip_msapplication_tileimage' );
 /**
  * Deregister the wp-embed script (oEmbed JS not used on the frontend).
  *

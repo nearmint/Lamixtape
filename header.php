@@ -3,7 +3,6 @@
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="msapplication-TileColor" content="#333333">
     <meta name="theme-color" content="#333333">
     <?php wp_head(); ?>
 </head>
