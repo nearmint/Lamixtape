@@ -20,7 +20,7 @@ $the_query = new WP_Query( array(
                     <?php
                     $random = lmt_get_random_mixtape( 'home_about_inline' );
                     if ( $random ) :
-                        echo '<a data-toggle="tooltip" data-placement="top" title="' . esc_attr__('Random mixtape', 'lamixtape') . '" href="' . esc_url( get_permalink( $random ) ) . '" class="underline">';
+                        echo '<a title="' . esc_attr__('Random mixtape', 'lamixtape') . '" href="' . esc_url( get_permalink( $random ) ) . '" class="underline">';
                         esc_html_e('getting lost', 'lamixtape');
                         echo '</a>';
                     endif;
