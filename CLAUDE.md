@@ -75,20 +75,19 @@ lamixtape/
 | **Process / Qualité** | 16 | 16 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
 | **Sécurité** | 9 | 8 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
 | **Performance** | 14 | 13 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#performance` |
-| **Accessibilité** | 11 | 0 | 0 | 4 | `_docs/AUDIT.md#a11y` |
+| **Accessibilité** | 11 | 11 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#a11y` |
 | **WP best practices** | 9 | 7 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#wp` |
 | **Migration Tailwind** | 5 | 5 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#tailwind` |
 | **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
-| **TOTAL** | **72** | **50** | **0** ✅ | **7** | |
+| **TOTAL** | **72** | **61** | **0** ✅ | **3** | |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 50 résolus à fin Phase 4 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3 + 6 P4 = TW-001/002/003/004/005 + QC-007 finalisé). 22 restants pour Phases 5-6+. **Aucun finding Critique ni Haute Tailwind restant** ✅. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 61 résolus à fin Phase 5 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3 + 6 P4 + 11 P5 = A11Y-001 à 011 incluant A11Y-010 retro Phase 2.5 et A11Y-NEW-001 retro Phase 4). 11 restants pour Phase 6+. **Aucun finding Critique ni Haute restant hors PERF-006 (Haute, reporté Q10 search rewrite post-Phase-6)** ✅. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
-Reste ouvert (cibles Phases 5-6+) :
-- **A11Y-001 à 011** : 11 findings (focus visible, skip-link, landmarks, contrastes, modals…) → Phase 5
+Reste ouvert (cibles Phase 6+) :
 - **PERF-006** (Haute, search LEFT JOIN postmeta) → Q10 search rewrite, post-Phase-6
 - **WP-005** / **WP-006** : 2 Moyennes (renommage Posts → Playlist sur le post type natif ; WP_POST_REVISIONS) → Phase 6 outillage
 - **OTHER-001 à 008** : 7 findings (RGPD, SEO/OG, monitoring) → Phase 6
-- **3 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy + Q13 dette résiduelle écarts visuels Phase 4 (cf. section 7) → Phase 5 polish ou ad-hoc
+- **3 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy + Q13 dette résiduelle écarts visuels Phase 4 → Phase 6 ou ad-hoc
 
 ### Phase 0 close — récap
 - 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
@@ -307,6 +306,53 @@ Détecté à la review CHECKPOINT 4 par l'utilisateur ("player complètement cas
 **Validation finale Phase 4 (à charge utilisateur)** :
 - Branche `feature/tailwind-migration` actuellement à `aea041d`. Tests post-merge : 8 templates iso-visuels à 99% vs `_docs/captures-post-phase-3/` (modulo dette résiduelle Q13). Bootstrap CSS + JS + mediaelementplayer.css confirmés absents du Network tab DevTools. Modals/burger/like/player/infinite scroll fonctionnels.
 - Captures `_docs/captures-post-phase-4/` à prendre par utilisateur post-merge.
+
+### Phase 5 close — récap (1er mai 2026)
+
+**Métriques globales** :
+- **13 commits** depuis fin Phase 4 (`f346b3b`), tous pushés directement sur `origin/main` (pas de branche feature, mode marathon procédure révisée — chaque finding A11Y est indépendant et facilement reversible). 2 commits prep (`3c0cebd` A11Y-010 retro Phase 2.5 + `8a10f48` A11Y-NEW-001 sub-note A11Y-008) + 9 commits fix A11Y-XXX + 1 commit verification statut (A11Y-008 fully resolved Phase 4) + 1 commit bonnes pratiques additionnelles a-g.
+- 22 fichiers modifiés ; **+307 / −73 lignes (net +234)** — phase à dominante structurale (helpers PHP, ARIA attributes, JS focus management, CSS focus-visible). Pas de suppression majeure.
+- **11 findings A11Y résolus Phase 5** (A11Y-001 à A11Y-011), incluant 1 retro Phase 2.5 (A11Y-010 par suppression module commentaires) et 1 retro Phase 4 (A11Y-NEW-001 sub-note A11Y-008 par migration `<dialog>` natif). Plus la finalisation A11Y-008 (markup déjà migré Phase 4, vérification `aria-labelledby` correcte Phase 5).
+- **Aucun fix spéculatif**. Toute décision ambiguë (A11Y-009 contrast ACF curators) escaladée à l'utilisateur via D-M-5.3.
+- **TOTAL findings résolus** : **61/72** à fin Phase 5 (50 pré-Phase-5 + 11 P5). 11 restants pour Phase 6+ (1 PERF-006 + 2 WP + 7 OTHER + Q10/Q11/Q12/Q13 questions).
+
+**Découpage par groupe** :
+- **GROUPE 1 — Sémantique HTML** (3 fixes) : `9ba2f26` A11Y-005 (`alt=` invalide → `title=`, paramètre `tag_link_attr` supprimé du template-part + 5 callers), `916c92a` A11Y-002 (9 triggers modal `<a href="#">` → `<button type="button">` + composant `.lmt-link-button` reset UA defaults + maj selectors `mixtape-page.css`), `f1c2884` A11Y-003 (hiérarchie headings : `<h1>` nav → `<span class="lmt-logo">`, page titles `<h2>`/`<h4>` → `<h1>` sur 7 templates, `<h1 class="sr-only">` ajouté home + explore).
+- **GROUPE 2 — Landmarks** (1 fix) : `9ae9953` A11Y-004 (skip-link `.lmt-skip-link` + `<main id="main" tabindex="-1">` wrap dans header/footer + `aria-label="Main navigation"` sur `<nav>`).
+- **GROUPE 3 — Modals & overlay** (2 fixes) : `bc100e5` A11Y-008 vérification (déjà résolu Phase 4 markup-wise, statut formalisé), `b29f8cd` A11Y-006 (mobile menu `role="dialog" aria-modal="true" aria-hidden="true"` + JS `setSiblingsInert()` focus trap + restauration focus sur close).
+- **GROUPE 4 — Préférences** (1 fix) : `0bc4953` A11Y-007 (`@media (prefers-reduced-motion: reduce)` global dans `general.css`, neutralise les 3 animations restantes + toute future).
+- **GROUPE 5 — Focus visible** (1 fix, impact visuel accepté) : `002731e` A11Y-001 (suppression rules legacy `outline: 0 !important`, ajout `:focus-visible { outline: 2px solid #fff; outline-offset: 2px }` universel + override `#seekbar:focus-visible` pour battre `outline: none` dans player.css).
+- **GROUPE 6 — Player** (1 fix) : `2f70e48` A11Y-011 (seekbar `aria-label="Track progress"` + `aria-valuetext` mis à jour par `updateSeekbarAria(cur, dur)` à chaque tick).
+- **GROUPE 7 — Décision business** (1 fix Option B) : `b6dc046` A11Y-009 (helper `lmt_contrast_text_color($hex)` formule WCAG luminance dans `inc/queries.php` + maj card-mixtape.php + single.php pour appliquer `color` inline + règle `article a, article small { color: inherit }` pour fix cascade).
+- **Bonnes pratiques additionnelles** (1 fix) : `c8f397d` form labels (explore.php `<label class="sr-only">`), `aria-hidden="true" focusable="false"` sur 7 SVG décoratifs (header, player, search, category, explore, 404, JS-emitted), `aria-label` sur like button (single.php) + 🔥 emoji wrapped en `<span aria-hidden>`, restauration X icon SVG dans `category.php` (empty link bug structurel — placeholder dev jamais terminé, audit-axe `link-name`).
+
+**Diagnostic-d'abord — pattern confirmé** :
+- **A11Y-NEW-001 ≠ finding indépendant** : le prompt-phase-5 référençait un ID qui n'existait pas séparément dans AUDIT.md. Cross-check 5.0.2 a évité 1 commit faussement créé. Clarifié comme sous-note A11Y-008.
+- **A11Y-010 résolu rétroactivement Phase 2.5** : la suppression module commentaires Phase 2.5 avait rendu A11Y-010 moot, mais le statut n'avait jamais été posé. Cross-check 5.0.2 a évité 1 commit fix sur du code inexistant.
+- **A11Y-002 + A11Y-007 + A11Y-008 partiellement résolus Phase 4** : Phase 4 Axe C avait migré markup (`<dialog>` natif, `data-lmt-dialog` triggers) sans finir la sémantique (`<a>` → `<button>`) ou la couverture (`prefers-reduced-motion`). Cross-check 5.0.2 a permis de planifier des sous-fixes ciblés au lieu de tout refaire.
+- **A11Y-009 + cascade `a, body, small`** : décision business d'abord (Option B luminance vs A palette restreinte vs C overlay), implémentation ensuite, fix cascade découvert au commit (les `<a>` enfants de `<article>` héritaient pas du `color` inline car `a, body, small { color: #fff }` (0,0,1) gagnait sur `<article style="color:...">` (0,0,0)). Pattern confirmé : *touch a frequently-styled selector → audit specificity ladder before assuming inheritance works*.
+
+**Apprentissages clés** (à retenir pour Phase 6) :
+1. **Marathon direct sur `main` viable pour Phase A11Y**. Chaque finding est indépendant et reversible (1 finding = 1 commit), pas de dépendances inter-fixes hors les 3 partiellement-couverts par Phase 4. Branche feature aurait été overkill. Pattern à reprendre pour les phases "punch list" futures.
+2. **Tailwind v4 preflight reset des headings = facilitateur a11y**. Le reset `h1-h6 { font-size: inherit }` rend la hiérarchie sémantique transparente visuellement — on peut promouvoir `<h2>` à `<h1>` sans changement de rendu, sauf sur les éléments explicitement stylés (couverts par updates de selectors). À garder en tête : *Tailwind preflight n'est pas seulement un reset CSS, c'est aussi un facilitateur d'a11y refactor*.
+3. **`inert` attribute > JS focus trap manuel**. La couverture browser (Safari 15.4+, Chrome 102+, Firefox 112+ → >97% en 2026) rend `inert` viable comme primitive. 5 lignes JS pour le mobile menu vs 50 lignes de focus trap manuel. Pattern à étendre aux autres composants modal-style si futurs.
+4. **Composants ARIA = wins composés**. La même migration `<dialog>` natif Phase 4 a couvert : focus trap (browser-natif), `aria-modal=true` (auto), focus restoration (auto), Escape close (auto), warning Chromium aria-hidden (auto). 1 décision technique = 5 a11y wins. Ne pas hésiter à pencher vers les primitives natives même quand un fallback custom existe déjà.
+5. **`focus-visible` >> `:focus`** pour les focus rings. Permet de retirer le focus ring sur clic souris (utilisateur visuel rarement intéressé) tout en le préservant sur navigation clavier (utilisateur clavier en a besoin). Le wrapper `:focus-visible` est natif tous browsers >2022, à utiliser systématiquement.
+
+**Pointeur Phase 6 — outillage SEO + clôture (dernière phase)** :
+- 7 OTHER findings (RGPD, SEO/OG, observabilité monitoring) → cf. `_docs/AUDIT.md#autres`
+- 2 WP findings (WP-005 renommage Posts → Playlist, WP-006 `WP_POST_REVISIONS` dans wp-config.php) → outillage admin
+- 3 questions ouvertes structurantes :
+  * **Q10 (PERF-006)** : refonte search rewrite (FT MySQL ou plugin Relevanssi/SearchWP) — décision business + technique
+  * **Q11 (CSP)** : Content-Security-Policy header — matrice à construire post-Phase-4 (Bootstrap supprimé simplifie)
+  * **Q13** : écarts visuels résiduels Phase 4 — diff manuel `_docs/captures-post-phase-3` vs `_docs/captures-post-phase-4` à charge utilisateur ; corrections ad-hoc sur `main`
+- **Q12** validation runtime Phase 3 (tests sécurité skippés Local) — à intégrer Phase 6 ou tester en prod post-déploiement
+
+**Validation finale Phase 5 (à charge utilisateur, à exécuter quand temps disponible)** :
+- Test rapide local : modals (donate + contact) ouvrent/ferment au clavier, ESC ferme, focus restored sur trigger ; burger menu ouvre, ESC ferme, focus revient sur burger ; skip link visible au Tab depuis address bar, Enter saute au `<main>` ; player play/pause/seekbar fonctionnels avec aria-valuetext qui se met à jour ; cards mixtape avec ACF color claire (s'il y en a) → texte automatiquement passe au noir (lisible).
+- Test axe DevTools (différé) : score Critical+Serious attendu = 0, Moderate/Minor acceptables si justifiés.
+- Test Lighthouse (différé) : score Accessibility ≥95 attendu sur la home (cible 100 si possible).
+- Si score insuffisant côté axe ou Lighthouse → commits correctifs ad-hoc post-Phase-5 (procédure révisée explicite).
 
 ## 5. Recommandations stratégiques
 
