@@ -5,7 +5,7 @@
         <div class="container mx-auto px-4">
             <hr class="mb-[5px]">
             <h1 class="sr-only"><?php esc_html_e( 'Explore mixtapes', 'lamixtape' ); ?></h1>
-            <form role="search" method="get" id="" class="mb-4 flex flex-wrap" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
+            <form role="search" method="get" id="" class="mb-4 flex flex-wrap gap-3" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
                 <div class="flex-none">
                     <svg aria-hidden="true" focusable="false" class="bi bi-search mt-5" width="30" height="30" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 011.415 0l3.85 3.85a1 1 0 01-1.414 1.415l-3.85-3.85a1 1 0 010-1.415z" clip-rule="evenodd"/>
