@@ -13,13 +13,6 @@ nav .lmt-logo {
     letter-spacing: -1px;
 }
 
-@media (max-width:768px) {
-    .navbar .container {
-        padding-left: 0!important;
-        padding-right: 0!important;
-    }
-}
-
 /* ========== Burger Menu ========== */
 /* .burger-menu { display: none; } removed Phase 4 CP2 fix #2.
  * The desktop "hidden" rule was historical dead code: the inline
