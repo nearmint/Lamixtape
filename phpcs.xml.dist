@@ -38,12 +38,161 @@
     <ini name="memory_limit" value="256M"/>
 
     <!--
-        Rulesets included :
+        Rulesets included — strategy: STRICT on security/correctness,
+        RELAXED on cosmetic formatting. Solo-developer workflow,
+        thème personnel non-publié. The cosmetic excludes below are
+        documented per group with rationale. WPCS security/correctness
+        sniffs (Security.*, DB.PreparedSQL*, WP.AlternativeFunctions,
+        WP.GlobalVariablesOverride, PHP.NoSilencedErrors,
+        PHP.StrictInArray, Security.NonceVerification) remain active
+        and currently report 0 violations on the theme codebase
+        (validated post-Phase-A2 baseline run).
+
         - WordPress-Core : basic, non-opinionated WP coding standards
           (file naming, indentation, basic security, escape patterns)
         - WordPress-Docs : PHPDoc + inline comment standards
     -->
-    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Core">
+        <!--
+            PrefixAllGlobals family — inopérant pour notre prefix
+            "lmt" (3 chars) à cause de la constante PHP
+            `MIN_PREFIX_LENGTH = 4` dans
+            vendor/wp-coding-standards/wpcs/WordPress/Sniffs/
+            NamingConventions/PrefixAllGlobalsSniff.php:69 + le
+            `continue;` qui skip total l'enregistrement du prefix
+            après l'erreur ShortPrefixPassed (ligne 1252). Tous les
+            variants downstream (NonPrefixedFunctionFound /
+            NonPrefixedVariableFound / NonPrefixedHooknameFound /
+            NonPrefixedConstantFound / etc.) consultent un cache
+            $validated_prefixes vide pour `lmt` → 100% faux positifs
+            sur du code conforme. À réactiver si le préfixe thème
+            passe à 4+ chars (ex. rename `lmt_*` → `lamixtape_*`).
+        -->
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals"/>
+
+        <!--
+            Cosmetic sniffs disabled below — see CLAUDE.md
+            apprentissage WPCS-RELAX for the rationale by group.
+            Counts ci-dessous = nombre d'occurrences au baseline
+            run pre-relax (Phase ad-hoc CI fix).
+        -->
+
+        <!-- 1071 occurrences. Conflit fondamental : WPCS impose
+             tabs, le thème (et .editorconfig Phase A2) utilise
+             4-space indent partout. Le thème a la priorité. -->
+        <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
+
+        <!-- ~155 (4 variants : SpaceBeforeCloseBracket /
+             SpaceAfterOpenBracket / CloseBracketLine /
+             ContentAfterOpenBracket / MultipleArguments). PEAR
+             impose un format strict des appels de fonction
+             multi-paramètres ; le thème utilise un style plus
+             concis. -->
+        <exclude name="PEAR.Functions.FunctionCallSignature"/>
+
+        <!-- 25 occurrences. Alignement strict des `=` dans des
+             blocs successifs. Cosmétique, pas de bénéfice
+             lisibilité significatif. -->
+        <exclude name="Generic.Formatting.MultipleStatementAlignment"/>
+
+        <!-- 16. Alignement strict des items d'array sur 4 spaces.
+             Couplé à DisallowSpaceIndent désactivé, cohérent. -->
+        <exclude name="WordPress.Arrays.ArrayIndentation"/>
+
+        <!-- 11. Whitespace de précision (.5 indent). Cosmétique. -->
+        <exclude name="Universal.WhiteSpace.PrecisionAlignment"/>
+
+        <!-- 9. Quotes simples préférées si pas d'interpolation.
+             Le thème utilise des doubles quotes selon le contexte
+             (concaténation HTML, etc.). Style assumé. -->
+        <exclude name="Squiz.Strings.DoubleQuoteUsage"/>
+
+        <!-- 9. Spacing strict autour de l'opérateur `.`
+             (concaténation). Cosmétique. -->
+        <exclude name="Squiz.Strings.ConcatenationSpacing"/>
+
+        <!-- 9. Format des commentaires inline (point final
+             obligatoire, etc.). Cosmétique. -->
+        <exclude name="Squiz.Commenting.InlineComment"/>
+
+        <!-- 9. Spacing strict après virgule dans les arguments
+             de fonction. Cosmétique. -->
+        <exclude name="Generic.Functions.FunctionCallArgumentSpacing"/>
+
+        <!-- 8. PHPDoc strict : @param doit avoir un commentaire
+             texte. Le thème PHPDoc est complet sur les types mais
+             omet le texte trivial. -->
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+
+        <!-- 13 (2 variants). Format strict des structures de
+             contrôle (newline après brace, space après keyword).
+             Cosmétique. -->
+        <exclude name="Squiz.ControlStructures.ControlSignature"/>
+
+        <!-- 21. Spacing strict dans les structures de contrôle
+             (parenthèses, alt syntax, etc.). Cosmétique. -->
+        <exclude name="WordPress.WhiteSpace.ControlStructureSpacing"/>
+
+        <!-- 6. File-level docblock strict (`/**` requis,
+             @package etc.). Le thème a des header docblocks mais
+             pas dans le format Squiz. -->
+        <exclude name="Squiz.Commenting.FileComment"/>
+
+        <!-- 7. Indent strict avec exact match. Couplé à
+             DisallowSpaceIndent désactivé. -->
+        <exclude name="Generic.WhiteSpace.ScopeIndent"/>
+
+        <!--
+            Pass 3 résiduels — sniffs additionnels désactivés post
+            premier round de relax. 32-34 occurrences au pass 3
+            baseline. Same rationale: cosmétique, incompatible
+            avec le style du thème ou avec WP template patterns.
+        -->
+
+        <!-- 22 occurrences (6 variants : SpacingBeforeClose /
+             ContentBeforeEnd / ContentAfterOpen / NoSemicolon /
+             ContentBeforeOpen / ContentAfterEnd). Squiz impose
+             que `<?php` et `?>` soient sur des lignes dédiées
+             (3 lignes minimum par bloc inline). Incompatible
+             avec le style WP template `<?php the_title(); ?>`
+             où l'inline est PARTOUT (header.php, footer.php,
+             single.php, etc.). -->
+        <exclude name="Squiz.PHP.EmbeddedPhp"/>
+
+        <!-- 2. Yoda conditions (`if ( true === $foo )`) sont un
+             anti-pattern moderne en 2026. Le style naturel
+             `if ( $foo === true )` est plus lisible. -->
+        <exclude name="WordPress.PHP.YodaConditions"/>
+
+        <!-- 2. Short ternary `$foo ?: $bar` est PHP 5.3+ et
+             largement accepté en 2026 (équivalent compact à
+             `$foo ? $foo : $bar`). -->
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+
+        <!-- 3. Spacing strict autour des opérateurs (`!`, `==`,
+             etc.). Cosmétique. -->
+        <exclude name="WordPress.WhiteSpace.OperatorSpacing"/>
+
+        <!-- 2. Alignement strict des `=>` dans les arrays
+             multi-lignes. Cosmétique. -->
+        <exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+
+        <!-- 2 (single.php include "player.php" + footer.php
+             include "analytics.php"). Style choice : `include`
+             ne crash pas si fichier manque, `require` si. Pour
+             des partials de template, `include` est défensif
+             acceptable. -->
+        <exclude name="PEAR.Files.IncludingFile.UseRequire"/>
+
+        <!-- 1. Trailing comma multi-line array. PHP 7.3+
+             supporte mais n'impose pas. Cosmétique. -->
+        <exclude name="NormalizedArrays.Arrays.CommaAfterLast"/>
+
+        <!-- 2 (SpacingBeforeTags + LongNotCapital). Format
+             strict des PHPDoc (espace avant tags, capitalisation
+             des descriptions longues). Cosmétique. -->
+        <exclude name="Generic.Commenting.DocComment"/>
+    </rule>
     <rule ref="WordPress-Docs"/>
 
     <!--
@@ -58,7 +207,9 @@
     -->
     <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array" value="lamixtape"/>
+            <property name="text_domain" type="array">
+                <element value="lamixtape"/>
+            </property>
         </properties>
     </rule>
 
@@ -68,7 +219,10 @@
     -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
-            <property name="prefixes" type="array" value="lmt,Lamixtape"/>
+            <property name="prefixes" type="array">
+                <element value="lmt"/>
+                <element value="Lamixtape"/>
+            </property>
         </properties>
     </rule>
 
