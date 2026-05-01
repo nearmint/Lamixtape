@@ -27,7 +27,7 @@ $the_query = new WP_Query( array(
                     <?php esc_html_e('can be a good thing.', 'lamixtape'); ?></p>
                 <small>PS: we’re not on social media, but you can reach us <a class="underline" data-lmt-dialog="contactmodal" href="#">here</a>.</small>
             </div>
-            <div class="tw:flex-1 tw:hidden tw:lg:block fade-in delay-2 tw:pt-12">
+            <div class="tw:hidden tw:lg:block tw:lg:w-1/3 tw:pt-12">
                 <a data-lmt-dialog="donatemodal" href="#"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="tw:max-w-full tw:h-auto illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>" loading="lazy" decoding="async"></a>
             </div>
         </article>
