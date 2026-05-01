@@ -193,6 +193,47 @@
     }
 
     /*
+     * Phase 5 A11Y-004 — skip link "Skip to main content".
+     *
+     * Visually hidden until it receives keyboard focus (via Tab as
+     * first focusable element of the page), at which point it
+     * appears in the top-left corner above the navbar so a keyboard
+     * user can press Enter to jump past the navigation directly to
+     * <main id="main">. Mouse users never see it.
+     *
+     * The width:auto / height:auto / clip-path:none on :focus undo
+     * the sr-only-style hiding. The visible state uses theme colors
+     * (#fff text on #333 background) and matches the navbar height.
+     */
+    .lmt-skip-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        background: #333;
+        color: #fff;
+        z-index: 100;
+    }
+
+    .lmt-skip-link:focus,
+    .lmt-skip-link:focus-visible {
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 1rem;
+        overflow: visible;
+        clip-path: none;
+        outline: 2px solid #fff;
+        outline-offset: -2px;
+    }
+
+    /*
      * Phase 5 A11Y-002 — modal triggers migrated from <a href="#"
      * data-lmt-dialog> to <button type="button" data-lmt-dialog>.
      * The <button> brings UA defaults (background, border, font,

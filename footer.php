@@ -1,3 +1,4 @@
+    </main>
     <!-- Donation Dialog -->
     <dialog id="donatemodal" class="lmt-dialog" aria-labelledby="donatemodal-title">
         <div class="lmt-dialog-content modal-content text-center">
