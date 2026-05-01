@@ -19,7 +19,7 @@
       </svg>
           </button>
 	  			<div id="time" class="mr-4 hidden sm:block" aria-live="polite">00:00</div>
-	              <input type="range" id="seekbar" min="0" max="100" value="0" step="0.1" aria-label="Seek">
+	              <input type="range" id="seekbar" min="0" max="100" value="0" step="0.1" aria-label="Track progress" aria-valuetext="00:00 of 00:00">
 	              <div id="duration" class="ml-4 hidden sm:block" aria-live="polite"></div>
 	  		</div>
 	  		<div class="w-1/6 px-4 hidden sm:block">

@@ -323,6 +323,7 @@
 - **Description** : `<input type="range" id="seekbar" aria-label="Seek">` — le label est minimal mais ne décrit pas la track en cours, et pas de `aria-valuetext` pour annoncer "01:23 sur 03:45".
 - **Impact** : Lecteur d'écran annonce "Seek, 0 sur 100" — peu utile.
 - **Recommandation** : Ajouter `aria-valuetext` mis à jour par JS (ex. `seekbar.setAttribute('aria-valuetext', '01:23 sur 03:45')`).
+- **Statut** : Résolu Phase 5. **player.php** : `aria-label="Seek"` → `aria-label="Track progress"` (plus descriptif), ajout `aria-valuetext="00:00 of 00:00"` initial. **js/player.js** : nouvelle fonction `updateSeekbarAria(cur, dur)` appelée à chaque tick `updateTimeDisplay()` qui formate `aria-valuetext = "<HH:MM> of <HH:MM> — <trackTitle>"` (ex. "01:23 of 03:45 — Daft Punk - Voyager"). Couvre les 2 types de player (YouTube + MediaElement MP3/MP4). Lecteur d'écran annonce maintenant la position temporelle réelle au lieu de "0 of 100".
 
 ---
 

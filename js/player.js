@@ -170,6 +170,16 @@ if (event.data === YT.PlayerState.ENDED) {
     return (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
   }
 
+  // Phase 5 A11Y-011: build a screen-reader-friendly seekbar value
+  // text. Without this, AT announces "Seek, 0 of 100" — useless. With
+  // it, AT announces "Track progress, 01:23 of 03:45 — <track title>".
+  function updateSeekbarAria(cur, dur) {
+    var curStr = formatTime(cur);
+    var durStr = formatTime(dur);
+    var titlePart = trackTitle ? ' — ' + trackTitle : '';
+    $seekbar.attr('aria-valuetext', curStr + ' of ' + durStr + titlePart);
+  }
+
   function updateTimeDisplay() {
     if (currentType === 'youtube' && youtubePlayer && youtubePlayer.getCurrentTime) {
       var cur = youtubePlayer.getCurrentTime();
@@ -180,6 +190,7 @@ if (event.data === YT.PlayerState.ENDED) {
         $seekbar.attr("max", dur);
       }
       $seekbar.val(cur);
+      updateSeekbarAria(cur, dur);
     } else if (currentType === 'mp3' && player) {
       var cur = player.currentTime;
       var dur = player.duration;
@@ -189,6 +200,7 @@ if (event.data === YT.PlayerState.ENDED) {
         $seekbar.attr("max", dur);
       }
       $seekbar.val(cur);
+      updateSeekbarAria(cur, dur);
     }
   }
 
