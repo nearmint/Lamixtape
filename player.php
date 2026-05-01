@@ -1,7 +1,7 @@
 <!-- Contrôles personnalisés -->
   <div id="footer-player" class="player-slide-up">
 	  <div class="container mx-auto px-4">
-	  	<div class="flex flex-wrap -mx-4 footer-player-container items-center">
+	  	<div class="flex flex-wrap footer-player-container items-center">
 	  		<div class="w-1/4 px-4 hidden sm:block">
 	  			<div class="flex items-center gap-[10px]">
 	  				<a id="yt-thumb-link" href="#" target="_blank" rel="noopener" style="display:none;" class="no--border">
