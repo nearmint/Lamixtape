@@ -80,14 +80,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
         </div>
         <div class="flex flex-wrap ml-0">
             <div class="action-buttons">
-                    <?php
-                        $random = lmt_get_random_mixtape( 'single_random_button' );
-                        if ( $random ) :
-                            echo '<a href="' . esc_url( get_permalink( $random ) ) . '">';
-                            esc_html_e( '🔀 Random Mixtape', 'lamixtape' );
-                            echo '</a>';
-                        endif;
-                        ?>
+                    <a href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>"><?php esc_html_e( '🔀 Random Mixtape', 'lamixtape' ); ?></a>
                     <button type="button" class="middle" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">💌 Send feedback</button>
                     <button type="button" data-lmt-dialog="donatemodal" data-tracking-source="mixtape_action_button" aria-haspopup="dialog" aria-controls="donatemodal">⚡️ Support us</button>
                 </div>

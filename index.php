@@ -17,14 +17,7 @@ $the_query = new WP_Query( array(
                 <p><?php esc_html_e('Lamixtape has no bullshit, no ads, no sponsored posts, and no paywalls. If you enjoy our mixtapes, please consider', 'lamixtape'); ?> <button type="button" class="lmt-link-button underline" data-lmt-dialog="donatemodal" data-tracking-source="home_about_link" aria-haspopup="dialog" aria-controls="donatemodal"><?php esc_html_e('supporting', 'lamixtape'); ?></button> <?php esc_html_e('what we do.', 'lamixtape'); ?></p>
                 <p><?php esc_html_e('If you really want to see what we’re about, go and explore our', 'lamixtape'); ?> <a class="underline" href="#mixtapes">360+ mixtapes</a>.</p>
                 <p><?php esc_html_e('And remember,', 'lamixtape'); ?>
-                    <?php
-                    $random = lmt_get_random_mixtape( 'home_about_inline' );
-                    if ( $random ) :
-                        echo '<a title="' . esc_attr__('Random mixtape', 'lamixtape') . '" href="' . esc_url( get_permalink( $random ) ) . '" class="underline">';
-                        esc_html_e('getting lost', 'lamixtape');
-                        echo '</a>';
-                    endif;
-                    ?>
+                    <a title="<?php esc_attr_e('Random mixtape', 'lamixtape'); ?>" href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>" class="underline"><?php esc_html_e('getting lost', 'lamixtape'); ?></a>
                     <?php esc_html_e('can be a good thing.', 'lamixtape'); ?></p>
                 <small>PS: we’re not on social media, but you can reach us <button type="button" class="lmt-link-button underline" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">here</button>.</small>
             </div>

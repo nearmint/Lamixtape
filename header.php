@@ -41,16 +41,7 @@
         <div class="container mx-auto px-4 mt-4">
             <ul>
                 <li class="menu-fade-in menu-delay-0"><a href="<?php echo esc_url( home_url( '/explore/' ) ); ?>">Search</a></li>
-                <li class="menu-fade-in menu-delay-1">
-                    <?php
-                    $random = lmt_get_random_mixtape( 'header_mobile_menu' );
-                    if ( $random ) :
-                        echo '<a href="' . esc_url( get_permalink( $random ) ) . '">';
-                        esc_html_e( 'Random mixtape', 'lamixtape' );
-                        echo '</a>';
-                    endif;
-                    ?>
-                </li>
+                <li class="menu-fade-in menu-delay-1"><a href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>"><?php esc_html_e( 'Random mixtape', 'lamixtape' ); ?></a></li>
                 <li class="menu-fade-in menu-delay-2"><a href="<?php echo esc_url( home_url( '/guests/' ) ); ?>">Guest curators</a></li>
                 <li class="menu-fade-in menu-delay-3"><button type="button" class="lmt-link-button" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">Contact us</button></li>
                 <li class="menu-fade-in menu-delay-4"><button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="mobile_menu" aria-haspopup="dialog" aria-controls="donatemodal">Support us</button> ⚡️</li>
