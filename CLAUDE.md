@@ -274,7 +274,7 @@ Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` 
 - **Diagnostic CHECKPOINT 2 (4 commits)** : 4 régressions visuelles détectées et corrigées : `85198ac` svg display:inline-block override préflight TW v4, `88e844e` link underline override WP wp-block-library global styles, `7cfe6f7` `.burger-menu { display: none }` dead code, `1b2fee6` `--breakpoint-lg: 62rem` aligné Bootstrap.
 - **Axe C (3 commits + 1 fix parser)** : `871b11d` markup `<dialog>` natif + `js/dialogs.js` vanilla + 9 triggers migrés `data-lmt-dialog` + `82aa39f` styles components `.lmt-dialog*` + `8af8fac` Bootstrap JS bundle removed. **Apprentissage parser** (`636cdf7`) : nested CSS comments cassent silencieusement le parser Tailwind v4 (impacts toutes les rules après le commentaire incriminé).
 - **Diagnostic CHECKPOINT 3 (4 commits)** : 4 régressions résiduelles : `32fad1f` flex-1 → lg:w-1/3 (image home), `5e58712` flex utilities navbar (burger position), `64f7aeb` suppression totale `.fade-in` (conflit infinite scroll), `a847a42` modal centering position:fixed inset:0 margin:auto.
-- **Axe D (4 commits, closure)** : `0d763ef` Bootstrap CSS enqueue + dossier `assets/vendor/bootstrap/` supprimés + `3c7c13f` strip `tw:` prefix sur 11 templates + rebuild Tailwind sans `prefix(tw)` + `63ce4b4` dequeue `mediaelementplayer.css` (TW-005) + `[SHA-CLOSURE]` ce commit (closure docs).
+- **Axe D (4 commits, closure)** : `0d763ef` Bootstrap CSS enqueue + dossier `assets/vendor/bootstrap/` supprimés + `3c7c13f` strip `tw:` prefix sur 11 templates + rebuild Tailwind sans `prefix(tw)` + `63ce4b4` dequeue `mediaelementplayer.css` (TW-005) + `aea041d` ce commit (closure docs).
 
 **Bonus business surprises** :
 - **Le diagnostic CHECKPOINT 2 a sauvé 4h+** de chasse aux régressions silencieuses : le préfixe `tw:` (D-COHAB-1) a permis de détecter avant CHECKPOINT 2 que les classes Bootstrap auraient sinon gagné silencieusement la cascade pendant la cohabitation. Sans ce préfixe, les régressions visuelles auraient été acceptées à tort comme "iso-99%" alors qu'elles cachaient un vrai bug de cascade. Pattern Phase 1+ confirmé : *toujours déboguer le build artefact, pas le code source.*
@@ -295,7 +295,7 @@ Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` 
 - Modals migrés `<dialog>` natif Phase 4 → A11Y-008 partiel résolu côté markup (focus trap browser-natif), reste les autres composants ARIA.
 
 **Validation finale Phase 4 (à charge utilisateur)** :
-- Branche `feature/tailwind-migration` actuellement à `[SHA-CLOSURE]`. Tests post-merge : 8 templates iso-visuels à 99% vs `_docs/captures-post-phase-3/` (modulo dette résiduelle Q13). Bootstrap CSS + JS + mediaelementplayer.css confirmés absents du Network tab DevTools. Modals/burger/like/player/infinite scroll fonctionnels.
+- Branche `feature/tailwind-migration` actuellement à `aea041d`. Tests post-merge : 8 templates iso-visuels à 99% vs `_docs/captures-post-phase-3/` (modulo dette résiduelle Q13). Bootstrap CSS + JS + mediaelementplayer.css confirmés absents du Network tab DevTools. Modals/burger/like/player/infinite scroll fonctionnels.
 - Captures `_docs/captures-post-phase-4/` à prendre par utilisateur post-merge.
 
 ## 5. Recommandations stratégiques
