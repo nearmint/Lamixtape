@@ -31,12 +31,14 @@
 
     <!-- Fullscreen Menu Overlay for mobile navigation -->
     <div id="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Mobile navigation', 'lamixtape' ); ?>" aria-hidden="true">
-        <div class="container mx-auto px-4 relative">
+        <div class="container mx-auto px-4 flex items-center justify-end h-[85px]">
             <button id="close-mobile-menu" aria-label="Close menu">
                 <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                 </svg>
             </button>
+        </div>
+        <div class="container mx-auto px-4 mt-4">
             <ul>
                 <li class="menu-fade-in menu-delay-0"><a href="<?php echo esc_url( home_url( '/explore/' ) ); ?>">Search</a></li>
                 <li class="menu-fade-in menu-delay-1">
