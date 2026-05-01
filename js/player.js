@@ -210,6 +210,24 @@ if (event.data === YT.PlayerState.ENDED) {
 
 
   function onPlayerError(event) {
+    // Phase Tracking v1 — fire youtube_embed_error BEFORE auto-skip.
+    // YouTube error codes (event.data) :
+    //   2   = invalid params (rare, probably bad videoId formatting)
+    //   5   = HTML5 player error (player itself crashed)
+    //   100 = video not found / private / removed
+    //   101 = embed restricted by uploader
+    //   150 = embed restricted by uploader (alias of 101)
+    // Critical for legacy mixtapes where YouTube videos disappear
+    // over time. Output : actionable list per mixtape_slug.
+    if (typeof window.lmtTrack === 'function') {
+      var youtubeId = trackUrl ? extractYouTubeId(trackUrl) : null;
+      window.lmtTrack('youtube_embed_error', {
+        mixtape_slug: window.lmtGetMixtapeSlug(),
+        track_index: currentTrack,
+        youtube_id: youtubeId,
+        error_code: event.data
+      });
+    }
     playNextSong();
   }
 
