@@ -1,0 +1,10 @@
+{
+    "standard": "WCAG2AA",
+    "reporter": "json",
+    "includeWarnings": true,
+    "includeNotices": false,
+    "chromeLaunchConfig": {
+        "ignoreHTTPSErrors": true,
+        "args": ["--ignore-certificate-errors"]
+    }
+}

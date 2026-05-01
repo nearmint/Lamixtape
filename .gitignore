@@ -31,3 +31,9 @@ assets/build/tailwindcss.exe
 
 # WordPress
 wp-config.php
+
+# Phase 7 audit — Lighthouse generates 1MB HTML + 1MB JSON per URL.
+# Keep the JSON (machine-readable, all data, ~4MB total for 4 URLs)
+# and ignore the HTML pretty reports (regeneratable on demand from
+# JSON via `lighthouse-ci` or `lighthouse --view` flag).
+_docs/audit/lighthouse/*.html
