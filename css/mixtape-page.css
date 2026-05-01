@@ -51,11 +51,6 @@ article.mixtape .buttons .like-btn:active {
     transform: translateY(1px)
 }
 
-article.mixtape #comments li.comment {
-    font-size: 20px;
-    padding: 0
-}
-
 article.mixtape img.illustration {
     border: solid 1px RGBA(255, 255, 255, .2);
     border-radius: 3px
