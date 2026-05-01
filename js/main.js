@@ -19,6 +19,15 @@ jQuery(function ($) {
                     $btn.attr('disabled', true).addClass('tada');
                     // Server returns the new count; trust it over optimistic UI.
                     $('.like__number').html(response);
+                    // Phase Tracking v1 — fire like_click after server-confirmed
+                    // success. Single-click design (button disables post-success +
+                    // 429 rate-limit on subsequent clicks), so each AJAX success
+                    // is a legitimate toggle ON. No toggle OFF case to handle.
+                    if (typeof window.lmtTrack === 'function') {
+                        window.lmtTrack('like_click', {
+                            mixtape_slug: window.lmtGetMixtapeSlug()
+                        });
+                    }
                 },
                 error: function (xhr) {
                     if (xhr.status === 429) {
