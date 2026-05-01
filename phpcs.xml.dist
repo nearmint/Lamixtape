@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<ruleset name="Lamixtape Theme">
+    <description>
+        PHPCS configuration for the Lamixtape WordPress theme.
+
+        Based on WPCS WordPress-Core (basic non-opinionated rules) +
+        WordPress-Docs (PHPDoc / inline comments standards). WordPress-Extra
+        is intentionally NOT included — it carries strong opinions on
+        structure (Yoda conditions, function naming, etc.) that don't all
+        align with the theme's existing style established in Phases 0-8.
+
+        Documentation : https://github.com/WordPress/WordPress-Coding-Standards
+    </description>
+
+    <!-- Files / paths to scan -->
+    <file>.</file>
+
+    <!-- Exclusions : non-PHP code, build artifacts, vendored libs -->
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/_docs/audit/*</exclude-pattern>
+    <exclude-pattern>/assets/build/*</exclude-pattern>
+    <exclude-pattern>/assets/vendor/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <exclude-pattern>wp-config.php</exclude-pattern>
+
+    <!-- Only check PHP files -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Show progress + display sniff codes -->
+    <arg value="ps"/>
+    <arg name="colors"/>
+
+    <!-- Parallel execution : 4 cores (most modern devs) -->
+    <arg name="parallel" value="4"/>
+
+    <!-- Memory limit : phpcs default 128M can be tight on large repos -->
+    <ini name="memory_limit" value="256M"/>
+
+    <!--
+        Rulesets included :
+        - WordPress-Core : basic, non-opinionated WP coding standards
+          (file naming, indentation, basic security, escape patterns)
+        - WordPress-Docs : PHPDoc + inline comment standards
+    -->
+    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Docs"/>
+
+    <!--
+        Theme-specific overrides — exceptions justifiées par le contexte
+        Lamixtape (Phases 0-8 du refacto). Chaque exclusion porte un commentaire
+        explicite expliquant POURQUOI la règle ne s'applique pas ici.
+    -->
+
+    <!--
+        Le thème est custom (non-publié, single-site). Le text-domain
+        'lamixtape' est utilisé dans tout le code (Phase 2 QC-004 fix).
+    -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array" value="lamixtape"/>
+        </properties>
+    </rule>
+
+    <!--
+        Le préfixe `lmt_` est utilisé pour toutes les fonctions et
+        hooks du thème (Phase 2 décision D6, CLAUDE.md section 8).
+    -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array" value="lmt,Lamixtape"/>
+        </properties>
+    </rule>
+
+    <!--
+        File naming : WPCS attend file-name.php (avec tirets), le thème
+        utilise déjà ce format. Pas d'override nécessaire.
+    -->
+
+    <!--
+        Le thème supporte PHP >=8.2 (prod confirmée). Les rules de
+        compat PHP 5.x sont sans intérêt.
+    -->
+    <config name="testVersion" value="8.2-"/>
+
+    <!--
+        Le thème supporte WP >=6.0 (à confirmer post-déploiement).
+        Cette valeur permet aux sniffs WPCS qui le supportent de
+        signaler les usages d'API plus récentes que la cible.
+    -->
+    <config name="minimum_supported_wp_version" value="6.0"/>
+</ruleset>
