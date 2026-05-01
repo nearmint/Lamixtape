@@ -45,8 +45,8 @@
                 <li class="menu-fade-in menu-delay-2"><a href="<?php echo esc_url( home_url( '/guests/' ) ); ?>">Guest curators</a></li>
                 <li class="menu-fade-in menu-delay-3"><button type="button" class="lmt-link-button" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">Contact us</button></li>
                 <li class="menu-fade-in menu-delay-4"><button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="mobile_menu" aria-haspopup="dialog" aria-controls="donatemodal">Support us</button> ⚡️</li>
-                <li class="menu-fade-in menu-delay-5"><a href="colophon">Colophon</a></li>
-                <li class="menu-fade-in menu-delay-5"><a href="legal-notice">Legal Notice</a></li>
+                <li class="menu-fade-in menu-delay-5"><a href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">Colophon</a></li>
+                <li class="menu-fade-in menu-delay-5"><a href="<?php echo esc_url( home_url( '/legal-notice/' ) ); ?>">Legal Notice</a></li>
             </ul>
         </div>
     </div>
