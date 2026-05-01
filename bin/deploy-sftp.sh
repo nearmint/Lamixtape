@@ -185,10 +185,14 @@ case "$MODE" in
     connect-test)
         echo "Testing SFTP connection..."
         echo
+        # `ls -l` instead of `ls -la` : OVH SFTP server rejects the
+        # `-a` flag with "ls: invalid option -- 'a'" warning. The
+        # `-l` long format gives the same useful info (perms, owner,
+        # size, date, name) for the sanity-check listing.
         lftp -u "$SFTP_USER,$SFTP_PASSWORD" -p "$SFTP_PORT" "sftp://$SFTP_HOST" <<EOF
 set ssl:verify-certificate no
 cd $SFTP_REMOTE_PATH
-ls -la | head -10
+ls -l | head -10
 bye
 EOF
         echo
