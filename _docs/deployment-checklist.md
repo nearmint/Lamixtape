@@ -11,9 +11,13 @@
 ## Pré-déploiement
 
 - [ ] **Captures `_docs/captures-pre-deploy/` posées** (les 8 templates : home, single, category, search, 404, explore, guests, text). Sert de baseline pour rollback / diff visuel post-déploiement.
-- [ ] **Vérifier merge `main` complet** : `git log --oneline | wc -l` doit être ~159+ commits. Working tree clean (`git status` → nothing to commit).
+- [ ] **Vérifier merge `main` complet** : `git log --oneline | wc -l` doit être ~180+ commits. Working tree clean (`git status` → nothing to commit).
 - [ ] **Tag git posé** : `git tag -a refacto-complete -m "Refacto thème Lamixtape complet — Phases 0 à 8"` puis `git push origin refacto-complete`. Permet rollback facile (`git reset --hard refacto-complete~1` si besoin).
 - [ ] **`CLAUDE.md` à jour** : sections 4 (dette technique, 63/72 résolus + 9 reportés), 7 (Q14 audits prod différés, Q15 Phase 8 vraie reportée).
+- [ ] **`.env` rempli** avec le SFTP_PASSWORD réel (récupéré depuis le manager OVH > Web Cloud > Hosting > FTP-SSH > Modify password). Ne JAMAIS committer `.env` (gitignored).
+- [ ] **Cluster OVH vérifié** dans `.env` : ouvrir le manager OVH et confirmer le hostname exact `ftp.clusterXXX.hosting.ovh.net` (105 ou autre selon le compte). Ajuster `SFTP_HOST` dans `.env` si différent du default.
+- [ ] **`lftp` installé** : `lftp --version` doit retourner v4.x. Sinon `brew install lftp`.
+- [ ] **Backup OVH côté serveur** posé d'abord via manager OVH > Web Cloud > Hosting > Backups > Create backup. Sert de filet de sécurité avant le premier deploy du refacto complet.
 
 ---
 
@@ -51,18 +55,46 @@
 
 ---
 
-## Déploiement
+## Déploiement (SFTP via lftp — OVH mutualisé sans SSH shell)
 
-- [ ] **Push prod** : `git push origin main` vers le serveur prod (méthode habituelle Lamixtape — webhook hébergeur, FTP sync, ou git pull side prod selon workflow en place).
-- [ ] **Purger cache Cloudflare** après déploiement (Cloudflare admin → Caching → Purge Everything).
-- [ ] **WP-CLI flush rewrite rules** (au cas où) :
-  ```bash
-  wp rewrite flush
-  ```
-- [ ] **WP-CLI régénérer thumbnails** si pertinent (probablement pas nécessaire, le thème ne change pas les image sizes Phases 0-8) :
-  ```bash
-  wp media regenerate --yes
-  ```
+OVH mutualisé n'expose pas de SSH shell — uniquement SFTP (port 22). Pas de `git pull` côté serveur, pas de webhook hébergeur. Le déploiement se fait via `bin/deploy-sftp.sh` (lftp full mirror).
+
+**Procédure en 3 étapes**, à exécuter dans cet ordre strict :
+
+### 1. `--connect-test` — sanity check connexion
+
+```bash
+bash bin/deploy-sftp.sh --connect-test
+```
+
+Doit afficher 10 entrées du `SFTP_REMOTE_PATH`. Si erreur d'authentification → vérifier le password dans `.env` (manager OVH > Modify password si nécessaire). Si erreur de path → vérifier `SFTP_REMOTE_PATH` (lowercase strict).
+
+### 2. `--dry-run` — preview du sync
+
+```bash
+bash bin/deploy-sftp.sh --dry-run
+```
+
+Affiche la liste complète des fichiers qui seraient uploadés / supprimés sur le serveur. **REVIEWER attentivement** :
+- Les fichiers attendus du refacto (functions.php, header.php, footer.php, single.php, etc.) sont bien dans la liste upload
+- Les fichiers exclus (`.git/`, `vendor/`, `_docs/`, `bin/`, `.env*`, etc.) ne sont PAS listés
+- Les fichiers à supprimer côté serveur sont des résidus pré-refacto attendus (vendor jQuery, Bootstrap, etc.) — pas du contenu user
+
+Si la liste contient des surprises → ABORT et investiguer avant le full deploy.
+
+### 3. Full deploy avec confirmation interactive
+
+```bash
+bash bin/deploy-sftp.sh
+```
+
+Le script affiche les paramètres de deploy + demande `Type 'yes' to confirm deployment`. Saisir `yes` pour lancer, autre input pour cancel.
+
+**Note critique sur `SFTP_REMOTE_PATH`** : le path destination doit être en LOWERCASE strict (`lamixtape`, pas `Lamixtape`) — Linux serveur case-sensitive vs macOS local case-insensitive. Sync vers `Lamixtape` créerait un nouveau dossier orphelin à côté de l'actif → site live pointant vers l'ancien thème non-update. Le script affiche le path avant la confirmation pour permettre un last-second abort.
+
+### 4. Purge cache Cloudflare
+
+- [ ] **Purger cache Cloudflare** post-deploy (Cloudflare admin → Caching → Purge Everything). Sinon les fichiers CSS/JS cachés masqueront les modifications côté visiteur.
 
 ---
 
@@ -133,18 +165,29 @@
 
 ## Rollback (si nécessaire)
 
-Si une régression critique est détectée post-déploiement :
+OVH mutualisé n'expose pas de `git pull` côté serveur. Le rollback passe **soit par le manager OVH (backup automatique)**, **soit par un re-deploy SFTP du tag git précédent** (méthode 2). Méthode 1 est plus rapide si une régression UX critique est détectée.
+
+### Méthode 1 — Restore backup OVH (recommandée si régression critique)
+
+- [ ] Manager OVH → Web Cloud → Hosting → Backups → identifier le backup posé en pré-déploiement → "Restore"
+- [ ] OVH restaure les fichiers du serveur à l'état du backup (typiquement quelques minutes pour un thème de cette taille)
+- [ ] **Purger cache Cloudflare** post-rollback
+- [ ] **Validation** : `_docs/captures-pre-deploy/` vs état restauré. Iso-visuel attendu.
+- [ ] Investiguer le bug en local sur la branche `main` post-rollback, fix, re-deploy via la procédure standard
+
+### Méthode 2 — Re-deploy SFTP d'un état git précédent
 
 - [ ] **Identifier le commit fautif** via `git log --oneline | head -20` + correlation avec le symptôme. La granularité 1 commit = 1 changement (Phases 0-8) facilite le bisect.
-- [ ] **Revert ciblé** si le commit fautif est isolé : `git revert <SHA> && git push origin main`
-- [ ] **Rollback complet** vers tag `refacto-complete~1` (avant refacto) si plusieurs commits sont impliqués :
-  ```bash
-  git reset --hard refacto-complete~1  # CAREFUL: destructive
-  git push origin main --force-with-lease
-  ```
-  ⚠️ **Force push** = à coordonner avec l'équipe + post-deploy hooks (Cloudflare, etc.).
-- [ ] **Purger cache Cloudflare** post-rollback.
-- [ ] **Validation** : `_docs/captures-pre-deploy/` vs état restauré post-rollback. Iso-visuel attendu.
+- [ ] **Checkout local du tag de référence** : `git checkout refacto-complete~1` (état pré-refacto) OU `git checkout <SHA-stable>` (commit avant le bug)
+- [ ] `bash bin/deploy-sftp.sh --dry-run` pour preview du rollback
+- [ ] `bash bin/deploy-sftp.sh` pour effectuer le re-deploy
+- [ ] **Purger cache Cloudflare** post-rollback
+- [ ] Une fois fixé en local : `git checkout main`, fix, commit, re-deploy via la procédure standard
+
+### Choix méthode
+
+- Méthode 1 (OVH backup) : plus rapide, ne touche que le serveur, sécurité maximale. **Recommandée pour régression critique en heures de pointe.**
+- Méthode 2 (re-deploy git) : plus chirurgicale, permet de tester le rollback en dry-run d'abord, contrôle exact de l'état restauré. **Recommandée hors urgence.**
 
 ---
 
