@@ -60,6 +60,24 @@ hr {
     border-top: 2px solid #fff;
 }
 
+/* ========== Reduced Motion (A11Y-007) ========== */
+/* Phase 5 — globally neutralize animations, transitions, and
+ * smooth-scroll for users who prefer reduced motion. This catches
+ * the 3 known thematic animations (.menu-fade-in navbar,
+ * #title marquee player, .player-slide-up player) AND any
+ * future / plugin-emitted animation. The 0.01ms value preserves
+ * the final state of `transition` rules without visible motion
+ * (vs setting `none` which can leave intermediate states stuck).
+ * Pattern recommended by MDN. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* ========== [END general.css] ========== */
 /* Homepage entrance animations (.fade-in + .delay-N) removed in
  * Phase 4 CHECKPOINT 3 fix #4. The animation conflicted with the
@@ -67,6 +85,4 @@ hr {
  * fade-in opacity:0 baseline but never received the .visible
  * class added by main.js on DOM ready, so cards beyond the first
  * 30 stayed permanently invisible. Removing the animation
- * (markup + CSS + JS handler) was the cleanest resolution.
- * Phase 5 (a11y) may reintroduce a respectful version under a
- * proper prefers-reduced-motion guard. */
+ * (markup + CSS + JS handler) was the cleanest resolution. */

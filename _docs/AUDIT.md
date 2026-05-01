@@ -285,6 +285,7 @@
 - **Description** : Animations `fade-in`, `marquee` (titre du track qui défile), `player-slide-up` actives sans média query `prefers-reduced-motion: reduce`.
 - **Impact** : Violation WCAG 2.3.3 (niveau AAA, mais good practice AA). Inconfort vestibulaire pour utilisateurs sensibles.
 - **Recommandation** : Wrapper les `@keyframes` et `transition` dans `@media (prefers-reduced-motion: no-preference) { ... }`, ou ajouter `@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }`.
+- **Statut** : Résolu en 2 phases. **Phase 4 CP3-4** : `.fade-in` homepage entrance animation supprimée intégralement (conflit avec infinite scroll, cf. trailer comment `general.css`). **Phase 5** : ajout du bloc global `@media (prefers-reduced-motion: reduce)` dans `css/general.css` qui force `animation-duration: 0.01ms !important`, `animation-iteration-count: 1 !important`, `transition-duration: 0.01ms !important`, `scroll-behavior: auto !important` sur `*, *::before, *::after`. Couvre les 3 animations restantes (`.menu-fade-in` navbar, `#title` marquee player, `.player-slide-up` player) ET toute animation future / plugin-émise. Pattern recommandé par MDN — 0.01ms préserve l'état final d'une transition sans motion visible (vs `none` qui peut laisser des intermediate states bloqués).
 
 ### [A11Y-008] Modals Bootstrap sans focus trap/role dialog WCAG
 - **Sévérité** : Moyenne
