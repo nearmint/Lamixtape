@@ -30,7 +30,7 @@
         );
         $categories = get_categories( $args );
         foreach ( $categories as $category ) {
-            echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '"><header><h2 class="pt-6">' . esc_html( $category->name ) . '</h2></header></a>';
+            echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '"><header class="flex items-center min-h-[100px] justify-center"><h2>' . esc_html( $category->name ) . '</h2></header></a>';
         }
         ?>
     </section>

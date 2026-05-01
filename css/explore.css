@@ -29,6 +29,17 @@
     color: #fff
 }
 
+/* Phase R.D F-14 — match the home/single h2 size (35px / 500 / 0
+ * letter-spacing) defined in mixtape-page.css `article :is(h1, h2)`.
+ * Index pages render h2 outside <article>, so the article-scoped
+ * rule does not apply and Tailwind preflight collapses h2 to body
+ * size. This per-page rule restores the visual weight. */
+#explore section h2 {
+    font-weight: 500;
+    font-size: 35px;
+    letter-spacing: 0;
+}
+
 #explore section a:nth-child(10n+1) header {
     background: #1abc9c!important
 }
