@@ -4,10 +4,10 @@ get_header('search');
 global $wp_query;
 ?>
 <div id="search">
-    <header class="font-smoothing fade-in delay-1">
-        <form role="search" method="get" id="" class="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
-            <div class="container">
-                <hr class="mb-4">
+    <header class="font-smoothing">
+        <form role="search" method="get" id="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
+            <div class="container mx-auto px-4">
+                <hr class="mb-6">
                 <h4><?php esc_html_e('Search:', 'lamixtape'); ?>
                     <?php the_search_query(); ?>
                     <a href="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>/explore" class="float-right no--hover">
@@ -25,14 +25,13 @@ global $wp_query;
         <?php if ($allsearch->have_posts()) : ?>
             <?php while ($allsearch->have_posts()) : $allsearch->the_post(); ?>
                 <?php get_template_part( 'template-parts/card-mixtape', null, array(
-                    'delay'                 => 2,
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,
                     'tag_link_attr'         => 'alt',
                 ) ); ?>
             <?php endwhile; else: ?>
-            <?php echo '<div class="container nothing--found"><h2 class="font-smoothing">' . esc_html__('Nothing found', 'lamixtape') . '</h2></div>'; ?>
+            <?php echo '<div class="container mx-auto px-4 nothing--found"><h2 class="font-smoothing">' . esc_html__('Nothing found', 'lamixtape') . '</h2></div>'; ?>
         <?php endif; ?>
     </section>
 </div>

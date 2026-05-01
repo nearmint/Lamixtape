@@ -1,0 +1,238 @@
+/*
+ * Tailwind v4 input file — scanned by the standalone CLI to produce
+ * assets/css/tailwind.css.
+ *
+ * Build (locally):
+ *     ./assets/build/tailwindcss \
+ *         -i assets/css/tailwind.input.css \
+ *         -o assets/css/tailwind.css \
+ *         --minify
+ *
+ * Watch mode (during template migration):
+ *     ./assets/build/tailwindcss \
+ *         -i assets/css/tailwind.input.css \
+ *         -o assets/css/tailwind.css \
+ *         --watch
+ *
+ * The CLI auto-scans HTML/JS/JSX/TS by default but NOT *.php — we
+ * therefore add an explicit @source directive (see below) to
+ * include every PHP template under the theme root.
+ *
+ * @theme tokens here generate matching utilities (e.g. --color-bg
+ * → bg-bg) and CSS custom properties (--color-bg) that components
+ * can reference directly.
+ */
+
+/*
+ * Phase 4 cohabitation prefix removed at C19.5 once Bootstrap CSS
+ * was eliminated in C19. The `tw:` prefix had only one purpose:
+ * avoid silent class-name collisions with Bootstrap utilities
+ * (e.g. mb-3, mb-4, text-center) that share the namespace but
+ * carry different spacing values. With BS gone, the prefix is no
+ * longer needed; templates have been stripped (find/replace
+ * `tw:` -> empty in *.php) and this @import line drops the
+ * prefix() option in turn.
+ */
+@import "tailwindcss";
+
+/*
+ * Source detection — Phase 4 Apprentissage TW-SCAN.
+ *
+ * Tailwind v4 default heuristic auto-scans HTML, JS, JSX, TS, TSX,
+ * MD(X) and a few others — but NOT *.php. Without explicit @source
+ * directives, the build comes out near-empty even though the
+ * templates are full of tw:* utilities.
+ *
+ * VARIANTE A — explicit per-directory patterns.
+ * The recursive glob "../../**\/*.php" silently failed (build stayed
+ * 9.3 KB with 0 tw: matches), so we list the 3 dirs that actually
+ * host .php files instead. Path relative to this file (assets/css/),
+ * "../../" reaches the theme root.
+ */
+@source "../../*.php";
+@source "../../inc/*.php";
+@source "../../template-parts/*.php";
+
+@theme {
+    /*
+     * Base palette — extracted from existing CSS (Phase 1+).
+     * Refined as templates migrate; treat as initial baseline.
+     */
+    --color-bg:     #333;   /* body / article fallback */
+    --color-text:   #fff;   /* primary text */
+    --color-accent: #e74c3c; /* red, most-used non-bg/text color */
+    --color-muted:  #2a2a2a; /* skeleton placeholder, deep gray */
+
+    /*
+     * Typography — Outfit variable, self-hosted (Phase 1 commit
+     * 57404c9). Stack ends with system-ui as a safety net before
+     * sans-serif so a missing woff2 doesn't fall back to Times.
+     */
+    --font-sans: "Outfit", system-ui, sans-serif;
+
+    /*
+     * Phase 4 CP2 regression #3 — align lg breakpoint with Bootstrap 4.
+     *
+     * BS 4 lg breakpoint = 992px. TW v4 default lg = 1024px (64rem).
+     * The 32px gap meant viewports between 992px and 1023px showed:
+     * - pre-Phase-4: BS lg active → side-by-side flex layout
+     * - post-Phase-4: TW lg not yet active → tw:lg:* dormant, child
+     *   columns collapsed (hidden image col, full-width text col)
+     *
+     * Override --breakpoint-lg to 62rem (= 992px) to match BS lg.
+     * This shifts ALL tw:lg:* utilities globally — no template-side
+     * change needed, the migration markup stays as-is.
+     *
+     * Other breakpoints (sm 640, md 768, xl 1280, 2xl 1536) are kept
+     * at TW defaults: BS uses sm=576/xl=1200 but the templates only
+     * use the lg breakpoint extensively (cf. d-lg-block, col-lg-X).
+     */
+    --breakpoint-lg: 62rem;
+}
+
+/*
+ * @layer base override — Phase 4 CP2 regression #4.
+ *
+ * TW v4 preflight sets `svg, img, video, canvas, audio, iframe,
+ * embed, object { display: block }`. Lamixtape relies on inline
+ * SVGs in buttons and links throughout (burger header, close
+ * header, shuffle 404, search explore, X search/category, Discogs
+ * player button, etc.). The block default forces a line break
+ * between the surrounding text and the SVG.
+ *
+ * Restore inline-block (strictly equivalent to the browser-default
+ * `inline` for SVG icons) and keep vertical-align: middle so the
+ * SVG stays baseline-aligned with the adjacent text.
+ *
+ * Within @layer base, this rule comes AFTER the imported preflight
+ * (later declaration in the same layer) so it wins the cascade.
+ */
+@layer base {
+    svg {
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
+
+/*
+ * @layer components — theme-specific reusable component classes.
+ *
+ * Populated in Phase 4 Axe C C17 with the lmt-dialog component
+ * styles for the new native <dialog>-based modals (donatemodal,
+ * contactmodal). Plain CSS (no @apply) because the prefix(tw)
+ * mode would require the component to reference tw:* classes
+ * that may not be generated when no template uses them.
+ *
+ * The matching visual properties were extracted from the previous
+ * Bootstrap modal (modal, modal-dialog modal-lg, modal-content,
+ * modal-body, close) so the CHECKPOINT 3 diff stays minimal.
+ * Theme-specific overrides for content (background gradient,
+ * text-shadow, .donate-box, .form-container) continue to live in
+ * css/donation.css, scoped via #donatemodal/#contactmodal +
+ * .modal-content (preserved as an alias class on .lmt-dialog-content).
+ */
+@layer components {
+    .lmt-dialog {
+        /* Sized to the legacy Bootstrap modal-lg max-width with
+         * responsive shrinking on narrow viewports. position:fixed
+         * + inset:0 + margin:auto centers the dialog both
+         * horizontally AND vertically in the viewport — the native
+         * <dialog> UA stylesheet only centers horizontally by
+         * default, so without these three properties the modal
+         * would stick to the top of the viewport (CP3 regression
+         * #2 fix). */
+        position: fixed;
+        inset: 0;
+        margin: auto;
+        max-width: 800px;
+        width: 90vw;
+        max-height: 90vh;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        overflow: visible;
+    }
+
+    /* Backdrop mirrors the Bootstrap default (50% black, no blur). */
+    .lmt-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .lmt-dialog-content {
+        /* position:relative anchors the close button absolute
+         * positioning when used corner-style, but the default
+         * close button below uses float:right so this is mostly
+         * defensive. padding mirrors BS .modal-body. */
+        position: relative;
+        padding: 2rem;
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+
+    .lmt-dialog-close {
+        /* Mirrors BS .close: float-right + transparent button-look,
+         * baseline opacity 0.7 going to 1 on hover/focus. The 40x40
+         * size matches the inline SVG width/height used in the
+         * markup (footer.php). */
+        float: right;
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        color: #fff;
+        opacity: 0.7;
+        transition: opacity 0.15s ease;
+    }
+
+    .lmt-dialog-close:hover,
+    .lmt-dialog-close:focus {
+        opacity: 1;
+    }
+}
+
+/*
+ * Legacy compatibility shims — to be added at the moment a template
+ * needs them and removed as the corresponding template gets
+ * fully migrated. Each shim must carry a "MIGRATE TO" comment line
+ * (not nested CSS comments — CSS does NOT support comment nesting,
+ * the inner close-comment marker would prematurely terminate the
+ * parent block and corrupt every rule that follows; learned the
+ * hard way at C17, see CHECKPOINT 2 fix for regression #1).
+ */
+
+/*
+ * Phase 4 CP2 regression #1 — override WP wp-block-library link
+ * underline injection.
+ *
+ * theme.json (v2) added in Phase 2 made WordPress emit a global
+ * stylesheet via <style id="global-styles-inline-css"> in <head>
+ * containing:
+ *     a:where(:not(.wp-element-button)) { text-decoration: underline }
+ *
+ * This rule has specificity (0,0,1) because :where() contributes 0.
+ * Pre-Phase-4, Bootstrap 4 reset (a { text-decoration: none },
+ * also (0,0,1)) won the cascade — but WP global-styles is printed
+ * AFTER bootstrap.min.css in <head>, so source order should
+ * theoretically have favored WP since Phase 2. The user reports
+ * pre-Phase-4 had no underline, so something else (BS reset
+ * via different selector? legacy CSS?) was winning silently. Phase 4
+ * cohabitation surfaced the issue.
+ *
+ * Fix: same selector but unlayered + minus the :where() wrapper, so
+ * specificity becomes (0,1,1) and beats WP regardless of source
+ * order. Preserves the wp-element-button exclusion so Gutenberg
+ * block buttons keep their decoration.
+ *
+ * Risk: paragraph-style links in body content (text.php colophon,
+ * legal-notice) lose their underline. If a missing underline is
+ * reported in review, switch to a SCOPED override targeting only
+ * navigation/cards (e.g. `header a, .navbar a, .mixtape-list a`).
+ * For now, trust the diagnostic that pre-Phase-4 had NO underline
+ * globally per user inspection of captures-post-phase-3.
+ */
+a:not(.wp-element-button) {
+    text-decoration: none;
+}

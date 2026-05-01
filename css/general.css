@@ -60,21 +60,13 @@ hr {
     border-top: 2px solid #fff;
 }
 
-/* ========== Homepage Entrance Animations ========== */
-.fade-in {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
-}
-.fade-in.visible {
-    opacity: 1;
-    transform: none;
-}
-/* Staggered delays for animation */
-.delay-1 { transition-delay: 0.2s; }
-.delay-2 { transition-delay: 0.4s; }
-.delay-3 { transition-delay: 0.6s; }
-.delay-4 { transition-delay: 0.8s; }
-.delay-5 { transition-delay: 1.0s; }
-
 /* ========== [END general.css] ========== */
+/* Homepage entrance animations (.fade-in + .delay-N) removed in
+ * Phase 4 CHECKPOINT 3 fix #4. The animation conflicted with the
+ * Phase 3 infinite-scroll: AJAX-appended cards inherited the
+ * fade-in opacity:0 baseline but never received the .visible
+ * class added by main.js on DOM ready, so cards beyond the first
+ * 30 stayed permanently invisible. Removing the animation
+ * (markup + CSS + JS handler) was the cleanest resolution.
+ * Phase 5 (a11y) may reintroduce a respectful version under a
+ * proper prefers-reduced-motion guard. */

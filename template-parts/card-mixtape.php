@@ -8,7 +8,6 @@
  *
  * Expected $args (all optional, sensible defaults applied below):
  *
- *   - 'delay'                 int     (1..N) — fade-in delay class
  *   - 'article_extra_classes' string  — extra classes on <article>
  *                                       (e.g. 'font-smoothing')
  *   - 'h2_extra_classes'      string  — extra classes on the <h2>
@@ -24,9 +23,9 @@
  *                                       'none' omits the highlight span
  *                                       entirely (matches category.php).
  *   - 'hide_curator_on_small' bool    — wrap the curator span in
- *                                       d-none d-sm-none d-md-none
- *                                       d-lg-block (true everywhere
- *                                       except single.php previous-loop)
+ *                                       hidden lg:block (true
+ *                                       everywhere except single.php
+ *                                       previous-loop)
  *   - 'tag_link_attr'         string  — 'alt' (legacy index/single/search,
  *                                       invalid HTML on <a>, A11Y-005)
  *                                       or 'title' (category.php legacy).
@@ -39,7 +38,6 @@
 $args = wp_parse_args(
     isset( $args ) && is_array( $args ) ? $args : array(),
     array(
-        'delay'                 => 3,
         'article_extra_classes' => '',
         'h2_extra_classes'      => '',
         'highlight_mode'        => 'always_span',
@@ -48,19 +46,19 @@ $args = wp_parse_args(
     )
 );
 
-$article_classes = trim( $args['article_extra_classes'] . ' fade-in delay-' . (int) $args['delay'] );
-$h2_classes      = trim( $args['h2_extra_classes'] . ' mb-0 pt-2 text-truncate' );
-$curator_classes = ( $args['hide_curator_on_small'] ? 'd-none d-sm-none d-md-none d-lg-block ' : '' )
+$article_classes = trim( $args['article_extra_classes'] );
+$h2_classes      = trim( $args['h2_extra_classes'] . ' mb-0 pt-2 truncate' );
+$curator_classes = ( $args['hide_curator_on_small'] ? 'hidden lg:block ' : '' )
     . 'float-right curator author-' . get_the_author_meta( 'ID' );
 
 $is_highlight = (bool) get_field( 'highlight' );
 ?>
 <article style="background-color:<?php echo esc_attr( get_field( 'color' ) ); ?>;" class="<?php echo esc_attr( $article_classes ); ?>">
-    <div class="container">
+    <div class="container mx-auto px-4">
         <?php if ( 'always_span' === $args['highlight_mode'] ) : ?>
-            <span class="highlight float-left mr-n3"><?php echo $is_highlight ? '🔥' : ''; ?></span>
+            <span class="highlight float-left -mr-4"><?php echo $is_highlight ? '🔥' : ''; ?></span>
         <?php elseif ( 'conditional' === $args['highlight_mode'] && $is_highlight ) : ?>
-            <span class="highlight float-left mr-n3">🔥</span>
+            <span class="highlight float-left -mr-4">🔥</span>
         <?php endif; ?>
         <a href="<?php the_permalink(); ?>"><h2 class="<?php echo esc_attr( $h2_classes ); ?>"><?php the_title(); ?><span class="<?php echo esc_attr( $curator_classes ); ?>"><?php esc_html_e( 'Curated by', 'lamixtape' ); ?> <?php the_author(); ?></span></h2></a>
         <div class="tags pb-2"><?php

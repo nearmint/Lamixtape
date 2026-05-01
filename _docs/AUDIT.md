@@ -378,7 +378,7 @@
 - **Description** : Styles inline dispersés (≥ 26 occurrences `style="..."`), JS inline dans `player.php` (~360 lignes), `search.php` (`fbq('track')`), `single.php` (`var postid = ...`).
 - **Impact** : Impossible à minifier, bundler, lint, ou versionner proprement. CSP `unsafe-inline` requis. Bundle Tailwind inutile si du CSS reste inline.
 - **Recommandation** : Extraire le JS du player dans `js/player.js`, enqueuer conditionnellement. `var postid` → `wp_localize_script` propre. Styles inline → classes utilities (Tailwind ou CSS custom). Suppression du `fbq` (cf. OTHER-008).
-- **Statut** : Résolu Phase 1 (partiel) — `c5f0382` extraction `var postid` (single.php) → `lmtData.post_id` + `b3f655b` extraction du JS player (343 l. de `player.php` → nouveau `js/player.js`, enqueued conditionnellement `is_singular('post')` avec deps `['jquery', 'wp-mediaelement']`). Partie CSS (~21 attributs `style="..."` statiques décoratifs encore présents dans header.php / explore.php / guests.php / single.php / player.php) **reportée Phase 4** : la migration Tailwind absorbera ces inline styles via classes utilities (cf. CLAUDE.md section 8). Les 5 `style="background-color:<?php get_field('color') ?>"` PHP-injected dynamiques restent inline par nécessité (couleur ACF unique par post). Umami inline conservé (décision Phase 1, snippet officiel).
+- **Statut** : Résolu Phase 1 + Phase 4. **Phase 1 partiel** (`c5f0382` extraction `var postid` → `lmtData.post_id` + `b3f655b` extraction `player.php` JS → `js/player.js`). **Phase 4 final** (Axe B C5-C15) : tous les `style="..."` statiques décoratifs (~21 occurrences dans header / explore / guests / single / etc.) absorbés en utilities Tailwind, ex. `style="margin-bottom: 5px"` → `mb-[5px]`, `style="height: 85px; display: flex; align-items: center"` → `h-[85px] flex items-center`, etc. Les 5 `style="background-color:<?php get_field('color') ?>"` PHP-injected dynamiques restent inline par nécessité (D-M-4.2 — couleur ACF unique par post). Umami inline conservé (décision Phase 1, snippet officiel SaaS).
 
 ### [QC-008] Aucun docblock, naming PHP incohérent, pas de namespace
 - **Sévérité** : Moyenne
@@ -576,6 +576,7 @@
   - `img-fluid` → `max-w-full h-auto`
   - `text-truncate` → `truncate`
   - `embed-responsive embed-responsive-16by9` → `aspect-video`
+- **Statut** : Résolu Phase 4 — migration intégrale Bootstrap → Tailwind v4 sur branche `feature/tailwind-migration` mergée en main. Setup Axe A (`28f025f` Tailwind CLI standalone v4.1.18 + `f99b6d7` mapping doc + `c4f4331` @source PHP scan + `19a2b7a` `prefix(tw)` cohabitation), 11 templates migrés en Axe B (`8bed8bc` 404 + `1845e75` text + `a690430` explore + `fc2d3bf` guests + `4afb8d1` header + `9c0bb36` single + `9351af8` index + `77be723` category + `b7c9dcf` search + `73ed8dd` card-mixtape ; footer skippé Axe B car migration intégrale en Axe C), Bootstrap CSS supprimé (`0d763ef` enqueue + dossier `assets/vendor/bootstrap/` ~236 KB libérés), préfixe `tw:` strippé sur tous les templates (`3c7c13f` find/replace mécanique perl -i + rebuild Tailwind sans `prefix(tw)`). 4 régressions visuelles détectées et corrigées en CHECKPOINT 2 (`85198ac` svg display preflight, `88e844e` link underline override WP wp-block-library, `7cfe6f7` burger-menu dead CSS, `1b2fee6` --breakpoint-lg=62rem) + 4 régressions CHECKPOINT 3 (`32fad1f` flex-1→lg:w-1/3, `5e58712` navbar flex utilities, `64f7aeb` suppression fade-in, `a847a42` modal centering position fixed inset margin auto). Apprentissages techniques tracés dans CLAUDE.md section 4 (D-COHAB-1 prefix, TW-SCAN @source, TW-VERIFY grep -c minified).
 
 ### [TW-002] Modals dépendent de Bootstrap JS + jQuery + Popper
 - **Sévérité** : Haute
@@ -589,6 +590,7 @@
   <button onclick="document.getElementById('donatemodal').showModal()">Donate</button>
   ```
   Ou Alpine.js (3 KB) si on veut du déclaratif. **Cohérent avec A11Y-008.**
+- **Statut** : Résolu Phase 4 (Axe C) — `871b11d` markup `<dialog>` natif HTML5 + `js/dialogs.js` vanilla (event delegation, `closeAllDialogs` avant chaque `showModal()`, fermeture via close button / backdrop / Escape, focus trap + aria-modal automatiques côté browser). 9 triggers `data-toggle="modal"` remplacés par `data-lmt-dialog="..."` dans header/index/single/footer. `82aa39f` styles components `.lmt-dialog` / `.lmt-dialog::backdrop` / `.lmt-dialog-content` / `.lmt-dialog-close` dans `tailwind.input.css @layer components`. `8af8fac` Bootstrap JS bundle (`bootstrap.bundle.min.js` ~80 KB incluant Popper) supprimé de `lmt_enqueue_assets()`. `a847a42` correctif centrage modal CHECKPOINT 3 (`position: fixed; inset: 0; margin: auto`). Plus aucune dépendance Bootstrap JS / jQuery / Popper sur le système modal. La classe `.modal-content` est préservée comme alias sur `.lmt-dialog-content` pour maintenir la compatibilité avec les rules `#donatemodal .modal-content` existantes dans `css/donation.css`.
 
 ### [TW-003] Menu mobile déjà custom mais couplé visuellement aux classes BS
 - **Sévérité** : Moyenne
@@ -597,6 +599,7 @@
 - **Description** : Le mobile menu est implémenté en jQuery custom (pas en BS Collapse), donc fonctionnellement indépendant. Mais visuellement il utilise `container`, `list-inline-item`, etc.
 - **Impact** : Faible — point d'entrée facile pour la migration.
 - **Recommandation** : Bonne candidate pour le **premier template migré** (avec `404.php` et `text.php`).
+- **Statut** : Résolu Phase 4 (Axe B) — `4afb8d1` header.php migré : `container` → `container mx-auto px-4`, `list-inline text-uppercase` → `flex gap-x-2 uppercase`, `list-inline-item` retiré (le parent flex suffit), inline styles redondants supprimés (theme rules `#close-mobile-menu` / `#mobile-menu-overlay ul` / `#mobile-menu-overlay a` couvrent déjà). `5e58712` correctif CHECKPOINT 3 : ajout de `flex flex-wrap items-center justify-between` sur le container du `<nav>` pour remplacer la rule BS `.navbar > .container` désormais cassée par le rename `container` → `tw:container` (puis prefix-stripped). `64f7aeb` suppression de `fade-in delay-1` sur les éléments du header (animation incompatible avec l'infinite scroll, supprimée en bloc).
 
 ### [TW-004] Player utilise `embed-responsive embed-responsive-16by9` BS4
 - **Sévérité** : Moyenne
@@ -605,6 +608,7 @@
 - **Description** : Wrapper `embed-responsive embed-responsive-16by9` pour l'iframe YouTube. À remplacer par `aspect-video` (Tailwind v4) ou `aspect-ratio: 16/9` CSS natif.
 - **Impact** : Moyen — fonctionnel à migrer, sans casse.
 - **Recommandation** : Remplacer par `<div class="aspect-video relative w-full">`.
+- **Statut** : Résolu Phase 4 (Axe B) — `9c0bb36` dans `single.php`, le wrapper `<div class="embed-responsive embed-responsive-16by9" style="display:none">` autour de `#youtubePlayer` devient `<div class="aspect-video relative hidden">`. La classe `aspect-video` (Tailwind v4 utility natif) génère `aspect-ratio: 16/9` directement. Le `display: none` reste (le YouTube player est masqué par design — Lamixtape extrait l'audio uniquement, l'iframe vidéo n'est jamais visible).
 
 ### [TW-005] `mediaelementplayer.css` chargé sans usage visuel
 - **Sévérité** : Moyenne
@@ -613,6 +617,7 @@
 - **Description** : MediaElement.js est initialisé avec `features: []` (aucun contrôle natif de MediaElement affiché — tout est custom dans `#footer-player`). Pourtant `mediaelementplayer.css` est chargée (~30 KB).
 - **Impact** : 30 KB inutiles téléchargés/parsés.
 - **Recommandation** : Désactiver l'`@import` MediaElement CSS dans `style.css`. Tester que le player fonctionne (les contrôles custom sont gérés par notre JS).
+- **Statut** : Résolu Phase 4 (Axe D C20) — `63ce4b4` `wp_enqueue_style('wp-mediaelement')` retiré de `lmt_enqueue_assets()`. Le script `wp-mediaelement` reste enqueué (dépendance dure de `js/player.js` pour le décodage audio MP3 + la postMessage YouTube). WP n'auto-enqueue pas la CSS comme dépendance du script (vérifié dans le core : la CSS est enregistrée séparément et seulement enqueuée via `wp_video_shortcode()` / `wp_audio_shortcode()`, deux fonctions que le thème n'utilise pas). ~30 KB CSS gagnés sur chaque page front-end.
 
 ---
 

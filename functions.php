@@ -30,33 +30,38 @@ function lmt_setup_theme() {
 add_action( 'after_setup_theme', 'lmt_setup_theme' );
 
 // -----------------------------------------------------
-// ------------ Frontend assets (CSS only) -------------
+// ------------ Frontend assets (CSS + JS) -------------
 // -----------------------------------------------------
-// Enqueues vendor CSS (Bootstrap, MediaElement, Outfit) and the 14 theme
-// CSS files in the exact cascade order of the legacy style.css @import
-// chain. JS assets (jQuery, MediaElement JS, Bootstrap JS, main.js) are
-// handled separately further down (and will be migrated in subsequent
-// Phase 1.3 steps).
-//
-// Cascade contract: lmt-bootstrap MUST load first; every theme stylesheet
-// declares lmt-bootstrap as a dependency so WP guarantees ordering.
+// Enqueues vendor CSS (Tailwind, Outfit, WP-bundled MediaElement),
+// the theme stylesheets (post-Bootstrap migration Phase 4) and all
+// frontend scripts. Bootstrap CSS + JS bundle were removed in
+// Phase 4 Axe D commits C19 and C18 respectively.
 function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
-    // Vendor CSS — load before theme CSS to preserve override semantics.
-    wp_enqueue_style( 'lmt-bootstrap', $theme_uri . '/assets/vendor/bootstrap/bootstrap.min.css', array(), '4.4.1' );
-    wp_enqueue_style( 'lmt-outfit',    $theme_uri . '/assets/vendor/outfit/outfit.css',          array( 'lmt-bootstrap' ), '1.0' );
+    // Tailwind v4 — Phase 4 Axe A. Carries the entire utility layer
+    // (post-Axe-D, prefix-less). Loaded first so the theme CSS files
+    // below can override individual rules if they need to.
+    $tailwind_path = get_template_directory() . '/assets/css/tailwind.css';
+    $tailwind_ver  = file_exists( $tailwind_path ) ? filemtime( $tailwind_path ) : null;
+    wp_enqueue_style( 'lmt-tailwind', $theme_uri . '/assets/css/tailwind.css', array(), $tailwind_ver );
 
-    // MediaElement.js — use the WP-bundled version (matches our 4.2.16 target).
-    // Enqueueing the script also enqueues the corresponding 'wp-mediaelement' CSS
-    // via WP's internal dependency. Saves ~170 KB of self-hosted assets.
-    wp_enqueue_style( 'wp-mediaelement' );
+    // Outfit variable font — self-hosted Phase 1 commit 57404c9.
+    wp_enqueue_style( 'lmt-outfit', $theme_uri . '/assets/vendor/outfit/outfit.css', array( 'lmt-tailwind' ), '1.0' );
+
+    // MediaElement.js — WP-bundled version (matches our 4.2.16 target).
+    // The script is needed for MP3/YouTube playback under js/player.js,
+    // but the associated mediaelementplayer.css is NOT enqueued: our
+    // player uses fully custom controls in #footer-player (cf.
+    // js/player.js init with features: []), so the native player CSS
+    // (~30 KB) would be downloaded and parsed for nothing. Dropping
+    // it closes TW-005 (Phase 4 Axe D C20).
     wp_enqueue_script( 'wp-mediaelement' );
 
-    // Theme CSS — strict order from the legacy style.css @import chain.
-    // Each depends on lmt-bootstrap so it always loads after vendor CSS.
-    // Loaded globally for now; conditional loading per template is a
-    // follow-up optimization (deferred to keep this commit cascade-safe).
+    // Theme CSS — formerly chained against lmt-bootstrap; now depends
+    // on lmt-tailwind so the cascade order remains deterministic. The
+    // conditional-loading-per-template optimisation is still a
+    // follow-up (Phase 5 or 6 polish).
     $theme_css = array(
         'search'               => 'css/search.css',
         'category'             => 'css/category.css',
@@ -74,17 +79,13 @@ function lmt_enqueue_assets() {
         'text'                 => 'css/text.css',
     );
     foreach ( $theme_css as $slug => $rel ) {
-        wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-bootstrap' ), '1.0' );
+        wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-tailwind' ), '1.0' );
     }
 
-    // Vendor JS — Bootstrap bundle includes Popper, required for the
-    // data-toggle="tooltip" in index.php and for modal/dropdown plugins.
-    // Loaded in the footer; jQuery is a hard dependency.
-    wp_enqueue_script( 'lmt-bootstrap-bundle', $theme_uri . '/assets/vendor/bootstrap/bootstrap.bundle.min.js', array( 'jquery' ), '4.4.1', true );
-
-    // Theme JS — main.js handles the like button, burger menu, fade-in
-    // animations and smooth scroll. Localized with site info + REST nonce
-    // (consumed as `lmtData` inside the closure in main.js).
+    // Theme JS — main.js handles the like button, burger menu, mobile
+    // menu overlay animation and smooth scroll. Localized with site
+    // info + REST nonce (consumed as `lmtData` inside the closure in
+    // main.js).
     wp_enqueue_script( 'lmt-main', $theme_uri . '/js/main.js', array( 'jquery' ), null, true );
     wp_localize_script( 'lmt-main', 'lmtData', array(
         'template_url' => $theme_uri,
@@ -100,6 +101,12 @@ function lmt_enqueue_assets() {
         wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
     }
 
+    // Dialogs JS — Phase 4 Axe C. Vanilla (no jQuery dep), handles
+    // open/close of #donatemodal and #contactmodal native <dialog>s.
+    // Loaded site-wide because the modal triggers live in header.php
+    // (mobile menu) and content templates (single, index).
+    wp_enqueue_script( 'lmt-dialogs', $theme_uri . '/js/dialogs.js', array(), null, true );
+
     // Infinite scroll — home, single (previous mixtapes), category.
     // The script early-returns if no #lmt-infinite-sentinel is present,
     // so the conditional is mainly a network-payload optimisation.
@@ -109,7 +116,7 @@ function lmt_enqueue_assets() {
         wp_enqueue_style(
             'lmt-infinite-scroll',
             $theme_uri . '/css/infinite-scroll.css',
-            array( 'lmt-bootstrap' ),
+            array( 'lmt-tailwind' ),
             '1.0'
         );
         wp_enqueue_script(

@@ -1,14 +1,14 @@
 <?php get_header(); ?>
-<div class="container">
+<div class="container mx-auto px-4">
     <hr>
-    <section class="text-right font-smoothing pb-5">
-        <h2 class="mt-5 pt-5"><?php esc_html_e('Looks like you got lost', 'lamixtape'); ?></h2>
+    <section class="text-right font-smoothing pb-12">
+        <h2 class="mt-12 pt-12"><?php esc_html_e('Looks like you got lost', 'lamixtape'); ?></h2>
         <p><?php esc_html_e('Sorry, the page you are looking for has moved', 'lamixtape'); ?></p>
-        <a class="btn text-uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'lamixtape'); ?></a>&nbsp;
+        <a class="inline-flex items-center bg-transparent text-white border-2 border-current rounded-none px-5 py-2.5 text-lg uppercase" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>/explore"><?php esc_html_e('Search', 'lamixtape'); ?></a>&nbsp;
         <?php
         $random = lmt_get_random_mixtape( '404_fallback' );
         if ( $random ) :
-            echo '<a class="btn text-uppercase" href="' . esc_url( get_permalink( $random ) ) . '">';
+            echo '<a class="inline-flex items-center bg-transparent text-white border-2 border-current rounded-none px-5 py-2.5 text-lg uppercase" href="' . esc_url( get_permalink( $random ) ) . '">';
             // SVG icon for shuffle
             echo '<svg class="bi bi-shuffle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" d="M12.646 1.146a.5.5 0 01.708 0l2.5 2.5a.5.5 0 010 .708l-2.5 2.5a.5.5 0 01-.708-.708L14.793 4l-2.147-2.146a.5.5 0 010-.708zm0 8a.5.5 0 01.708 0l2.5 2.5a.5.5 0 010 .708l-2.5 2.5a.5.5 0 01-.708-.708L14.793 12l-2.147-2.146a.5.5 0 010-.708z" clip-rule="evenodd"/>
@@ -20,6 +20,6 @@
         endif;
         ?>
     </section>
-    <img src="<?php echo esc_url( get_template_directory_uri() );?>/img/404.gif" class="travolta img-fluid d-none d-sm-none d-md-none d-lg-block" alt="404" loading="lazy" decoding="async">
+    <img src="<?php echo esc_url( get_template_directory_uri() );?>/img/404.gif" class="travolta max-w-full h-auto hidden lg:block" alt="404" loading="lazy" decoding="async">
 </div>
 <?php get_footer(); ?>

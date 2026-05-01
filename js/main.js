@@ -99,16 +99,9 @@ jQuery(function ($) {
         if (e.target === this) resetMenuItems();
     });
 
-    // =============================
-    // HOMEPAGE ENTRANCE ANIMATIONS
-    // =============================
-    $(function() {
-        $(".fade-in").each(function(i, el) {
-            setTimeout(function() {
-                $(el).addClass("visible");
-            }, 100 + i * 120);
-        });
-    });
+    // Homepage entrance animations (.fade-in stagger) removed in
+    // Phase 4 CHECKPOINT 3 fix #4 — see css/general.css trailer
+    // for the rationale.
 
     // =============================
     // PLAYER SLIDE-UP ANIMATION
