@@ -139,7 +139,16 @@
 @layer components {
     .lmt-dialog {
         /* Sized to the legacy Bootstrap modal-lg max-width with
-         * responsive shrinking on narrow viewports. */
+         * responsive shrinking on narrow viewports. position:fixed
+         * + inset:0 + margin:auto centers the dialog both
+         * horizontally AND vertically in the viewport — the native
+         * <dialog> UA stylesheet only centers horizontally by
+         * default, so without these three properties the modal
+         * would stick to the top of the viewport (CP3 regression
+         * #2 fix). */
+        position: fixed;
+        inset: 0;
+        margin: auto;
         max-width: 800px;
         width: 90vw;
         max-height: 90vh;
