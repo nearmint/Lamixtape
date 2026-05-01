@@ -149,56 +149,26 @@ add_action( 'deleted_post',  'lmt_invalidate_posts_grouped_cache' );
 add_action( 'trashed_post',  'lmt_invalidate_posts_grouped_cache' );
 
 /**
- * Pick #fff or #000 as foreground text color for a given hex
- * background, based on relative luminance (WCAG formula).
+ * Return text color for a given background hex.
  *
- * Phase 5 A11Y-009 — the ACF `color` field is applied raw as
- * `background-color` on each `<article>` (cards in mixtape lists +
- * the single mixtape page). The text inside is hardcoded white,
- * which fails WCAG 1.4.3 (niveau AA, contrast ≥ 4.5:1) for any
- * curator-supplied hex lighter than ~#767676. Rather than constraining
- * the ACF palette (Option A in the audit, kills curator freedom)
- * or overlaying a semi-transparent dark layer (Option C, dims the
- * branding for everyone), this helper computes the relative
- * luminance of the supplied hex and returns the matching readable
- * text color. Curators keep full color freedom; readability is
- * automatic.
+ * Originally (Phase 5 A11Y-009) implemented WCAG relative luminance
+ * to auto-pick '#fff' or '#000' for AA contrast on the ACF-supplied
+ * background of each <article> (mixtape cards + single page).
  *
- * Threshold: relative luminance > 0.5 → return '#000'. The exact
- * WCAG 4.5:1 cross-over point depends on whether you're comparing
- * against #fff or #000, but the mid-luminance simplification
- * correctly switches text in the vast majority of real-world cases
- * and is the standard pattern used by GitHub, Material, etc.
+ * Phase Recette F-1 — neutralized to return '#fff' unconditionally.
+ * Design intent: 100% white text on every background. WCAG strict
+ * contrast traded for design coherence. Acceptable risk for a
+ * single-owner side project with a curated palette under direct
+ * control.
  *
- * Edge cases: 3-char short hex is expanded to 6, malformed input
- * returns '#fff' as a safe legacy default (matches the pre-fix
- * behavior so a missing/malformed color doesn't suddenly flip the
- * page to black-on-default-bg).
+ * The function signature is preserved (still takes $hex) to avoid
+ * touching the 2 call sites (single.php, template-parts/card-mixtape.php).
  *
- * @param  string $hex  Hex color, with or without leading '#',
- *                      3 or 6 hexadecimal characters.
- * @return string       '#000' or '#fff'.
+ * @param  string $hex  Background color (unused, kept for signature
+ *                      backward-compatibility).
+ * @return string       Always '#fff'.
  */
 function lmt_contrast_text_color( $hex ) {
-    $hex = ltrim( (string) $hex, '#' );
-
-    if ( 3 === strlen( $hex ) ) {
-        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-    }
-
-    if ( 6 !== strlen( $hex ) || ! ctype_xdigit( $hex ) ) {
-        return '#fff';
-    }
-
-    $r = hexdec( substr( $hex, 0, 2 ) ) / 255;
-    $g = hexdec( substr( $hex, 2, 2 ) ) / 255;
-    $b = hexdec( substr( $hex, 4, 2 ) ) / 255;
-
-    $rl = $r <= 0.03928 ? $r / 12.92 : pow( ( $r + 0.055 ) / 1.055, 2.4 );
-    $gl = $g <= 0.03928 ? $g / 12.92 : pow( ( $g + 0.055 ) / 1.055, 2.4 );
-    $bl = $b <= 0.03928 ? $b / 12.92 : pow( ( $b + 0.055 ) / 1.055, 2.4 );
-
-    $luminance = 0.2126 * $rl + 0.7152 * $gl + 0.0722 * $bl;
-
-    return $luminance > 0.5 ? '#000' : '#fff';
+    unset( $hex );
+    return '#fff';
 }
