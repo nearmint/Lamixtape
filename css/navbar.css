@@ -67,8 +67,11 @@ nav .lmt-logo {
     font-size: 2rem;
 }
 
-#mobile-menu-overlay a {
-    color: #fff;    
+/* R.A.bis: extend selector to .lmt-link-button so Contact us /
+ * Support us entries (rendered as <button data-lmt-dialog>, not <a>)
+ * share the same visual treatment as the <a> menu links. */
+#mobile-menu-overlay :is(a, .lmt-link-button) {
+    color: #fff;
     text-decoration: none;
     -webkit-font-smoothing: antialiased;
     text-shadow: 2px 2px 0 #1c5e8b;
