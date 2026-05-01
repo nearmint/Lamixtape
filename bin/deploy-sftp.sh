@@ -149,6 +149,35 @@ EXCLUDES=(
 )
 
 # ═══════════════════════════════════════════════════════════════════
+# 6.5. Verify SSH host key is known (first-time connection guard)
+# ═══════════════════════════════════════════════════════════════════
+#
+# lftp uses SSH for SFTP under the hood. On a first connection to
+# a new host, OpenSSH requires the host key to be added to
+# ~/.ssh/known_hosts. Without it, lftp fails with a cryptic
+# "Host key verification failed" message that doesn't suggest the
+# fix. We pre-check here and print clear instructions.
+#
+# `ssh-keygen -F <host>` returns 0 if the host has at least one
+# entry in known_hosts, non-zero otherwise. We don't auto-add the
+# key from the script (security : an attacker could MITM and we'd
+# silently trust their fake key) — the user runs ssh-keyscan once
+# explicitly after reading this message.
+
+if ! ssh-keygen -F "$SFTP_HOST" -f ~/.ssh/known_hosts &>/dev/null; then
+    echo ""
+    echo "⚠ SSH host key for $SFTP_HOST is not in known_hosts."
+    echo ""
+    echo "First-time connection requires adding the host key."
+    echo "Run this command once:"
+    echo ""
+    echo "    ssh-keyscan -p $SFTP_PORT $SFTP_HOST >> ~/.ssh/known_hosts 2>/dev/null"
+    echo ""
+    echo "Then re-run the deploy script."
+    exit 1
+fi
+
+# ═══════════════════════════════════════════════════════════════════
 # 7. Execute mode
 # ═══════════════════════════════════════════════════════════════════
 
