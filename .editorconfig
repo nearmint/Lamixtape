@@ -1,0 +1,29 @@
+# EditorConfig — https://editorconfig.org
+#
+# Cohérence indentation/EOL/charset entre éditeurs (VSCode, PhpStorm,
+# vim, etc.). Aligné sur WordPress Coding Standards (WPCS) :
+# https://make.wordpress.org/core/handbook/best-practices/coding-standards/php/
+#
+# WPCS impose 4-space indent pour PHP/JS/CSS, MAIS tabs pour les
+# fichiers WP core. Le thème Lamixtape utilise 4-space indent partout
+# (cohérent avec ce qui a été fait Phases 0-8). On documente ce choix
+# explicite ici plutôt que de suivre la règle WP-Core sur les tabs.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
