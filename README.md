@@ -79,6 +79,17 @@ Configuration Pa11y : `pa11y.json` (chromeLaunchConfig.ignoreHTTPSErrors pour ce
 
 Cf. `_docs/audit-post-refacto.md` pour le rapport baseline post-Phases 0-8.
 
+### Runtime security tests
+
+```bash
+# Vérifie les 5 headers Phase 3 + absence X-Powered-By + burst
+# stability sur l'endpoint REST /wp-json/lamixtape/v1/posts.
+bash bin/check-headers.sh https://lamixtape.local  # Local
+bash bin/check-headers.sh https://lamixtape.fr     # post-deploy
+```
+
+14 checks, exit code 0 si tous ✓. Auto-detect `local` dans l'URL pour ajouter `-k` (cert auto-signé). Ne teste PAS le rate-limit (100/h/IP) — cf. doc inline du script pour la procédure manuelle post-déploiement.
+
 ## CI
 
 GitHub Actions workflow `.github/workflows/lint.yml` :
