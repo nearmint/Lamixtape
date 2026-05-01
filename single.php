@@ -61,7 +61,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
                 <div>
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
-                            <button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" aria-haspopup="dialog" aria-controls="donatemodal" aria-label="<?php esc_attr_e('Open the support us dialog', 'lamixtape'); ?>"><?php the_post_thumbnail( 'large', array(
+                            <button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="mixtape_thumbnail" aria-haspopup="dialog" aria-controls="donatemodal" aria-label="<?php esc_attr_e('Open the support us dialog', 'lamixtape'); ?>"><?php the_post_thumbnail( 'large', array(
                                 'class'    => 'max-w-full h-auto mt-6 illustration',
                                 'alt'      => esc_attr( get_the_title() ),
                                 'loading'  => 'lazy',
@@ -89,7 +89,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
                         endif;
                         ?>
                     <button type="button" class="middle" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">💌 Send feedback</button>
-                    <button type="button" data-lmt-dialog="donatemodal" aria-haspopup="dialog" aria-controls="donatemodal">⚡️ Support us</button>
+                    <button type="button" data-lmt-dialog="donatemodal" data-tracking-source="mixtape_action_button" aria-haspopup="dialog" aria-controls="donatemodal">⚡️ Support us</button>
                 </div>
         </div>
     </div>

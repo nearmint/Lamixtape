@@ -51,6 +51,16 @@
             var id = trigger.getAttribute( 'data-lmt-dialog' );
             if ( id ) {
                 openDialogById( id );
+                // Phase Tracking v1 — fire donate_modal_open with
+                // source attribution. The 5 donatemodal triggers in
+                // the templates carry a data-tracking-source attr
+                // that maps to the location (mobile_menu /
+                // home_about_link / home_sidebar_image /
+                // mixtape_thumbnail / mixtape_action_button).
+                if ( id === 'donatemodal' && typeof window.lmtTrack === 'function' ) {
+                    var source = trigger.getAttribute( 'data-tracking-source' ) || 'unknown';
+                    window.lmtTrack( 'donate_modal_open', { source: source } );
+                }
             }
             return;
         }
