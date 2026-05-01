@@ -755,6 +755,55 @@ Action utilisateur quand prêt :
 6. Tests visuels manuels production (8 templates de référence + tests fonctionnels modals/burger/player/like/infinite-scroll)
 7. Audits Q14 différés (Lighthouse / Pa11y / PageSpeed Insights / Mozilla Observatory / securityheaders.com / validator.schema.org / comparaison Core Web Vitals)
 
+### Phase R.D ad-hoc post-closure — récap (1er mai 2026)
+
+4 findings ajoutés post-closure Phase Recette, traités en phase ad-hoc immédiate (pattern "findings au fil de l'eau" plutôt qu'accumulation pour un mythique futur sprint).
+
+**Findings R.D (4)** :
+
+| # | Finding | Statut | SHA |
+|---|---------|--------|-----|
+| F#14 | Harmonize h2 size on /explore and /guests + flex-center /explore header | Manual user fix (Claude Code drafted, user adjusted with `justify-center`) | `39e0395` |
+| F#15 | Gap between search icon and input on /explore | Claude Code | `5eeb2fa` |
+| F#16 | Use `home_url()` for `/colophon/` and `/legal-notice/` menu hrefs | Manual user fix (audit menu WordPress best practices) | `5b97416` |
+| F#17 | Harmonize h1 size on /category page with home playlist h2 | Claude Code | `9190548` |
+
+**Commits polish associés (2)** :
+
+| Commit | Description | SHA |
+|---|---|---|
+| polish UI | Various manual UI tweaks (footer pt-1/pt-6 modal close, index pb-4 paragraphs + pt-12, single mt-6 tracklist, mixtape-page width 33.3%) | `49b2664` |
+| polish guests | Tighten guests h2 top padding pt-2 → pt-1 (post-F#14 vertical fine-tuning) | `3957aef` |
+
+**Apprentissage technique TW-VERIFY consolidé (3ème confirmation)** :
+
+Discipline TW-VERIFY confirmée 3 fois sur le projet :
+1. **Phase 4 D-COHAB-1** (origin) — `tw:` prefix cohabitation pendant la migration Bootstrap → Tailwind v4.
+2. **F#9 R.A.bis bis** (Phase Recette) — `justify-end` ajouté au markup mais pas dans le build → 3 tentatives F#9.
+3. **F#14 + F#15 R.D** — `min-h-[100px]` (F#14) + `gap-3` (F#15) ajoutés au markup, rebuild Tailwind systématiquement inclus dans le commit qui modifie le markup.
+
+Pattern désormais bien institutionnalisé : **toute classe Tailwind utility ou arbitrary value ajoutée au markup PHP REQUIERT un rebuild Tailwind + grep-verify dans le MÊME commit**.
+
+Commande de verify type :
+```bash
+./assets/build/tailwindcss -i assets/css/tailwind.input.css -o assets/css/tailwind.css --minify
+grep -oE '\.<utility>\{[^}]*\}' assets/css/tailwind.css
+```
+
+**Métriques R.D** :
+
+| Métrique | Valeur |
+|---|---|
+| Findings résolus | 4 (F#14 manual, F#15 Claude Code, F#16 manual, F#17 Claude Code) |
+| Commits R.D | 7 (3 préparatoires polish/F#16/F#14 + polish guests + F#15 + F#17 + closure) |
+| Net code delta | ~+30 lignes (CSS rules per-page + 2 nouvelles Tailwind utilities émises au build) |
+| WPCS local exit 0 | Maintenu sur tous les commits |
+| Régression UX | Aucune (testé utilisateur Local sur chaque finding) |
+
+**Pointeur deploy** :
+
+Refacto + Tracking + Recette + R.D = **4 phases livrées sur Local**, prêtes pour deploy SFTP simultané vers OVH prod. Procédure dans `_docs/deployment-checklist.md`, script `bin/deploy-sftp.sh`, workflow CLAUDE.md "2 validations séparées".
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
