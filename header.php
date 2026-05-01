@@ -23,7 +23,7 @@
             <span class="text-right">
                 <ul class="flex gap-x-2 uppercase mb-0">
                     <li class="burger-menu block">
-                        <button id="burger-btn" class="bg-transparent border-0 p-0 outline-none" aria-label="Open menu">
+                        <button id="burger-btn" class="bg-transparent border-0 p-0" aria-label="Open menu">
                             <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
                                 <rect x="0" y="0" width="22" height="1.5" rx="0.75" fill="#ffffff"/>
                                 <rect x="8" y="7" width="14" height="1.5" rx="0.75" fill="#ffffff"/>
