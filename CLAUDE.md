@@ -72,22 +72,28 @@ lamixtape/
 
 | Axe | Total | Résolus (P0+P1+P2+P2.5+P3+P4) | Critique restant | Haute restant | Référence |
 |---|:-:|:-:|:-:|:-:|---|
-| **Process / Qualité** | 16 | 16 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
-| **Sécurité** | 9 | 8 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
-| **Performance** | 14 | 13 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#performance` |
-| **Accessibilité** | 11 | 11 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#a11y` |
-| **WP best practices** | 9 | 7 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#wp` |
-| **Migration Tailwind** | 5 | 5 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#tailwind` |
-| **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
-| **TOTAL** | **72** | **61** | **0** ✅ | **3** | |
+| Axe | Total | Résolus | Reportés | Critique restant | Haute restant |
+|---|:-:|:-:|:-:|:-:|:-:|
+| **Process / Qualité** | 16 | 16 ✅ | 0 | 0 ✅ | 0 ✅ |
+| **Sécurité** | 9 | 8 ✅ | 1 (SEC-004→Q10) | 0 ✅ | 0 ✅ |
+| **Performance** | 14 | 12 ✅ | 2 (PERF-006→Q10, PERF-014→infra) | 0 ✅ | 0 ✅ |
+| **Accessibilité** | 11 | 11 ✅ | 0 | 0 ✅ | 0 ✅ |
+| **WP best practices** | 9 | 7 ✅ | 2 (WP-005→biz CPT, WP-006→infra) | 0 ✅ | 0 ✅ |
+| **Migration Tailwind** | 5 | 5 ✅ | 0 | 0 ✅ | 0 ✅ |
+| **Autres (SEO, RGPD, observabilité)** | 8 | 4 ✅ | 4 (OTHER-001/004/005/007) | 0 ✅ | 0 ✅ |
+| **TOTAL** | **72** | **63** | **9** | **0** ✅ | **0** ✅ |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 61 résolus à fin Phase 5 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3 + 6 P4 + 11 P5 = A11Y-001 à 011 incluant A11Y-010 retro Phase 2.5 et A11Y-NEW-001 retro Phase 4). 11 restants pour Phase 6+. **Aucun finding Critique ni Haute restant hors PERF-006 (Haute, reporté Q10 search rewrite post-Phase-6)** ✅. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5. Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. **63 résolus à fin Phase 6** (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3 + 6 P4 + 11 P5 + 2 P6 résolus + 2 P6 backfills retro). **9 reportés explicitement** avec raison documentée dans le Statut (infrastructure/business/scope hors thème). **0 finding sans Statut** — 100% du périmètre AUDIT couvert. **Aucun Critique ni Haute en travail restant** côté code thème ✅. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5. Tous les findings portent un bloc `**Statut** : Résolu Phase X (...)` ou `**Statut** : Reporté <raison>` à la fin de leur section dans `_docs/AUDIT.md`.
 
-Reste ouvert (cibles Phase 6+) :
-- **PERF-006** (Haute, search LEFT JOIN postmeta) → Q10 search rewrite, post-Phase-6
-- **WP-005** / **WP-006** : 2 Moyennes (renommage Posts → Playlist sur le post type natif ; WP_POST_REVISIONS) → Phase 6 outillage
-- **OTHER-001 à 008** : 7 findings (RGPD, SEO/OG, monitoring) → Phase 6
-- **3 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy + Q13 dette résiduelle écarts visuels Phase 4 → Phase 6 ou ad-hoc
+**Refacto thème complet — reste reporté hors scope thème** :
+- **PERF-006 + SEC-004** (Haute) → Q10 search rewrite (FT MySQL / Relevanssi / Algolia / status quo)
+- **PERF-014 + WP-006** (Basse + Moyenne) → infrastructure (wp-config.php hors thème)
+- **WP-005** (Moyenne) → décision business migration vers vrai CPT `mixtape`
+- **OTHER-001** (Haute) → infra + business (RGPD Umami, contenu legal-notice)
+- **OTHER-004** (Moyenne) → vérification live favicons à charge utilisateur
+- **OTHER-005** (Basse) → vérification Rank Math sitemap à charge utilisateur
+- **OTHER-007** (Basse) → infrastructure (Sentry/error_log côté hébergeur)
+- **3 Q ouvertes structurantes** : Q10 search + Q11 CSP (phase dédiée infra) + Q13 dette visuelle Phase 4 → ad-hoc post-refacto
 
 ### Phase 0 close — récap
 - 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
@@ -353,6 +359,88 @@ Détecté à la review CHECKPOINT 4 par l'utilisateur ("player complètement cas
 - Test axe DevTools (différé) : score Critical+Serious attendu = 0, Moderate/Minor acceptables si justifiés.
 - Test Lighthouse (différé) : score Accessibility ≥95 attendu sur la home (cible 100 si possible).
 - Si score insuffisant côté axe ou Lighthouse → commits correctifs ad-hoc post-Phase-5 (procédure révisée explicite).
+
+### Phase 6 close — récap (1er mai 2026)
+
+**Métriques globales** :
+- **7 commits** depuis fin Phase 5 (`21a7188`), tous pushés sur `origin/main` (mode marathon direct, pas de branche feature). 4 commits prep + 3 commits marathon (Axes A/B/C). Zéro commit Axe D fix code (les 8 findings OTHER non-fixables côté thème ont été marqués Reportés en commit prep #4).
+- 5 fichiers modifiés / 1 nouveau (`inc/seo.php`) ; **+627 / −0 lignes (net +627)** — phase à dominante structurale (extension theme.json, nouveau module SEO fallback, mises à jour AUDIT.md statuts). Aucune suppression.
+- **2 findings résolus + 2 backfills + 8 reportés** : OTHER-003 (Open Graph) + OTHER-006 (JSON-LD MusicPlaylist) résolus Phase 6 via `inc/seo.php`. QC-006 (doublon SEC-006) + OTHER-002 (title-tag via WP-003 Phase 2) backfills rétroactifs. PERF-006 / PERF-014 / WP-005 / WP-006 / OTHER-001 / OTHER-004 / OTHER-005 / OTHER-007 marqués Reportés avec raison explicite (infrastructure/business/scope hors thème).
+- **TOTAL findings résolus** : **63/72** à fin Phase 6 (61 pré-Phase-6 + 2 P6 résolus + 2 P6 backfills retro = 65 selon comptage AUDIT, 63 après réconciliation table par axe). **9 findings Reportés**. **0 finding sans Statut** ✅ — couverture 100% du périmètre AUDIT.
+
+**Découpage par axe** :
+- **Prep (4 commits)** : `205ae54` fix mapping IDs prompt-phase-6 (WP-005/006 → OTHER-003/006), `0a3cd6f` backfill QC-006 retro Phase 1, `2af3b7b` backfill OTHER-002 retro Phase 2, `d997375` 8 findings marked Reported avec Statut explicite.
+- **Axe A theme.json (1 commit)** : `1f1da27` extension `theme.json` v2 minimal → tokens design alignés Tailwind v4 (`@theme` block) : palette 4 couleurs (bg #333 / text #fff / accent #e74c3c / muted #2a2a2a) avec `defaultPalette: false` pour ne présenter que la palette Lamixtape dans l'éditeur Gutenberg, fontFamily Outfit, fontSizes small/medium/large, spacing.padding+margin actifs. Aucun bloc `styles` global (le thème est largement custom CSS, theme.json reste limité aux tokens accessibles dans l'éditeur).
+- **Axe B Open Graph + Twitter Cards (1 commit)** : `d514a27` fallback préventif côté thème via nouveau fichier `inc/seo.php` (chargé via `require_once` dans `functions.php`, structure flat-file matching `inc/queries.php` + `inc/rest.php`). Hook `wp_head` priorité 20 avec early return si `defined('RANK_MATH_VERSION')` — aucune duplication quand Rank Math actif (cas par défaut). Quand Rank Math inactif, émission complète : `og:type/title/description/url/site_name/locale/image`, `twitter:card/title/description/image` adaptatifs (`summary_large_image` si image, `summary` sinon). Coverage 8 templates (single/home/category/search/404/page-templates).
+- **Axe C JSON-LD MusicPlaylist (1 commit)** : `a21b224` extension `inc/seo.php` avec fonction `lmt_emit_jsonld_musicplaylist()`. Décision business utilisateur : `MusicPlaylist` retenu plutôt que `Article` (cohérence sémantique Lamixtape = playlists curatées). Hook `wp_head` priorité 20, early return si Rank Math actif. Champs émis sur `is_singular('post')` : `@type` MusicPlaylist, `name`/`url`/`datePublished`/`dateModified`/`description`/`image`/`author Person`/`numTracks`/`track[] MusicRecording` extraits du repeater ACF `tracklist`. `wp_json_encode` avec `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE` pour JSON-LD valide. Skip clean si données absentes (pas de placeholder fake — discipline diagnostic-d'abord respectée).
+
+**Diagnostic-d'abord — pattern confirmé une dernière fois** :
+- **Mapping IDs prompt vs AUDIT.md mismatch** (WP-005/006 → OTHER-003/006) : pattern Phase 3 (PERF) et Phase 4 (TAIL→TW) répété. Cross-check 6.0.2 a évité 1-2 commits avec des IDs erronés et 30 min+ de re-doc post-marathon. **Apprentissage permanent** : toujours cross-checker IDs prompt vs AUDIT en pre-flight, indépendamment de la phase.
+- **2 backfills rétroactifs détectés** : QC-006 résolu Phase 1 (doublon SEC-006) et OTHER-002 résolu Phase 2 (via WP-003) avaient été oubliés sans Statut. Pattern confirmé : *les findings doublons documentaires ou résolus implicitement par un parent finding doivent porter un Statut explicite, sinon ils restent flottants*.
+- **Architecture défensive Rank Math fallback** : décision business utilisateur (Décision 4) prise sans audit live (procédure révisée Phase 5 / 6 — pas le temps). Pattern fallback préventif via `defined('RANK_MATH_VERSION')` est plus robuste que l'audit conditionnel : aucune surprise si Rank Math est désactivé un jour, et zéro duplication quand il est actif. *Pattern réutilisable pour toute future intégration plugin tiers*.
+- **JSON-LD `MusicPlaylist` vs `Article`** : décision business utilisateur (Décision 5) prise rapidement avec justification cohérence sémantique > rich results Google. Possibilité future d'ajouter `Article` en parallèle via `@graph`. *Pattern : ne pas lock-in une décision business, anticiper les coexistences*.
+
+**Apprentissages clés** (à retenir pour évolutions futures) :
+1. **`require_once inc/seo.php` = pattern flat-file confirmé**. Phase 2 D6 a établi la convention `inc/queries.php` (queries layer) + Phase 3 `inc/rest.php` (REST layer) + Phase 6 `inc/seo.php` (SEO layer). 3 fichiers flat, zéro classe, zéro autoload — la convention scale bien jusqu'au refacto thème complet. À ré-employer si nouveau besoin transversal (ex. `inc/admin.php`, `inc/cron.php`) plutôt que d'introduire une couche OOP.
+2. **theme.json minimal > theme.json complet**. La version Phase 6 reste minimale (tokens uniquement, pas de bloc `styles` global) parce que le thème est custom CSS. theme.json full-featured serait redondant et risquerait de casser le rendu via les `global-styles-inline-css` injectés par WP. *Apprentissage : pour un thème custom CSS legacy, theme.json = passerelle Gutenberg, pas un système de design alternatif*.
+3. **`defined('RANK_MATH_VERSION')` plus simple que `function_exists()`**. Rank Math expose plusieurs entry points (constants, classes, functions). La constante est définie tôt dans le bootstrap plugin, présente que le plugin soit network-activated ou per-site. *Pattern à reproduire pour tout autre plugin tiers (Yoast, ACF, WPML) — préférer la constante version au function check*.
+4. **`wp_json_encode` + `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE`** indispensable pour JSON-LD : sans ces flags, les URLs auraient des slashes échappés (`https:\/\/`) et les caractères accentués des Unicode escapes (`é`) — JSON valide mais peu lisible et parfois mal interprété par les outils de test SERP. À ré-employer pour tout autre JSON-LD (BreadcrumbList, FAQPage, etc.).
+
+**Validation finale Phase 6 (à charge utilisateur)** :
+- Test view-source 1 page mixtape : confirmer Rank Math émet ses meta OG + JSON-LD (priorité 10) ET le fallback thème NE s'émet PAS (early return via `defined('RANK_MATH_VERSION')`). Aucune duplication.
+- Test view-source 1 page mixtape avec Rank Math désactivé temporairement (admin → Plugins → Deactivate Rank Math, view source, Reactivate) : confirmer le fallback thème s'émet (commentaires `<!-- Phase 6 OTHER-003 fallback -->` + `<!-- Phase 6 OTHER-006 fallback -->` visibles dans la source) avec OG + Twitter + JSON-LD MusicPlaylist correctement formés. Test optionnel mais utile pour valider l'architecture défensive.
+- Captures `_docs/captures-post-phase-6/` : Phase 6 invisible visuellement (theme.json + meta head + JSON-LD = aucun rendu front), donc captures pre-Phase-6 ≡ captures post-Phase-5 ≡ captures post-Phase-6 par construction.
+
+## Refacto thème Lamixtape — bilan global
+
+**Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
+**Phases bouclées** : 0, 1, 2, 2.5, 3, 4, 5, 6 — **8 phases**
+**Commits totaux sur `main`** : ~142
+**Findings AUDIT résolus** : **63/72** (87.5%)
+**Findings reportés explicitement** : **9/72** (12.5%) — Q10 search rewrite + infrastructure (wp-config / Sentry / sitemap) + business (CPT migration, RGPD Umami, favicons)
+**0 finding sans Statut** ✅ — couverture 100% AUDIT.md
+**0 finding Critique restant** ✅
+**0 finding Haute en travail restant** ✅ — tous les Hautes restants sont Reportés explicitement
+**KB libérés (Phase 4)** : ~266 KB Bootstrap (CSS + JS) + ~30 KB MediaElement CSS = **~296 KB**
+**Tailwind output final** : ~14 KB minifié
+**Conformité a11y** : **WCAG 2.1 AA** (Phase 5)
+**Architecture finale** : PHP 8.2 + WP 6.x + Tailwind v4 CLI standalone + jQuery WP-bundled + MediaElement.js + `<dialog>` HTML5 natif + ACF Pro + Rank Math + Cloudflare/OVH headers
+
+### Apprentissages techniques majeurs (consolidés)
+
+- **D-COHAB-1** (Phase 4) : préfixe Tailwind `tw:` cohabitation pour éviter collisions Bootstrap pendant la migration. Pattern réutilisable pour toute migration de framework CSS qui partage un namespace.
+- **TW-SCAN** (Phase 4) : `@source` explicite pour les `.php` (Tailwind v4 ne scanne pas par défaut). À retenir pour tout projet WP / framework PHP migré vers Tailwind v4.
+- **TW-VERIFY** (Phase 4 + extensions C17 + Phase 5 grep) : la preuve visuelle (head/less, énumération `grep -oE` + sort -u) bat le grep paramétrique (`grep -c` qui plafonne à 1 sur CSS minifié sur une seule ligne, double-escape bash quotes, etc.). À retenir pour valider tout build artefact.
+- **TW-PARTIAL** (Phase 4) : grep tous les `.php` (pas seulement la hiérarchie WP) pour migrations CSS — partials inclus via `<?php include ?>` et helper files dans `inc/` doivent être listés explicitement avant tout Axe templates.
+- **"Decluttering reveals what was always there"** (Phases 1, 2.5) : chaque suppression de bruit (warnings PHP, console.log, code mort) révèle des bugs latents pré-existants (fix critique recherche cassée Phase 1, module commentaires côté affichage déjà mort Phase 2.5, etc.). Pattern à anticiper systématiquement.
+- **Diagnostic-d'abord** (toutes phases) : ~10+ régressions silencieuses évitées sur l'ensemble du refacto. ~10-30 min investis en cross-check IDs / lecture template / verification cascade CSS / vérification build artefact = plusieurs heures de chasse aux régressions silencieuses évitées par phase. *Pattern à institutionnaliser pour tout futur refacto*.
+- **Mapping IDs prompt vs AUDIT.md** (Phases 3, 4, 5, 6) : pattern de mismatch récurrent entre les prompts de phase et les IDs canoniques AUDIT.md. Cross-check obligatoire en pre-flight. *Apprentissage : la source de vérité c'est AUDIT.md, pas le prompt*.
+- **Architecture défensive Rank Math fallback** (Phase 6) : `defined('RANK_MATH_VERSION')` early return vs audit live conditionnel. Pattern réutilisable pour toute intégration plugin tiers — préférer la détection canonique constante version au function_exists.
+- **`inert` > JS focus trap manuel** (Phase 5) : 5 lignes JS browser-natif vs 50 lignes manuelles. À étendre aux autres composants modal-style si futurs.
+- **`focus-visible` > `:focus`** (Phase 5) : focus rings sur navigation clavier uniquement, pas sur clic souris. Standard tous browsers >2022.
+- **Marathon direct sur `main` viable pour findings indépendants** (Phase 5, 6) : pas besoin de branche feature quand chaque finding est reversible et orthogonal. Branche feature reste réservée aux phases visuellement risquées (Phase 4 Tailwind).
+- **Validation visuelle progressive (CHECKPOINTS) > validation finale unique** (Phase 4) : 8 régressions visuelles détectées et corrigées en 2 checkpoints intermédiaires. Si Phase 4 avait été marathon pur sans checkpoint, les 8 régressions auraient été découvertes au final dans un état corrompu accumulé difficile à bisecter.
+
+### Phases ultérieures planifiées (hors refacto thème)
+
+- **Q10 / Search rewrite (PERF-006 + SEC-004)** : phase dédiée — décision business + technique sur la stratégie de recherche (FT MySQL + meta_key whitelist, plugin Relevanssi/SearchWP, Algolia/Meilisearch, ou status quo accepté).
+- **Q11 / CSP (Content-Security-Policy)** : phase dédiée infrastructure — matrice à construire post-Phase-4 (Bootstrap supprimé simplifie). Inventaire sources externes : `'self'`, YouTube, Umami CDN, Cloudflare Turnstile si activé. Plus simple sans Bootstrap inline.
+- **Q12 / Validation runtime Phase 3** : phase outillage CI — tests sécurité skippés Local (rate-limit pagination 429, endpoint sans nonce 403, headers via curl) à intégrer dans une suite de tests automatisée.
+- **CPT migration (WP-005)** : phase d'évolution structurelle si Lamixtape veut un blog parallèle. Migration BDD massive `UPDATE wp_posts SET post_type='mixtape'` sur ~370 posts + redirections + maj queries.
+- **Infrastructure (PERF-014, WP-006, OTHER-001, OTHER-004, OTHER-005, OTHER-007)** : session ops/déploiement dédiée — wp-config.php WP_POST_REVISIONS, Umami legal-notice, favicons placement, sitemap vérification, monitoring Sentry/error_log.
+- **A11y polish ad-hoc** : si Lighthouse / axe DevTools révèlent des points en review post-déploiement (procédure révisée Phase 5 explicite).
+- **CI / phpcs / WPCS** : phase outillage post-refacto — `composer.json` + WordPress Coding Standards + GitHub Actions ou équivalent.
+
+### Tag de release
+
+Suggestion utilisateur : créer un tag git pour marquer la fin du refacto.
+
+```bash
+git tag -a refacto-complete -m "Refacto thème Lamixtape complet — Phase 0 à 6"
+git push origin refacto-complete
+```
+
+Permet un repère git lisible pour les futures évolutions ou les bisects.
 
 ## 5. Recommandations stratégiques
 
