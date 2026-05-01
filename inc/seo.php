@@ -127,8 +127,9 @@ function lmt_emit_og_twitter_fallback() {
 add_action( 'wp_head', 'lmt_emit_og_twitter_fallback', 20 );
 
 /**
- * Emit a `MusicPlaylist` JSON-LD structured data block on single
- * mixtape pages, as a fallback when Rank Math is not active.
+ * Build the MusicPlaylist JSON-LD data array for the current single
+ * post. Returns null if the current request is not a single post or
+ * if data cannot be built.
  *
  * Decision business utilisateur Phase 6 (Décision 5) :
  * `MusicPlaylist` retenu plutôt que `Article` car Lamixtape est
@@ -138,47 +139,44 @@ add_action( 'wp_head', 'lmt_emit_og_twitter_fallback', 20 );
  * future d'ajouter un schema `Article` en parallèle via @graph
  * sans rien casser.
  *
- * Champs émis :
+ * Champs émis (omis si données absentes — pas de placeholder fake) :
+ *   - @type          : MusicPlaylist
  *   - name           : titre de la mixtape
- *   - description    : excerpt (30 mots, fallback content)
  *   - url            : permalink
  *   - datePublished  : date ISO 8601
  *   - dateModified   : date ISO 8601
+ *   - description    : excerpt 30 mots (fallback content)
  *   - image          : featured image si dispo
- *   - author         : Person { name = curator }
+ *   - author         : Person { name = curator display_name }
  *   - numTracks      : count des items dans le repeater ACF
  *   - track[]        : array de MusicRecording { name, url } —
  *                      uniquement si tracklist non vide
  *
- * `track[]` est extrait via `get_field('tracklist')` qui retourne
- * directement un array (ACF repeater) — coût marginal, pas de
- * placeholder fake si la donnée manque.
+ * Le `@context` est volontairement OMIS : ce helper retourne juste
+ * une entrée d'array. Le @context est ajouté soit par Rank Math
+ * (cas filter), soit par le fallback standalone (cas direct emit).
  *
- * Hook `wp_head` priorité 20 (cf. lmt_emit_og_twitter_fallback).
- * Bypass total si Rank Math actif (Rank Math émet son propre
- * JSON-LD `Article` ou `WebPage` selon configuration ; éviter
- * double JSON-LD pour ne pas confondre les crawlers).
+ * Refactor post-Phase-7 (OTHER-006 audit finding) : extracted from
+ * the original `lmt_emit_jsonld_musicplaylist()` so both code paths
+ * (Rank Math filter integration AND standalone wp_head fallback)
+ * partagent la même logique de construction (DRY).
  *
- * @return void
+ * @return array|null  MusicPlaylist data ready for JSON-LD encoding,
+ *                     or null si pas de single post ou erreur.
  */
-function lmt_emit_jsonld_musicplaylist() {
-    if ( lmt_rank_math_active() ) {
-        return;
-    }
-
+function lmt_build_musicplaylist_data() {
     if ( ! is_singular( 'post' ) ) {
-        return;
+        return null;
     }
 
     $post_id = get_the_ID();
     if ( ! $post_id ) {
-        return;
+        return null;
     }
 
     $description = wp_trim_words( strip_tags( get_the_excerpt() ?: get_the_content() ), 30, '…' );
 
     $data = array(
-        '@context'      => 'https://schema.org',
         '@type'         => 'MusicPlaylist',
         'name'          => get_the_title(),
         'url'           => get_permalink(),
@@ -229,7 +227,83 @@ function lmt_emit_jsonld_musicplaylist() {
         }
     }
 
-    $json = wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+    return $data;
+}
+
+/**
+ * Inject MusicPlaylist into Rank Math's `@graph` via the
+ * `rank_math/json_ld` filter.
+ *
+ * Refactor post-Phase-7 (OTHER-006 audit finding) : Phase 7 audit
+ * a détecté que Rank Math n'émet AUCUN JSON-LD sur les single
+ * mixtapes (module Schema désactivé sur le post type `post`,
+ * cf. `_docs/audit-post-refacto.md` section 2.3). Le fallback
+ * Phase 6 d'origine (early return sur `defined('RANK_MATH_VERSION')`)
+ * était trop défensif : il skippait la fallback même quand RM
+ * n'émettait rien, laissant les singles sans aucune structured
+ * data.
+ *
+ * Le filter `rank_math/json_ld` (cf. RM `class-jsonld.php:149`
+ * `$data = $this->do_filter( 'json_ld', [], $this )`) reçoit
+ * l'array de schemas qui devient le `@graph` final. Notre callback
+ * y ajoute MusicPlaylist :
+ *   - Si RM avait déjà émis d'autres schemas → MusicPlaylist
+ *     coexiste dans le @graph (multiples @type valides en JSON-LD)
+ *   - Si RM n'avait rien à émettre → notre injection rend le
+ *     `$data` non-vide, RM émet un `<script>` contenant juste
+ *     notre MusicPlaylist (résout le finding OTHER-006)
+ *
+ * Priorité 20 pour s'exécuter après les callbacks RM internes
+ * (qui hookent à 8/10/99 cf. RM `class-frontend.php`).
+ *
+ * @param  array $data  Array of JSON-LD schemas accumulated par RM
+ *                      et autres callbacks (peut être vide).
+ * @return array        Same array avec MusicPlaylist ajoutée si
+ *                      applicable, sinon inchangée.
+ */
+function lmt_inject_musicplaylist_to_rank_math( $data ) {
+    if ( ! is_array( $data ) ) {
+        $data = array();
+    }
+    $musicplaylist = lmt_build_musicplaylist_data();
+    if ( $musicplaylist ) {
+        $data['lmt_musicplaylist'] = $musicplaylist;
+    }
+    return $data;
+}
+add_filter( 'rank_math/json_ld', 'lmt_inject_musicplaylist_to_rank_math', 20, 1 );
+
+/**
+ * Emit a standalone `MusicPlaylist` JSON-LD `<script>` block when
+ * Rank Math is NOT active.
+ *
+ * When Rank Math is active, our MusicPlaylist data is injected via
+ * `rank_math/json_ld` filter (cf. lmt_inject_musicplaylist_to_rank_math)
+ * and emitted by RM inside its own `<script class="rank-math-schema">`.
+ * This standalone fallback emission only runs when RM is absent, to
+ * avoid double JSON-LD (which would confuse crawlers).
+ *
+ * Hook `wp_head` priorité 20 (cohérent avec
+ * lmt_emit_og_twitter_fallback).
+ *
+ * @return void
+ */
+function lmt_emit_jsonld_musicplaylist() {
+    if ( lmt_rank_math_active() ) {
+        return;
+    }
+
+    $musicplaylist = lmt_build_musicplaylist_data();
+    if ( ! $musicplaylist ) {
+        return;
+    }
+
+    $payload = array_merge(
+        array( '@context' => 'https://schema.org' ),
+        $musicplaylist
+    );
+
+    $json = wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     if ( false === $json ) {
         return;
     }
