@@ -289,6 +289,7 @@
 - **Impact** : Comportement clavier non garanti hors BS4.
 - **Recommandation** : Migrer vers `<dialog>` natif (`<dialog id="donatemodal"><h2 id="donatemodal-title">...</h2></dialog>`) avec `dialog.showModal()`. Ajustement `aria-labelledby="donatemodal-title"`.
 - **Note d'observation (Phase 1)** : Chromium émet en console à l'ouverture d'un modal `Blocked aria-hidden on an element because its descendant retained focus.` Manifestation directe du finding : Bootstrap 4.4 pose `aria-hidden="true"` sur le modal pendant que le focus s'y trouve, et les navigateurs récents flaguent ce conflit. **Pas une régression Phase 1** — bug intrinsèque à BS4. Résolution attendue avec la migration `<dialog>` (Phase 5).
+- **Note A11Y-NEW-001 (résolution Phase 4)** : la note d'observation Phase 1 ci-dessus a parfois été référencée sous l'identifiant `A11Y-NEW-001` (warning Chromium aria-hidden). **Résolu Phase 4** (`871b11d` migration `<dialog>` natif Axe C C16) : le composant `<dialog>` HTML5 ne pose plus `aria-hidden` pendant l'ouverture comme Bootstrap 4 le faisait — l'attribut `open` du `<dialog>` est mutuellement exclusif avec `aria-hidden`, et le browser-natif gère le focus management sans le conflit BS4. À traiter ici comme sous-note de A11Y-008 plutôt que finding indépendant. Le finding A11Y-008 lui-même (focus trap + `aria-labelledby` correct vers `<h2>` titre) reste partiellement ouvert et sera finalisé en Phase 5.
 
 ### [A11Y-009] Couleurs ACF `color` appliquées sans contrôle de contraste
 - **Sévérité** : Moyenne
