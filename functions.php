@@ -86,6 +86,20 @@ function lmt_asset_ver( $relative_path ) {
 function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
+    // Umami custom events tracking helper — Phase Tracking v1.
+    // Loaded in <head> ($in_footer = false) with no dependency so
+    // window.lmtTrack and window.lmtGetMixtapeSlug are defined
+    // before any other theme script runs (footer-loaded). Helper
+    // silent-fails if Umami is blocked (adblocker) — never breaks UX.
+    // Spec : _docs/tracking-plan.md
+    wp_enqueue_script(
+        'lmt-tracking',
+        $theme_uri . '/js/tracking.js',
+        array(),
+        lmt_asset_ver( 'js/tracking.js' ),
+        false
+    );
+
     // Tailwind v4 — Phase 4 Axe A. Carries the entire utility layer
     // (post-Axe-D, prefix-less). Loaded first so the theme CSS files
     // below can override individual rules if they need to.
