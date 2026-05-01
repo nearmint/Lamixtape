@@ -10,7 +10,7 @@
     <a class="lmt-skip-link" href="#main"><?php esc_html_e( 'Skip to main content', 'lamixtape' ); ?></a>
     <nav class="navbar" aria-label="<?php esc_attr_e( 'Main navigation', 'lamixtape' ); ?>">
         <div class="container mx-auto px-4 flex flex-wrap items-center justify-between">
-            <a class="no--hover pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
+            <a class="no--hover" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
                 <span class="lmt-logo"><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></span>
             </a>
             <span class="text-right">
