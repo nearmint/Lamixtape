@@ -92,11 +92,13 @@ function lmt_emit_og_twitter_fallback() {
         }
     } elseif ( is_category() ) {
         $cat      = get_queried_object();
+        /* translators: %s = category (genre) name (e.g. "Hip-Hop"). */
         $og_title = sprintf( __( 'Genre : %s', 'lamixtape' ), $cat->name );
         if ( ! empty( $cat->description ) ) {
             $og_desc = wp_trim_words( strip_tags( $cat->description ), 30, '…' );
         }
     } elseif ( is_search() ) {
+        /* translators: %s = the user-entered search query. */
         $og_title = sprintf( __( 'Search : %s', 'lamixtape' ), get_search_query() );
     } elseif ( is_404() ) {
         $og_title = sprintf( '%s — %s', __( 'Page not found', 'lamixtape' ), $site_name );

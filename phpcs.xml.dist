@@ -192,8 +192,24 @@
              strict des PHPDoc (espace avant tags, capitalisation
              des descriptions longues). Cosmétique. -->
         <exclude name="Generic.Commenting.DocComment"/>
+
     </rule>
     <rule ref="WordPress-Docs"/>
+
+    <!--
+        Internal.NoCodeFound — sniff PHPCS-internal (pas dans
+        WordPress-Core ruleset), donc l'exclude doit être au
+        niveau top du ruleset via `<severity>0</severity>` plutôt
+        que `<exclude name="..."/>` inside <rule ref="WordPress-Core">.
+        Faux positif structurel sur les partials HTML/JS-only inclus
+        via <?php include ?> dans les templates (player.php = player
+        markup, analytics.php = Umami snippet inline). Le sniff
+        vérifie qu'un fichier .php contient du code PHP, mais ces
+        partials sont volontairement HTML-only.
+    -->
+    <rule ref="Internal.NoCodeFound">
+        <severity>0</severity>
+    </rule>
 
     <!--
         Theme-specific overrides — exceptions justifiées par le contexte

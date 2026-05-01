@@ -63,8 +63,10 @@ $fg_color     = lmt_contrast_text_color( $bg_color );
             $output     = '';
             if ( ! empty( $categories ) ) {
                 foreach ( $categories as $category ) {
-                    $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" '
-                        . 'title="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">'
+                    /* translators: %s = category name (e.g. "Hip-Hop"). */
+                    $title    = sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name );
+                    $output  .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" '
+                        . 'title="' . esc_attr( $title ) . '">'
                         . esc_html( $category->name ) . '</a>' . $separator;
                 }
                 echo trim( $output, $separator );
