@@ -690,6 +690,71 @@ Pattern de nommage `<page>_<location>_<element>` permet le filtrage Umami par pr
 
 **Apprentissage tracking** : pour les players hybrides (YouTube IFrame + MediaElement), 2 systèmes d'événements en parallèle nécessitent 2 hooks séparés mais cohérents (même fire `play_start` avec `source: 'youtube'` ou `source: 'mp3'`). Le flag `playStartTrackedForCurrentTrack` reset dans `preparePlayer()` évite les duplicates au resume sans complexité side-effect. Pattern réutilisable pour tout futur event multi-source dans le même contexte.
 
+### Phase Recette pré-deploy close — récap (1er mai 2026)
+
+**Métriques globales** :
+- **~19 commits** depuis fin Tracking v1 close (`4303774`), tous pushés sur `origin/main`. Découpage : R.A 8 commits + R.A.bis 3 commits (polish post-validation user) + R.A.bis bis 1 commit (rebuild Tailwind) + R.B 4 commits (3 internes F#4 + F#1) + R.C 2 commits + closure 1 commit.
+- ~12 fichiers modifiés (templates PHP + CSS thème + JS + tailwind build + CLAUDE.md). Net code R.A.bis et R.B confondus : ~-50 lignes (suppression du helper `lmt_get_random_mixtape` + 4 conditionnels redondants > l'ajout endpoint REST + helper "already liked").
+- **12 findings résolus + 1 skip + 1 ajout** détecté et corrigé en cours de phase. Aucun finding en travail restant. WPCS local exit 0 maintenu sur tous les commits.
+- Discipline diagnostic-d'abord MAINTENUE : pre-flight obligatoire avant chaque finding, présentation options à l'utilisateur quand ambiguïté (F#1 α/β/γ, F#7 décisions tada+tooltip, F#9 cause structurelle vs approximation), STOP intermédiaires avant chaque commit pour validation visuelle.
+
+**Findings résolus (12)** :
+
+| # | Finding | Sub-phase | SHA(s) |
+|---|---------|-----------|--------|
+| F#1 | Force white text on all backgrounds (design over WCAG) | R.B | `8ae009b` |
+| F#2 | Header logo+menu vertical center | R.A + R.A.bis | `4ced979` + `d30d987` |
+| F#3 | Cursor pointer on actionable hovers | R.A | `a2fd963` |
+| F#4 | Random mixtape REST endpoint + 302 redirect | R.B | `2e40c3d` + `74835d6` + `2c91059` |
+| F#6 | Player edges aligned with container | R.A | `04ac86d` |
+| F#7 | Like persistent localStorage + tooltip "Already liked" + subtle tada anim | R.C | `87352f1` |
+| F#8 | hr margin-top via Tailwind utilities | R.A | `44f4e22` |
+| F#9 | Mobile menu close pixel-perfect alignment | R.A + R.A.bis + R.A.bis bis | `fdf26e4` + `5f78bd8` + `dc38453` |
+| F#10 | Close mobile menu before opening Contact/Support modal | R.C | `074d031` |
+| F#11 | Modal titles font-size to 2rem | R.A | `3b1d2e0` |
+| F#12 | Margin below "Donate via PayPal" button | R.A | `f3708e5` |
+| F#13 | Mobile header container width = page container | R.A | `c71d0bb` |
+
+**Findings skipped (1)** :
+
+| # | Finding | Raison |
+|---|---------|--------|
+| F#5 | Outline focus visible after click | False positive — `:focus-visible` Phase 5 A11Y-001 fonctionne déjà comme attendu, retesté Local par utilisateur |
+
+**Findings ajoutés en cours (1)** :
+
+| # | Finding | Sub-phase | SHA |
+|---|---------|-----------|-----|
+| (R.A.bis nouveau) | Text-shadow harmonisé Contact/Support dans menu mobile | R.A.bis | `bbf83ee` |
+
+**Apprentissage technique consolidé — TW-VERIFY (Phase 4 D-COHAB-1 confirmé 2ème fois)** :
+
+F#9 a nécessité **3 tentatives** parce que le rebuild Tailwind n'a pas été lancé après l'ajout de classes utility au markup (Phase 4 D-COHAB-1, TW-SCAN, TW-PARTIAL, TW-VERIFY déjà documentés). Le pattern a été oublié 2 fois sur ce projet :
+1. F#11 (titres modales) — résolu via rebuild explicite (utility nouvelle dans `@layer components` du tailwind.input.css, donc OK).
+2. F#9 R.A.bis — `justify-end` ajouté au markup mais pas dans le build → croix rendue à gauche au lieu de droite. 3ème tentative résolue par rebuild + grep-verify (`dc38453`).
+
+**Discipline à institutionnaliser** : toute classe Tailwind ajoutée au markup PHP (header, footer, templates, partials) **REQUIERT** un rebuild Tailwind + un grep-verify sur le build artefact dans le **MÊME commit**. Vérification obligatoire :
+
+```bash
+./assets/build/tailwindcss -i assets/css/tailwind.input.css -o assets/css/tailwind.css --minify
+grep -oE '\.<utility>\{[^}]*\}' assets/css/tailwind.css
+```
+
+Sans rebuild, les classes inertes provoquent des bugs visuels difficiles à diagnostiquer (l'élément se rend "presque correctement" parce que d'autres utilities continuent d'agir, masquant la vraie cause).
+
+**Pointeur deploy** :
+
+Refacto + Tracking + Recette = 3 phases livrées sur Local, prêtes pour deploy SFTP simultané vers OVH prod. Procédure dans `_docs/deployment-checklist.md`, script `bin/deploy-sftp.sh`, workflow CLAUDE.md "2 validations séparées" (push GitHub puis deploy SFTP, validation utilisateur explicite à chaque étape).
+
+Action utilisateur quand prêt :
+1. `bash bin/deploy-sftp.sh --connect-test` (déjà validé)
+2. `bash bin/deploy-sftp.sh --dry-run` + reviewer attentivement la liste
+3. Backup OVH côté serveur (manager OVH > Restore backup > Create)
+4. `bash bin/deploy-sftp.sh` + tape `yes` à la confirmation interactive
+5. `bash bin/check-headers.sh https://lamixtape.fr` — sanity headers post-deploy
+6. Tests visuels manuels production (8 templates de référence + tests fonctionnels modals/burger/player/like/infinite-scroll)
+7. Audits Q14 différés (Lighthouse / Pa11y / PageSpeed Insights / Mozilla Observatory / securityheaders.com / validator.schema.org / comparaison Core Web Vitals)
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
