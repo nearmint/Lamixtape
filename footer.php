@@ -13,7 +13,7 @@
             <p>Lamixtape celebrates musical diversity with human-curated mixtapes.</p>
             <p>If you enjoy what we do, please consider supporting us!</p>
             <div class="donate-box">
-                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ADUSQ5WWUPQXQ&item_name=Lamixtape&currency_code=EUR&source=url" class="btn btn-donate mt-6 mb-4" target="_blank">Donate via PayPal</a><br>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ADUSQ5WWUPQXQ&item_name=Lamixtape&currency_code=EUR&source=url" class="btn btn-donate mt-6 mb-6" target="_blank">Donate via PayPal</a><br>
                 <small>Not in the mood to donate? A few <button type="button" class="lmt-link-button underline" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">kind words</button> or feedback go a long way.</small>
             </div>
         </div>
