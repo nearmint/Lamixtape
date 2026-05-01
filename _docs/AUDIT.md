@@ -276,6 +276,7 @@
 - **Description** : `#mobile-menu-overlay` est masqué via `display: none` mais sans `aria-hidden="true"` initial. À l'ouverture, aucune gestion du focus trap : la touche Tab peut sortir du menu vers la page derrière. ESC ferme (✓), mais pas de focus return sur le burger après fermeture.
 - **Impact** : Lecteur d'écran annonce des liens cachés ; clavier perdu.
 - **Recommandation** : Ajouter `aria-hidden="true"` initial. À l'ouverture, mettre `aria-hidden="false"` + `inert` sur le reste de la page + focus sur le bouton close. Au close, restaurer focus sur `#burger-btn`. Considérer le pattern "dialog modal" (rôle `dialog`, `aria-modal="true"`).
+- **Statut** : Résolu Phase 5. **header.php** : `<div id="mobile-menu-overlay">` enrichi avec `role="dialog"`, `aria-modal="true"`, `aria-label="Mobile navigation"`, `aria-hidden="true"` initial. **js/main.js** : à l'ouverture (`openMenu()`), sauvegarde `document.activeElement` dans `lastFocused`, met `aria-hidden="false"`, focus le bouton close après le `fadeIn`, et applique `inert` sur tous les enfants directs de `<body>` sauf l'overlay (focus trap browser-natif). À la fermeture (`closeMenu()`), met `aria-hidden="true"`, retire `inert` de tous les siblings, et restaure le focus sur `lastFocused` (typiquement `#burger-btn`). Préserve le close ESC + click-outside existants. Le pattern `inert` est supporté Safari 15.4+, Chrome 102+, Firefox 112+ (couverture > 97% en 2026).
 
 ### [A11Y-007] Animations sans `prefers-reduced-motion`
 - **Sévérité** : Moyenne

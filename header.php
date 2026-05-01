@@ -37,7 +37,7 @@
     </nav>
 
     <!-- Fullscreen Menu Overlay for mobile navigation -->
-    <div id="mobile-menu-overlay">
+    <div id="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Mobile navigation', 'lamixtape' ); ?>" aria-hidden="true">
         <div class="container mx-auto px-4">
             <button id="close-mobile-menu" aria-label="Close menu">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">

@@ -39,17 +39,43 @@ jQuery(function ($) {
         var $burgerBtn = $('#burger-btn');
         var $mobileMenu = $('#mobile-menu-overlay');
         var $closeBtn = $('#close-mobile-menu');
+        // Phase 5 A11Y-006: focus return target after close.
+        var lastFocused = null;
+        // Toggle `inert` on every direct body child except the
+        // overlay itself when the menu opens/closes. `inert` removes
+        // descendants from sequential focus order AND prevents
+        // pointer-events, providing a browser-native focus trap.
+        // Supported in all evergreen browsers (Safari 15.4+, Chrome
+        // 102+, Firefox 112+).
+        function setSiblingsInert(inertValue) {
+            var overlay = document.getElementById('mobile-menu-overlay');
+            var children = document.body.children;
+            for (var i = 0; i < children.length; i++) {
+                if (children[i] !== overlay) {
+                    children[i].inert = inertValue;
+                }
+            }
+        }
         function openMenu() {
+            lastFocused = document.activeElement;
+            $mobileMenu.attr('aria-hidden', 'false');
             $mobileMenu.fadeIn(200, function() {
                 $mobileMenu.css({'pointer-events': 'auto', 'opacity': 1});
+                $closeBtn.trigger('focus');
             });
             $('body').css('overflow', 'hidden');
+            setSiblingsInert(true);
         }
         function closeMenu() {
+            $mobileMenu.attr('aria-hidden', 'true');
             $mobileMenu.fadeOut(200, function() {
                 $mobileMenu.css({'pointer-events': 'none', 'opacity': 0});
             });
             $('body').css('overflow', '');
+            setSiblingsInert(false);
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                lastFocused.focus();
+            }
         }
         $burgerBtn.on('click', function(e) {
             e.preventDefault();
