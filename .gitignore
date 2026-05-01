@@ -14,6 +14,8 @@ Thumbs.db
 /node_modules/
 /vendor/
 composer.lock
+# Composer phar binary — each dev installs locally if needed.
+composer.phar
 
 # Logs
 *.log
