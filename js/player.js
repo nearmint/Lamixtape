@@ -53,6 +53,13 @@ jQuery(function ($) {
   var $youtubePlayer = $("#youtubePlayer");
   var currentType = null;
 
+  // Phase Tracking v1 — flag to prevent duplicate play_start events.
+  // YouTube `PLAYING` state and MediaElement `playing` event both
+  // fire on initial play AND on resume after pause. We only want to
+  // track the first play per track. Reset in preparePlayer() when a
+  // new track is loaded.
+  var playStartTrackedForCurrentTrack = false;
+
   // Initialize MediaElement.js for MP3/MP4
   $audioPlayer.mediaelementplayer({
     features: [],
@@ -64,6 +71,16 @@ jQuery(function ($) {
       player.addEventListener("playing", function () {
         $playPauseBtn.text("Pause");
         startTimer();
+        // Phase Tracking v1 — fire play_start on first play only.
+        if (!playStartTrackedForCurrentTrack && typeof window.lmtTrack === 'function') {
+          window.lmtTrack('play_start', {
+            mixtape_slug: window.lmtGetMixtapeSlug(),
+            track_index: currentTrack,
+            track_title: trackTitle,
+            source: 'mp3'
+          });
+          playStartTrackedForCurrentTrack = true;
+        }
       });
       player.addEventListener("pause", function () {
         $playPauseBtn.text("Play");
@@ -151,6 +168,16 @@ if (event.data === YT.PlayerState.ENDED) {
 } else if (event.data === YT.PlayerState.PLAYING) {
   $playPauseBtn.html(pauseSvg);
   startTimer();
+  // Phase Tracking v1 — fire play_start on first play only.
+  if (!playStartTrackedForCurrentTrack && typeof window.lmtTrack === 'function') {
+    window.lmtTrack('play_start', {
+      mixtape_slug: window.lmtGetMixtapeSlug(),
+      track_index: currentTrack,
+      track_title: trackTitle,
+      source: 'youtube'
+    });
+    playStartTrackedForCurrentTrack = true;
+  }
 } else if (event.data === YT.PlayerState.PAUSED) {
   $playPauseBtn.html(playSvg);
   stopTimer();
@@ -221,6 +248,8 @@ if (event.data === YT.PlayerState.ENDED) {
     trackTitle = $item.find('a').text();
     $titleDiv.text(trackTitle);
     $discogsSearchBtn.show();
+    // Phase Tracking v1 — reset play_start flag for the new track.
+    playStartTrackedForCurrentTrack = false;
     if (!trackUrl) {
       return;
     }
