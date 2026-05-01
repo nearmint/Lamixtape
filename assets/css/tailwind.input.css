@@ -170,6 +170,16 @@
         max-height: 90vh;
     }
 
+    /* Modal titles ("Support us", "Contact us"). Tailwind preflight
+     * resets all <h2> to font-size:inherit, so without this the
+     * dialog title renders at body size (~1rem). Phase Recette F#11
+     * promotes it to a proper modal heading scale. */
+    .lmt-dialog-content h2 {
+        font-size: 2rem;
+        font-weight: 500;
+        letter-spacing: -0.5px;
+    }
+
     .lmt-dialog-close {
         /* Mirrors BS .close: float-right + transparent button-look,
          * baseline opacity 0.7 going to 1 on hover/focus. The 40x40
