@@ -45,7 +45,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
                     ?>
                     <a href="<?php echo esc_url($author_url); ?>?ref=lamixtape.fr" target="_blank" class="underline"><?php the_author(); ?></a>.
                 </p>
-                <ul class="list-none p-0 lowercase" id="playlist">
+                <ul class="list-none p-0 lowercase mt-6" id="playlist">
                     <?php if( have_rows('tracklist') ): ?>
                         <?php while( have_rows('tracklist') ): the_row();?>
                             <li>

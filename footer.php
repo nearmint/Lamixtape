@@ -3,7 +3,7 @@
     <dialog id="donatemodal" class="lmt-dialog" aria-labelledby="donatemodal-title">
         <div class="lmt-dialog-content modal-content text-center">
             <h2 id="donatemodal-title" class="pb-6">Support us ☕
-                <button type="button" class="lmt-dialog-close pt-1" aria-label="Close">
+                <button type="button" class="lmt-dialog-close" aria-label="Close">
                     <span aria-hidden="true"><svg class="bi bi-x" width="40" height="40" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
                         <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
@@ -14,7 +14,7 @@
             <p>If you enjoy what we do, please consider supporting us!</p>
             <div class="donate-box">
                 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ADUSQ5WWUPQXQ&item_name=Lamixtape&currency_code=EUR&source=url" class="btn btn-donate mt-6 mb-6" target="_blank">Donate via PayPal</a><br>
-                <small>Not in the mood to donate? A few <button type="button" class="lmt-link-button underline" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">kind words</button> or feedback go a long way.</small>
+                <small>Not in the mood to donate? A few <button type="button" class="lmt-link-button underline pt-6" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">kind words</button> or feedback go a long way.</small>
             </div>
         </div>
     </dialog>
@@ -22,7 +22,7 @@
     <dialog id="contactmodal" class="lmt-dialog" aria-labelledby="contactmodal-title">
         <div class="lmt-dialog-content modal-content text-center">
             <h2 id="contactmodal-title" class="pb-6">Contact us 💌
-                <button type="button" class="lmt-dialog-close pt-1" aria-label="Close">
+                <button type="button" class="lmt-dialog-close" aria-label="Close">
                     <span aria-hidden="true"><svg class="bi bi-x" width="40" height="40" viewBox="0 0 16 16" fill="white" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
                         <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>

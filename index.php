@@ -10,18 +10,18 @@ $the_query = new WP_Query( array(
 <section class="about font-smoothing">
     <div class="container mx-auto px-4">
         <hr>
-        <article class="flex flex-wrap pt-6 pb-12">
+        <article class="flex flex-wrap pt-12 pb-12">
             <div class="w-full lg:w-2/3">
-                <p><?php esc_html_e('Hi and welcome to Lamixtape.', 'lamixtape'); ?></p>
-				<p><?php esc_html_e('Between', 'lamixtape'); ?> <a class="underline" href="https://web.archive.org/web/20130612232050/http://lamixtape.fr/" target="_blank"><?php esc_html_e('2011', 'lamixtape'); ?></a> <?php esc_html_e('and 2022, we released mixtapes every month, curated by our roster of curators and', 'lamixtape'); ?> <a class="underline" href="https://lamixtape.fr/guests/"><?php esc_html_e('incredible guests', 'lamixtape'); ?></a>. <?php esc_html_e("Our foundational reason for building Lamixtape was that we're really excited about sharing music. If we had a central goal, it was to feed your ears and curiosity with as much quality and diversity as possible.", 'lamixtape'); ?></p>
-                <p><?php esc_html_e('Lamixtape has no bullshit, no ads, no sponsored posts, and no paywalls. If you enjoy our mixtapes, please consider', 'lamixtape'); ?> <button type="button" class="lmt-link-button underline" data-lmt-dialog="donatemodal" data-tracking-source="home_about_link" aria-haspopup="dialog" aria-controls="donatemodal"><?php esc_html_e('supporting', 'lamixtape'); ?></button> <?php esc_html_e('what we do.', 'lamixtape'); ?></p>
-                <p><?php esc_html_e('If you really want to see what we’re about, go and explore our', 'lamixtape'); ?> <a class="underline" href="#mixtapes">360+ mixtapes</a>.</p>
-                <p><?php esc_html_e('And remember,', 'lamixtape'); ?>
+                <p class="pb-4"><?php esc_html_e('Hi and welcome to Lamixtape.', 'lamixtape'); ?></p>
+				<p class="pb-4"><?php esc_html_e('Between', 'lamixtape'); ?> <a class="underline" href="https://web.archive.org/web/20130612232050/http://lamixtape.fr/" target="_blank"><?php esc_html_e('2011', 'lamixtape'); ?></a> <?php esc_html_e('and 2022, we released mixtapes every month, curated by our roster of curators and', 'lamixtape'); ?> <a class="underline" href="https://lamixtape.fr/guests/"><?php esc_html_e('incredible guests', 'lamixtape'); ?></a>. <?php esc_html_e("Our foundational reason for building Lamixtape was that we're really excited about sharing music. If we had a central goal, it was to feed your ears and curiosity with as much quality and diversity as possible.", 'lamixtape'); ?></p>
+                <p class="pb-4"><?php esc_html_e('Lamixtape has no bullshit, no ads, no sponsored posts, and no paywalls. If you enjoy our mixtapes, please consider', 'lamixtape'); ?> <button type="button" class="lmt-link-button underline" data-lmt-dialog="donatemodal" data-tracking-source="home_about_link" aria-haspopup="dialog" aria-controls="donatemodal"><?php esc_html_e('supporting', 'lamixtape'); ?></button> <?php esc_html_e('what we do.', 'lamixtape'); ?></p>
+                <p class="pb-4"><?php esc_html_e('If you really want to see what we’re about, go and explore our', 'lamixtape'); ?> <a class="underline" href="#mixtapes">360+ mixtapes</a>.</p>
+                <p class="pb-4"><?php esc_html_e('And remember,', 'lamixtape'); ?>
                     <a title="<?php esc_attr_e('Random mixtape', 'lamixtape'); ?>" href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>" class="underline"><?php esc_html_e('getting lost', 'lamixtape'); ?></a>
                     <?php esc_html_e('can be a good thing.', 'lamixtape'); ?></p>
                 <small>PS: we’re not on social media, but you can reach us <button type="button" class="lmt-link-button underline" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">here</button>.</small>
             </div>
-            <div class="hidden lg:block lg:w-1/3 pt-12">
+            <div class="hidden lg:block lg:w-1/3">
                 <button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="home_sidebar_image" aria-haspopup="dialog" aria-controls="donatemodal" aria-label="<?php esc_attr_e('Open the support us dialog', 'lamixtape'); ?>"><img src="<?php echo esc_url( get_template_directory_uri() ); ?>/img/booking.jpg" class="max-w-full h-auto illustration" alt="<?php esc_attr_e('Booking', 'lamixtape'); ?>" loading="lazy" decoding="async"></button>
             </div>
         </article>
