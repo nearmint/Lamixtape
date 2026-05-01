@@ -25,7 +25,7 @@ $fg_color = lmt_contrast_text_color( $bg_color );
             <div class="hidden lg:block lg:w-1/3 text-right buttons">
                 <button class="like__btn animated like-btn" aria-label="<?php esc_attr_e( 'Like this mixtape', 'lamixtape' ); ?>">
                     <span aria-hidden="true">🔥&nbsp;</span>
-                    <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
+                    <span class="like__number"><?php echo (int) ( get_field( 'likes_number' ) ?: 0 ); ?></span>
                 </button>
             </div>
         </div>

@@ -57,6 +57,32 @@ function lmt_asset_ver( $relative_path ) {
     return file_exists( $absolute ) ? filemtime( $absolute ) : null;
 }
 
+/**
+ * Enqueue all theme styles and scripts on the front-end.
+ *
+ * Hooked on `wp_enqueue_scripts`. Single source of truth for all
+ * theme asset loading post-Phase-4 (Bootstrap removed) +
+ * post-Phase-7-A2 (Tailwind + 14 theme CSS files + JS modules).
+ *
+ * Loading order :
+ *   1. lmt-tailwind   — Tailwind v4 build (utilities + components)
+ *   2. lmt-outfit     — self-hosted Outfit variable font
+ *   3. wp-mediaelement (script only, no CSS) — needed by lmt-player
+ *   4. 13 theme CSS   — search/category/general/navbar/mixtape-page/
+ *                       mixtape-of-the-month/donation/guests/explore/
+ *                       404/list-of-mixtapes/player/text
+ *   5. lmt-main JS    — like + burger + smooth scroll
+ *   6. lmt-player JS  — single mixtape pages only (MediaElement +
+ *                       YouTube IFrame)
+ *   7. lmt-dialogs JS — vanilla, modal triggers (donate/contact)
+ *   8. lmt-infinite-scroll CSS+JS — home/single/category, conditional
+ *
+ * Cache busting : all CSS use `lmt_asset_ver()` helper (filemtime),
+ * cf. Phase 8 ad-hoc head cleanup F8 (commit `bfa71f9`). JS files
+ * use `null` (WP-default version, sufficient for the small JS surface).
+ *
+ * @return void
+ */
 function lmt_enqueue_assets() {
     $theme_uri = get_template_directory_uri();
 
@@ -427,7 +453,7 @@ remove_action( 'template_redirect', 'rest_output_link_header', 11, 0 );
  */
 add_filter( 'feed_links_show_comments_feed', '__return_false' );
 
-/*
+/**
  * Phase 8 ad-hoc head cleanup — strip msapplication-TileImage meta.
  *
  * WP core's `wp_site_icon()` (wp-includes/general-template.php:3596-
@@ -625,7 +651,11 @@ add_action( 'rest_api_init', function () {
 
 /**
  * Permission callback for the likes REST endpoint.
+ *
  * Verifies the X-WP-Nonce header to block CSRF / cross-origin abuse.
+ *
+ * @param  WP_REST_Request $request The REST request object.
+ * @return true|WP_Error            True if nonce valid, WP_Error 403 otherwise.
  */
 function lmt_social_like_permission( WP_REST_Request $request ) {
     $nonce = $request->get_header( 'X-WP-Nonce' );
