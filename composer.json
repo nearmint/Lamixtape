@@ -1,0 +1,25 @@
+{
+    "name": "lamixtape/theme",
+    "description": "Lamixtape WordPress theme — dev tooling for PHP linting (Phase A2 post-refacto).",
+    "type": "wordpress-theme",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "lint:summary": "phpcs --report=summary"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}

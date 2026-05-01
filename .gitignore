@@ -13,6 +13,7 @@ Thumbs.db
 # assets/vendor/ (self-hosted libs) is tracked.
 /node_modules/
 /vendor/
+composer.lock
 
 # Logs
 *.log
