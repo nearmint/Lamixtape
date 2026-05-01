@@ -258,6 +258,16 @@ Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` 
 
 **Extension TW-VERIFY (CHECKPOINT 2 → C17)** : `grep -c PATTERN file` compte les **lignes** matchantes, pas les occurrences. Sur un CSS Tailwind v4 minifié (qui est sur une SEULE ligne), `grep -c` plafonne à 1 quoi qu'il arrive. La vérification doit utiliser `grep -oE PATTERN file | wc -l` (compte les occurrences) OU le check visuel direct (`grep -oE 'lmt-dialog[^{}, ]*' file | sort -u` pour énumérer les sélecteurs réels). 30 min perdues à C17 sur un faux positif "lmt-dialog absent du build" parce que `grep -c` retournait 1 alors que les 6 sélecteurs étaient bien tous émis. Apprentissage cumulatif : pour valider un build CSS minifié, **énumérer** plutôt que **compter**.
 
+**Apprentissage TW-PARTIAL — Templates partiels inclus via `<?php include ?>` ne sont pas dans la hiérarchie WP standard** (révélé en CHECKPOINT 4 final, post-merge attempt)
+
+`player.php` est un partial inclus dans `single.php` via `<?php include "player.php" ?>` (pas via `get_template_part()` ni la hiérarchie WP). Conséquence : oublié de la liste explicite des templates Axe B (qui couvrait 404, text, explore, guests, header, footer, single, index, category, search, card-mixtape — tous les templates de la hiérarchie WP standard, plus le partial card-mixtape via `template-parts/`). Les classes Bootstrap dans player.php (`container`, `row`, `col-3`, `col-2`, `col`, `d-flex`, `d-none`, `d-sm-block`, `align-items-center`, `btn`, `btn-link`, `btn-xs`, `btn-outline-light`, `custom-range`, `mr-3`, `ml-3`) ont survécu à toute la migration Axe B et n'ont commencé à casser visuellement qu'au moment de la suppression Bootstrap CSS en C19.
+
+Détecté à la review CHECKPOINT 4 par l'utilisateur ("player complètement cassé"). Diagnostic immédiat (grep `class=` sur player.php) a révélé l'oubli en 30 secondes. Fix : commit retroactif `refactor(player): migrate player.php to Tailwind utilities (Axe B retroactive)` qui applique le même pattern que les 11 autres templates Axe B mais sans le préfixe `tw:` (l'Axe D C19.5 strip avait déjà transformé tous les autres templates en plain Tailwind).
+
+**Pour les futures migrations CSS framework** : lister explicitement TOUS les `*.php` du thème via `find . -maxdepth 3 -name "*.php" -print` AVANT de planifier l'Axe templates, et non pas seulement les templates de la hiérarchie WP. Cela inclut : partials (`include`-d), helper files dans `inc/`, ACF block render files, pattern files, etc. La hiérarchie WP standard ne capture que la couche principale.
+
+**Coût du faux positif** : 1 régression visuelle critique survenue au CHECKPOINT 4 final, ~30 min de diagnostic + 1 commit retroactif. Détecté grâce au sanity check post-merge-prep (et aux tests fonctionnels demandés en CHECKPOINT 4). Sans ce sanity check, le merge aurait shippé un player cassé en prod.
+
 ### Phase 4 close — récap (1er mai 2026)
 
 **Métriques globales** :
