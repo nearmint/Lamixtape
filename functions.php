@@ -50,11 +50,12 @@ function lmt_enqueue_assets() {
     wp_enqueue_style( 'lmt-outfit', $theme_uri . '/assets/vendor/outfit/outfit.css', array( 'lmt-tailwind' ), '1.0' );
 
     // MediaElement.js — WP-bundled version (matches our 4.2.16 target).
-    // The associated mediaelementplayer.css is still enqueued here for
-    // the moment; C20 (TW-005) will dequeue it because our player
-    // uses fully custom controls in #footer-player (cf. js/player.js
-    // init with features:[]) so the native CSS (~30 KB) is dead weight.
-    wp_enqueue_style( 'wp-mediaelement' );
+    // The script is needed for MP3/YouTube playback under js/player.js,
+    // but the associated mediaelementplayer.css is NOT enqueued: our
+    // player uses fully custom controls in #footer-player (cf.
+    // js/player.js init with features: []), so the native player CSS
+    // (~30 KB) would be downloaded and parsed for nothing. Dropping
+    // it closes TW-005 (Phase 4 Axe D C20).
     wp_enqueue_script( 'wp-mediaelement' );
 
     // Theme CSS — formerly chained against lmt-bootstrap; now depends
