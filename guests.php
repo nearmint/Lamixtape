@@ -19,7 +19,7 @@
         ?>
             <span class="<?php echo esc_attr($curauth->nickname); ?>">
                 <header>
-                    <h2 class="pt-2 pb-0 mb-0 truncate"><?php echo esc_html($curauth->nickname); ?></h2>
+                    <h2 class="pt-1 pb-0 mb-0 truncate"><?php echo esc_html($curauth->nickname); ?></h2>
                     <span class="hidden lg:block">
                         <?php foreach ( $author_posts as $author_post ) : ?>
                             <a href="<?php echo esc_url( get_permalink( $author_post ) ); ?>" class="mr-2"><?php echo esc_html( get_the_title( $author_post ) ); ?></a>
