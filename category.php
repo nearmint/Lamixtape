@@ -2,11 +2,11 @@
 
 <div id="category">
     <header class="font-smoothing">
-        <div class="tw:container tw:mx-auto tw:px-4">
-            <hr class="tw:mb-6 tw:pb-1">
+        <div class="container mx-auto px-4">
+            <hr class="mb-6 pb-1">
             <h4>
                 <?php esc_html_e('Genre :', 'lamixtape'); ?> <?php single_cat_title(); ?>
-                <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="tw:float-right no--hover">
+                <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover">
                     <!-- “X” icon -->
                 </a>
             </h4>
@@ -46,7 +46,7 @@
                      aria-hidden="true"></div>
             <?php endif; ?>
         <?php else : ?>
-            <div class="tw:container tw:mx-auto tw:px-4 nothing--found">
+            <div class="container mx-auto px-4 nothing--found">
                 <h2 class="font-smoothing"><?php esc_html_e('No playlist found', 'lamixtape'); ?><br>
                     <small><?php esc_html_e('Let us know if you want a specific genre or artist', 'lamixtape'); ?><br>
                     → <a href="mailto:hello@lamixtape.fr">hello@lamixtape.fr</a></small>

@@ -1,9 +1,9 @@
 <?php get_header(); ?>
-<article class="mixtape font-smoothing tw:pb-12" style="background-color:<?php echo esc_attr( get_field('color') ); ?>">
-    <div class="tw:container tw:mx-auto tw:px-4">
-        <div class="tw:flex tw:flex-wrap tw:pt-12">
-            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3">
-                <h2 class="tw:mb-0"><?php the_title(); ?></h2>
+<article class="mixtape font-smoothing pb-12" style="background-color:<?php echo esc_attr( get_field('color') ); ?>">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-wrap pt-12">
+            <div class="flex-1 md:flex-none md:w-2/3">
+                <h2 class="mb-0"><?php the_title(); ?></h2>
                 <?php
                 // Display categories for this mixtape
                 $categories = get_the_category();
@@ -16,19 +16,19 @@
                     echo trim( $output, $separator );
                 }
                 ?>
-                <span class="tw:ml-1 tw:mr-2">·</span><span class="date"><?php the_time('F Y'); ?></span>
+                <span class="ml-1 mr-2">·</span><span class="date"><?php the_time('F Y'); ?></span>
             </div>
-            <div class="tw:hidden tw:lg:block tw:lg:w-1/3 tw:text-right buttons">
+            <div class="hidden lg:block lg:w-1/3 text-right buttons">
                 <button class="like__btn animated like-btn">
                     🔥&nbsp;
                     <span class="like__number"><?php if(!get_field('likes_number')) { echo "0"; } else { the_field('likes_number'); } ?></span>
                 </button>
             </div>
         </div>
-        <hr class="tw:my-6">
-        <div class="tw:flex tw:flex-wrap tracklist">
-            <div class="tw:flex-1 tw:md:flex-none tw:md:w-2/3">
-                <p class="tw:mb-6 curated author-<?php the_author_meta('ID') ?>">
+        <hr class="my-6">
+        <div class="flex flex-wrap tracklist">
+            <div class="flex-1 md:flex-none md:w-2/3">
+                <p class="mb-6 curated author-<?php the_author_meta('ID') ?>">
                     <?php esc_html_e('This mixtape has been curated by our guest,', 'lamixtape'); ?>
                     <?php
                     // Get author URL or fallback to author archive
@@ -40,7 +40,7 @@
                     ?>
                     <a href="<?php echo esc_url($author_url); ?>?ref=lamixtape.fr" target="_blank" class="underline"><?php the_author(); ?></a>.
                 </p>
-                <ul class="tw:list-none tw:p-0 tw:lowercase" id="playlist">
+                <ul class="list-none p-0 lowercase" id="playlist">
                     <?php if( have_rows('tracklist') ): ?>
                         <?php while( have_rows('tracklist') ): the_row();?>
                             <li>
@@ -52,12 +52,12 @@
                     <?php endif; ?>
                 </ul>
             </div>
-            <div class="tw:hidden tw:lg:block tw:lg:w-1/3">
+            <div class="hidden lg:block lg:w-1/3">
                 <div>
                     <div>
                         <?php if( has_post_thumbnail() ): ?>
                             <a href="#" data-lmt-dialog="donatemodal" class="no--hover"><?php the_post_thumbnail( 'large', array(
-                                'class'    => 'tw:max-w-full tw:h-auto tw:mt-6 illustration',
+                                'class'    => 'max-w-full h-auto mt-6 illustration',
                                 'alt'      => esc_attr( get_the_title() ),
                                 'loading'  => 'lazy',
                                 'decoding' => 'async',
@@ -66,14 +66,14 @@
                     </div>
                     <!-- Container for player iframes -->
                     <div id="player-container"></div>
-                    <audio id="audioPlayer" class="tw:hidden"></audio>
-                    <div class="tw:aspect-video tw:relative tw:hidden">
+                    <audio id="audioPlayer" class="hidden"></audio>
+                    <div class="aspect-video relative hidden">
                         <div id="youtubePlayer" class="player-frame"></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="tw:flex tw:flex-wrap tw:ml-0">
+        <div class="flex flex-wrap ml-0">
             <div class="action-buttons">
                     <?php
                         $random = lmt_get_random_mixtape( 'single_random_button' );

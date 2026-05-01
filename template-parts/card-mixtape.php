@@ -23,7 +23,7 @@
  *                                       'none' omits the highlight span
  *                                       entirely (matches category.php).
  *   - 'hide_curator_on_small' bool    — wrap the curator span in
- *                                       tw:hidden tw:lg:block (true
+ *                                       hidden lg:block (true
  *                                       everywhere except single.php
  *                                       previous-loop)
  *   - 'tag_link_attr'         string  — 'alt' (legacy index/single/search,
@@ -47,27 +47,27 @@ $args = wp_parse_args(
 );
 
 $article_classes = trim( $args['article_extra_classes'] );
-$h2_classes      = trim( $args['h2_extra_classes'] . ' tw:mb-0 tw:pt-2 tw:truncate' );
-$curator_classes = ( $args['hide_curator_on_small'] ? 'tw:hidden tw:lg:block ' : '' )
-    . 'tw:float-right curator author-' . get_the_author_meta( 'ID' );
+$h2_classes      = trim( $args['h2_extra_classes'] . ' mb-0 pt-2 truncate' );
+$curator_classes = ( $args['hide_curator_on_small'] ? 'hidden lg:block ' : '' )
+    . 'float-right curator author-' . get_the_author_meta( 'ID' );
 
 $is_highlight = (bool) get_field( 'highlight' );
 ?>
 <article style="background-color:<?php echo esc_attr( get_field( 'color' ) ); ?>;" class="<?php echo esc_attr( $article_classes ); ?>">
-    <div class="tw:container tw:mx-auto tw:px-4">
+    <div class="container mx-auto px-4">
         <?php if ( 'always_span' === $args['highlight_mode'] ) : ?>
-            <span class="highlight tw:float-left tw:-mr-4"><?php echo $is_highlight ? '🔥' : ''; ?></span>
+            <span class="highlight float-left -mr-4"><?php echo $is_highlight ? '🔥' : ''; ?></span>
         <?php elseif ( 'conditional' === $args['highlight_mode'] && $is_highlight ) : ?>
-            <span class="highlight tw:float-left tw:-mr-4">🔥</span>
+            <span class="highlight float-left -mr-4">🔥</span>
         <?php endif; ?>
         <a href="<?php the_permalink(); ?>"><h2 class="<?php echo esc_attr( $h2_classes ); ?>"><?php the_title(); ?><span class="<?php echo esc_attr( $curator_classes ); ?>"><?php esc_html_e( 'Curated by', 'lamixtape' ); ?> <?php the_author(); ?></span></h2></a>
-        <div class="tags tw:pb-2"><?php
+        <div class="tags pb-2"><?php
             $categories = get_the_category();
             $separator  = ' ';
             $output     = '';
             if ( ! empty( $categories ) ) {
                 foreach ( $categories as $category ) {
-                    $output .= '<a class="tw:mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" '
+                    $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" '
                         . esc_attr( $args['tag_link_attr'] ) . '="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">'
                         . esc_html( $category->name ) . '</a>' . $separator;
                 }

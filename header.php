@@ -15,14 +15,14 @@
 </head>
 <body <?php body_class(); ?>>
     <nav class="navbar">
-        <div class="tw:container tw:mx-auto tw:px-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between">
-            <a class="no--hover tw:pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
+        <div class="container mx-auto px-4 flex flex-wrap items-center justify-between">
+            <a class="no--hover pt-1" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
                 <h1><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></h1>
             </a>
-            <span class="tw:text-right">
-                <ul class="tw:flex tw:gap-x-2 tw:uppercase tw:mb-0">
-                    <li class="burger-menu tw:block">
-                        <button id="burger-btn" class="tw:bg-transparent tw:border-0 tw:p-0 tw:outline-none" aria-label="Open menu">
+            <span class="text-right">
+                <ul class="flex gap-x-2 uppercase mb-0">
+                    <li class="burger-menu block">
+                        <button id="burger-btn" class="bg-transparent border-0 p-0 outline-none" aria-label="Open menu">
                             <svg width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
                                 <rect x="0" y="0" width="22" height="1.5" rx="0.75" fill="#ffffff"/>
                                 <rect x="8" y="7" width="14" height="1.5" rx="0.75" fill="#ffffff"/>
@@ -37,7 +37,7 @@
 
     <!-- Fullscreen Menu Overlay for mobile navigation -->
     <div id="mobile-menu-overlay">
-        <div class="tw:container tw:mx-auto tw:px-4">
+        <div class="container mx-auto px-4">
             <button id="close-mobile-menu" aria-label="Close menu">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
