@@ -8,6 +8,20 @@ a, body, small {
     color: #fff;
 }
 
+/* Phase 5 A11Y-009 — make <a> and <small> inside any <article>
+ * inherit the article's text color. Mixtape articles (single.php
+ * + card-mixtape.php) set an inline `color` based on luminance of
+ * the curator-supplied ACF background, but the rule above gives
+ * <a> and <small> a fixed #fff that wins by specificity (0,0,1
+ * tag-only) and breaks the contrast adaptation. Specificity 0,0,2
+ * (article + tag) here beats it cleanly. The home/text <article>
+ * tags don't set an inline color so they inherit body #fff via
+ * the cascade, no visual change. */
+article a,
+article small {
+    color: inherit;
+}
+
 .font-smoothing {
     -webkit-font-smoothing: antialiased!important;
     -moz-osx-font-smoothing: grayscale!important;

@@ -1,5 +1,9 @@
 <?php get_header(); ?>
-<article class="mixtape font-smoothing pb-12" style="background-color:<?php echo esc_attr( get_field('color') ); ?>">
+<?php
+$bg_color = get_field( 'color' );
+$fg_color = lmt_contrast_text_color( $bg_color );
+?>
+<article class="mixtape font-smoothing pb-12" style="background-color:<?php echo esc_attr( $bg_color ); ?>; color:<?php echo esc_attr( $fg_color ); ?>;">
     <div class="container mx-auto px-4">
         <div class="flex flex-wrap pt-12">
             <div class="flex-1 md:flex-none md:w-2/3">

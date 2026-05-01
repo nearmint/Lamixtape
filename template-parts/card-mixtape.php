@@ -46,8 +46,10 @@ $curator_classes = ( $args['hide_curator_on_small'] ? 'hidden lg:block ' : '' )
     . 'float-right curator author-' . get_the_author_meta( 'ID' );
 
 $is_highlight = (bool) get_field( 'highlight' );
+$bg_color     = get_field( 'color' );
+$fg_color     = lmt_contrast_text_color( $bg_color );
 ?>
-<article style="background-color:<?php echo esc_attr( get_field( 'color' ) ); ?>;" class="<?php echo esc_attr( $article_classes ); ?>">
+<article style="background-color:<?php echo esc_attr( $bg_color ); ?>; color:<?php echo esc_attr( $fg_color ); ?>;" class="<?php echo esc_attr( $article_classes ); ?>">
     <div class="container mx-auto px-4">
         <?php if ( 'always_span' === $args['highlight_mode'] ) : ?>
             <span class="highlight float-left -mr-4"><?php echo $is_highlight ? '🔥' : ''; ?></span>
