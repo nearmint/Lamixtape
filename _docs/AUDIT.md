@@ -149,6 +149,7 @@
 - **Description** : Toute recherche frontend déclenche un `LEFT JOIN postmeta`. La table `postmeta` est dénormalisée et **non-indexée** sur `meta_value` (par défaut WP). Sur 360 posts × N champs ACF, c'est OK ; à 10k+ ça devient catastrophique.
 - **Impact** : Recherches lentes (>1s) à mesure que la BDD grossit.
 - **Recommandation** : Limiter aux meta-keys utiles (filter `WHERE meta_key IN ('tracklist_%_track', ...)`), ou indexer `wp_postmeta(meta_value(191))`, ou migrer vers `WP_Query` standard avec un index plein-texte (`MATCH ... AGAINST`).
+- **Statut** : Reporté Q10 search rewrite, post-Phase-6 (cf. CLAUDE.md section 7 Q10). Décision business + technique : refonte de la stratégie de recherche est trop volumineuse pour le scope refacto thème. Options à arbitrer : (1) index FT MySQL + meta_key whitelist, (2) plugin Relevanssi ou SearchWP, (3) Algolia / Meilisearch (probablement overkill < 1k posts), (4) status quo accepté tant que la BDD reste < 1k posts. Aujourd'hui tolérable post-fix QC-005 Phase 1 (la recherche fonctionne de nouveau, juste pas optimale en performance). À ré-évaluer si la BDD croît significativement.
 
 ### [PERF-007] `category.php` sans pagination (`posts_per_page => -1`)
 - **Sévérité** : Moyenne
@@ -220,6 +221,7 @@
 - **Description** : `define('WP_POST_REVISIONS', 3)` arrive lors du chargement du thème, donc **après** que WP a déjà décidé du nombre de revisions à conserver pour les requêtes en cours (sauvegarde de post). Le bon emplacement est `wp-config.php`.
 - **Impact** : La limitation à 3 revisions n'est pas garantie.
 - **Recommandation** : Déplacer dans `wp-config.php` (`define('WP_POST_REVISIONS', 3);` avant `require_once ABSPATH . 'wp-settings.php';`).
+- **Statut** : Reporté infrastructure (Phase 6 prep). Le fix complet impose de modifier `wp-config.php` qui est hors du périmètre du thème (CLAUDE.md section 8 — règle "wp-config.php hors thème, ne jamais modifier sans confirmation"). Mitigation déjà en place Phase 1 (`389dd3c` wrap `if ( ! defined('WP_POST_REVISIONS') )` dans `functions.php`, cf. QC-NEW-001) qui élimine le warning et permet à `wp-config.php` de définir la constante en amont si la valeur y est posée. À reprendre lors d'une session admin/infrastructure dédiée (déploiement, ops). Doublon documentaire : voir aussi WP-006 sous l'axe WP best practices.
 
 ---
 
@@ -530,6 +532,7 @@
 - **Description** : `revcon_change_post_label()` et `revcon_change_post_object()` modifient les labels du post type `post` au lieu de créer un CPT `mixtape`. Conséquences : (1) impossibilité d'avoir des posts "classiques" (blog actu, etc.), (2) toutes les fonctions WP qui ciblent `post_type=post` (RSS, archives, etc.) sont impactées, (3) migration future vers un vrai CPT = lourde (migration BDD `wp_posts.post_type`).
 - **Impact** : Dette structurelle. Si Lamixtape veut un blog parallèle, il faudra créer un CPT `news` quand même.
 - **Recommandation** : Décision business à prendre (cf. CLAUDE.md Q.1). Garder pour ce refacto, planifier la migration vers un vrai CPT en phase 2.
+- **Statut** : Reporté décision business migration CPT, hors scope refacto thème actuel (cf. CLAUDE.md section 7 Q1). La migration impose : (1) création d'un CPT `mixtape` dans le thème, (2) migration BDD massive `UPDATE wp_posts SET post_type='mixtape' WHERE post_type='post'` sur ~370 posts, (3) redirections SEO 301 (URLs /<slug>/ inchangées si rewrite slug = ''), (4) export/import ACF, (5) maj sitemap Rank Math, (6) maj toutes les requêtes `WP_Query`/`get_recent_posts` du thème. Volume + risque trop élevés pour ce refacto (qui s'arrête à un thème stable post-Phase-6, déployable as-is). À reprendre lors d'une phase d'évolution structurelle ultérieure si Lamixtape veut un blog parallèle (besoin business identifié) ou si la dette devient bloquante.
 
 ### [WP-006] `WP_POST_REVISIONS` défini dans le thème (cf. PERF-014)
 - **Sévérité** : Moyenne
@@ -538,6 +541,7 @@
 - **Description** : Cf. PERF-014.
 - **Impact** : Cf. PERF-014.
 - **Recommandation** : Cf. PERF-014.
+- **Statut** : Reporté infrastructure (doublon documentaire de PERF-014). Cf. PERF-014 pour le détail du Statut. La résolution complète impose de modifier `wp-config.php` (hors scope thème). Mitigation Phase 1 en place via wrap `if ( ! defined() )`.
 
 ### [WP-007] `setup_postdata` sur boucle custom sans `wp_reset_postdata` propre
 - **Sévérité** : Moyenne
@@ -643,6 +647,7 @@
 - **Description** : Umami (`cloud.umami.is`) est un analytics anonyme, pas de cookies tiers, pas d'ID utilisateur — la CNIL le considère généralement comme "exempté" du consentement (cf. doctrine 2022). MAIS : aucune mention dans une politique de confidentialité, aucun bandeau, aucun lien `Cookie policy` en footer. La conformité dépend de la documentation côté contenu, pas du code.
 - **Impact** : Risque RGPD modéré (faible amende potentielle). Manque de transparence.
 - **Recommandation** : Confirmer auprès du legal/CNIL que Umami Cloud (et non pas le self-hosted) bénéficie bien de l'exemption pour le périmètre Lamixtape. Ajouter une page `legal-notice` (déjà liée dans le menu mobile, header.php:74) qui mentionne Umami. Sinon, ajouter un bandeau de consentement.
+- **Statut** : Reporté infrastructure + business (Phase 6 prep). Le fix nécessite (1) une décision legal/CNIL sur l'exemption d'Umami Cloud (business), et (2) la mise à jour du contenu de la page legal-notice + éventuel bandeau de consentement (côté contenu WP admin, pas dans le code thème). Page legal-notice déjà existante et liée dans le menu mobile (header.php:62 post-Phase-5). À reprendre par l'équipe legal + content. Note : Umami est aujourd'hui inline dans `analytics.php` avec attribut `defer` ; le snippet n'utilise pas de cookies (anonyme), donc le risque RGPD est techniquement bas mais la transparence est à formaliser.
 
 ### [OTHER-002] `add_theme_support('title-tag')` désactivé → `<title>` non géré par WP
 - **Sévérité** : Haute
@@ -668,6 +673,7 @@
 - **Description** : `<link rel="icon" href="/favicon-32x32.png">` etc. — les chemins sont absolus à la racine du site, pas dans le thème. Si les fichiers ne sont pas à la racine du document root (probablement dans `/wp-content/uploads/` ou ailleurs), 404 sur favicon.
 - **Impact** : Favicon manquant, manifest cassé, mauvaise PWA-ability.
 - **Recommandation** : Vérifier que `favicon-32x32.png`, `apple-touch-icon.png`, `site.webmanifest`, `safari-pinned-tab.svg` existent à la racine du site. Sinon, déplacer dans `img/` du thème et corriger les chemins (`<?php echo esc_url(get_template_directory_uri()); ?>/img/favicon-32x32.png`).
+- **Statut** : Reporté décision business + infrastructure (Phase 6 prep). La résolution impose de tester l'existence des 4 fichiers favicon à la racine du site (`curl -I https://lamixtape.fr/favicon-32x32.png` etc.) côté utilisateur. Si les fichiers existent → finding moot, juste un Statut "Vérifié OK" à poser. Si absents → décision : (1) déplacer les fichiers dans `img/` du thème + maj `header.php` chemins absolus → relatifs (changement code thème), ou (2) uploader les fichiers manquants à la racine du document root (changement infrastructure côté hébergeur). Décision technique mineure mais nécessite la vérification live à charge utilisateur.
 
 ### [OTHER-005] Pas de robots.txt / sitemap.xml côté thème
 - **Sévérité** : Basse
@@ -676,6 +682,7 @@
 - **Description** : Délégué à Rank Math (qui gère bien les sitemaps). Mention pour traçabilité.
 - **Impact** : Aucun si Rank Math actif. À confirmer.
 - **Recommandation** : Vérifier que `https://lamixtape.fr/sitemap_index.xml` répond bien.
+- **Statut** : Reporté infrastructure (Phase 6 prep) — non-actionable côté code thème par construction. Rank Math est listé dans CLAUDE.md section 2 comme plugin actif avec sitemap functionnel. Vérification live `curl -I https://lamixtape.fr/sitemap_index.xml` à charge utilisateur. Si réponse 200 → finding résolu de fait. Si réponse 404 → reconfigurer Rank Math en admin WP (toujours hors code thème).
 
 ### [OTHER-006] Aucune structured data Schema.org pour les mixtapes
 - **Sévérité** : Basse
@@ -692,6 +699,7 @@
 - **Description** : Pas de Sentry, Bugsnag, Rollbar, ni même `error_log()` structuré. `console.log` actifs (cf. PERF-013) sont du diagnostic dev, pas du monitoring.
 - **Impact** : Bugs prod non détectés (sauf signalement utilisateur).
 - **Recommandation** : Considérer Sentry (free tier généreux) ou un simple `error_log` PHP redirigé vers un fichier monitoré par l'hébergeur.
+- **Statut** : Reporté infrastructure (Phase 6 prep). Le monitoring de prod est par essence une couche infrastructure (intégration Sentry / Bugsnag / Rollbar avec credentials secrets, ou redirection `error_log` PHP côté hébergeur). À configurer lors d'une session ops/déploiement dédiée. Le code thème n'a aujourd'hui aucun emplacement où une intégration Sentry serait critique (les 2 endpoints REST custom `social/v2/likes` et `lamixtape/v1/posts` sont défensifs et ne lèvent que des `WP_Error` typés).
 
 ### [OTHER-008] Appel `fbq('track', 'Search')` orphelin (Pixel Facebook retiré)
 - **Sévérité** : Basse
