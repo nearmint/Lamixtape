@@ -70,26 +70,25 @@ lamixtape/
 
 ## 4. Dette technique priorisée
 
-| Axe | Total | Résolus (P0+P1+P2+P2.5+P3) | Critique restant | Haute restant | Référence |
+| Axe | Total | Résolus (P0+P1+P2+P2.5+P3+P4) | Critique restant | Haute restant | Référence |
 |---|:-:|:-:|:-:|:-:|---|
-| **Process / Qualité** | 16 | 15 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
+| **Process / Qualité** | 16 | 16 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#qc` |
 | **Sécurité** | 9 | 8 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#securite` |
 | **Performance** | 14 | 13 ✅ | 0 ✅ | 1 | `_docs/AUDIT.md#performance` |
 | **Accessibilité** | 11 | 0 | 0 | 4 | `_docs/AUDIT.md#a11y` |
 | **WP best practices** | 9 | 7 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#wp` |
-| **Migration Tailwind** | 5 | 0 | 0 | 2 | `_docs/AUDIT.md#tailwind` |
+| **Migration Tailwind** | 5 | 5 ✅ | 0 ✅ | 0 ✅ | `_docs/AUDIT.md#tailwind` |
 | **Autres (SEO, RGPD, observabilité)** | 8 | 1 | 0 | 2 | `_docs/AUDIT.md#autres` |
-| **TOTAL** | **72** | **44** | **0** ✅ | **9** | |
+| **TOTAL** | **72** | **50** | **0** ✅ | **7** | |
 
-> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 44 résolus à fin Phase 3 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3). 28 restants pour Phases 4-6+. **Aucun finding Critique restant** ✅ (PERF-001/002 fermés Phase 3 via infinite scroll). **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
+> 70 findings audit initial + 2 NEW découverts en Phase 1 = 72 au total. 50 résolus à fin Phase 4 (3 P0 + 20 P1 incluant 4 backfills + 12 P2 + 9 P3 + 6 P4 = TW-001/002/003/004/005 + QC-007 finalisé). 22 restants pour Phases 5-6+. **Aucun finding Critique ni Haute Tailwind restant** ✅. **Q9 (suppression module commentaires)** = décision business, hors comptage findings, traitée Phase 2.5 (cf. `_docs/AUDIT.md#business`). Tous les findings résolus portent un bloc `**Statut** : Résolu Phase X (...)` à la fin de leur section dans `_docs/AUDIT.md`.
 
-Reste ouvert (cibles Phases 4-6+) :
+Reste ouvert (cibles Phases 5-6+) :
 - **A11Y-001 à 011** : 11 findings (focus visible, skip-link, landmarks, contrastes, modals…) → Phase 5
-- **TW-001 à 005** : 5 findings → Phase 4 (migration Bootstrap → Tailwind v4)
 - **PERF-006** (Haute, search LEFT JOIN postmeta) → Q10 search rewrite, post-Phase-6
 - **WP-005** / **WP-006** : 2 Moyennes (renommage Posts → Playlist sur le post type natif ; WP_POST_REVISIONS) → Phase 6 outillage
 - **OTHER-001 à 008** : 7 findings (RGPD, SEO/OG, monitoring) → Phase 6
-- **2 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy → post-Phase-4 minimum
+- **3 Q ouvertes structurantes** : Q10 search rewrite + Q11 Content-Security-Policy + Q13 dette résiduelle écarts visuels Phase 4 (cf. section 7) → Phase 5 polish ou ad-hoc
 
 ### Phase 0 close — récap
 - 5 commits, 3 critiques résolues (QC-001 init git, SEC-001 likes endpoint sécurisé, SEC-002 feature dislike supprimée).
@@ -259,19 +258,56 @@ Faux positif diagnostic en fin Axe B : `grep -c 'tw\:' assets/css/tailwind.css` 
 
 **Extension TW-VERIFY (CHECKPOINT 2 → C17)** : `grep -c PATTERN file` compte les **lignes** matchantes, pas les occurrences. Sur un CSS Tailwind v4 minifié (qui est sur une SEULE ligne), `grep -c` plafonne à 1 quoi qu'il arrive. La vérification doit utiliser `grep -oE PATTERN file | wc -l` (compte les occurrences) OU le check visuel direct (`grep -oE 'lmt-dialog[^{}, ]*' file | sort -u` pour énumérer les sélecteurs réels). 30 min perdues à C17 sur un faux positif "lmt-dialog absent du build" parce que `grep -c` retournait 1 alors que les 6 sélecteurs étaient bien tous émis. Apprentissage cumulatif : pour valider un build CSS minifié, **énumérer** plutôt que **compter**.
 
+### Phase 4 close — récap (1er mai 2026)
+
+**Métriques globales** :
+- **34 commits** sur la branche `feature/tailwind-migration` (de `772b418` C1 à `63ce4b4` C20), tous mergés en main via merge `--no-ff` à la closure C21.
+- 27 fichiers modifiés ; **+811 / −221 lignes (net +590)**. La majorité de l'inflation vient du `assets/css/tailwind.css` 13 KB minifié + `assets/css/tailwind.input.css` configuration + `js/dialogs.js` vanilla + `_docs/bootstrap-tailwind-mapping.md`. Hors docs/build, le delta net code est proche de zéro.
+- **6 findings résolus Phase 4** : TW-001, TW-002, TW-003, TW-004, TW-005 (5 nouveaux) + QC-007 finalisé (était partial Phase 1, partie CSS absorbée par la migration Tailwind).
+- **236 KB Bootstrap supprimés** (CSS `bootstrap.min.css` 156 KB + JS bundle `bootstrap.bundle.min.js` 80 KB) + ~30 KB `mediaelementplayer.css` dequeued = **~266 KB de poids vendor en moins** par page front-end.
+- **Tailwind output** : 13 KB minifié (de baseline 8.4 KB initial à 13 KB final post-strip-prefix). L'output contient les 70+ utilities effectivement utilisées dans les templates + le préflight v4 + le composant `lmt-dialog`.
+- **TOTAL findings résolus** : 50/72 à fin Phase 4 (44 pré-Phase-4 + 6 P4). 22 restants pour Phases 5+.
+
+**Découpage par axe** :
+- **Axe A (5 commits, prep)** : `772b418` `.gitignore` Tailwind binary + `f3c00ac` `tailwind.input.css` scaffold + `f99b6d7` mapping doc Bootstrap → Tailwind v4 + `19a2b7a` ajout `prefix(tw)` pour cohabitation + `28f025f` premier build + enqueue cohabité.
+- **Axe B (11 commits, templates)** : C5 404 / C6 text / C7 explore / C8 guests / C9 header / C11 single + TW-004 / C12 index / C13 category / C14 search / C15 card-mixtape ; footer.php skippé Axe B et migré entièrement en Axe C C16. **Apprentissage TW-SCAN découvert en cours d'Axe B** : `@source "../../**/*.php"` obligatoire pour Tailwind v4 sur projet PHP (default scanner ignore les `.php`).
+- **Diagnostic CHECKPOINT 2 (4 commits)** : 4 régressions visuelles détectées et corrigées : `85198ac` svg display:inline-block override préflight TW v4, `88e844e` link underline override WP wp-block-library global styles, `7cfe6f7` `.burger-menu { display: none }` dead code, `1b2fee6` `--breakpoint-lg: 62rem` aligné Bootstrap.
+- **Axe C (3 commits + 1 fix parser)** : `871b11d` markup `<dialog>` natif + `js/dialogs.js` vanilla + 9 triggers migrés `data-lmt-dialog` + `82aa39f` styles components `.lmt-dialog*` + `8af8fac` Bootstrap JS bundle removed. **Apprentissage parser** (`636cdf7`) : nested CSS comments cassent silencieusement le parser Tailwind v4 (impacts toutes les rules après le commentaire incriminé).
+- **Diagnostic CHECKPOINT 3 (4 commits)** : 4 régressions résiduelles : `32fad1f` flex-1 → lg:w-1/3 (image home), `5e58712` flex utilities navbar (burger position), `64f7aeb` suppression totale `.fade-in` (conflit infinite scroll), `a847a42` modal centering position:fixed inset:0 margin:auto.
+- **Axe D (4 commits, closure)** : `0d763ef` Bootstrap CSS enqueue + dossier `assets/vendor/bootstrap/` supprimés + `3c7c13f` strip `tw:` prefix sur 11 templates + rebuild Tailwind sans `prefix(tw)` + `63ce4b4` dequeue `mediaelementplayer.css` (TW-005) + `[SHA-CLOSURE]` ce commit (closure docs).
+
+**Bonus business surprises** :
+- **Le diagnostic CHECKPOINT 2 a sauvé 4h+** de chasse aux régressions silencieuses : le préfixe `tw:` (D-COHAB-1) a permis de détecter avant CHECKPOINT 2 que les classes Bootstrap auraient sinon gagné silencieusement la cascade pendant la cohabitation. Sans ce préfixe, les régressions visuelles auraient été acceptées à tort comme "iso-99%" alors qu'elles cachaient un vrai bug de cascade. Pattern Phase 1+ confirmé : *toujours déboguer le build artefact, pas le code source.*
+- **Tailwind v4 ne scanne pas les `.php` par défaut** (TW-SCAN) — découvert pendant Axe B. Solution `@source "../../**/*.php"` documentée comme apprentissage permanent dans CLAUDE.md.
+- **CSS comments ne nestent pas** (parser corruption fix `636cdf7`) — un commentaire contenant `/* ... */` casse silencieusement le parser Tailwind v4 et fait dropper toutes les rules après. Découvert à C17 par diagnostic-d'abord.
+
+**Apprentissages clés** (à retenir pour Phases 5-6) :
+1. **Diagnostic-d'abord = bénéfice composé**. La discipline a payé en Phase 1 (decluttering reveals what was always there), Phase 2 (guests SQLi pattern), Phase 3 (PERF IDs mismatch), Phase 4 (TW-SCAN, cascade collisions, parser corruption). À chaque phase, ~10-30 min investis en diagnostic avant le premier commit ont évité plusieurs heures de chasse aux régressions silencieuses.
+2. **Cohabitation par préfixe** : pattern réutilisable pour toute migration de framework CSS. Le préfixe `tw:` ajoute du verbe au markup pendant la transition mais protège mécaniquement contre les collisions namespace, et son strip mécanique en fin de phase est trivial (find/replace + rebuild). À ré-employer si migration Phase 5/6 demande la cohabitation d'un autre framework.
+3. **Validation visuelle progressive (CHECKPOINTS)** > validation finale unique. CHECKPOINT 2 a détecté 4 régressions, CHECKPOINT 3 en a détecté 4 autres. Si Phase 4 avait été un marathon sans CHECKPOINT, les 8 régressions auraient été découvertes au CHECKPOINT 4 final, dans un état corrompu accumulé difficile à bisecter. **Pour les phases visuellement risquées : JAMAIS de marathon sans checkpoint intermédiaire.**
+4. **Build artefact ≠ code source.** Plusieurs faux positifs (TW-SCAN initial, TW-VERIFY grep -c, parser corruption) auraient été pris pour des bugs de code si je n'avais pas vérifié le build directement. Pour valider un build minifié : énumérer (`grep -oE`) plutôt que compter (`grep -c`).
+5. **Branche feature dédiée + merge `--no-ff` final** : isolation totale, possibilité de bisecter facilement, rollback simple si la phase échoue. Pattern à conserver pour Phase 5 a11y (autre phase à risque visuel).
+
+**Pointeur Phase 5 — accessibilité (a11y)** :
+- 11 findings A11Y-001 à A11Y-011 ouverts.
+- **Quick wins** : focus visible (A11Y-001), `<a href="#" data-toggle...>` factices remplacés par `<button>` (A11Y-002, déjà partiellement traité par la migration `<dialog>` Axe C), skip-link (A11Y-004), landmarks (A11Y-004).
+- **Plus structurants** : hiérarchie titres (A11Y-003), contrastes ACF couleurs curators (A11Y-009), prefers-reduced-motion (A11Y-007 — peut réintroduire un `.fade-in` respectueux supprimé Phase 4).
+- Modals migrés `<dialog>` natif Phase 4 → A11Y-008 partiel résolu côté markup (focus trap browser-natif), reste les autres composants ARIA.
+
+**Validation finale Phase 4 (à charge utilisateur)** :
+- Branche `feature/tailwind-migration` actuellement à `[SHA-CLOSURE]`. Tests post-merge : 8 templates iso-visuels à 99% vs `_docs/captures-post-phase-3/` (modulo dette résiduelle Q13). Bootstrap CSS + JS + mediaelementplayer.css confirmés absents du Network tab DevTools. Modals/burger/like/player/infinite scroll fonctionnels.
+- Captures `_docs/captures-post-phase-4/` à prendre par utilisateur post-merge.
+
 ## 5. Recommandations stratégiques
 
 ### Stack cible recommandée
 
-- **Tailwind CSS v4 + CLI standalone** (binaire unique, pas de Node/PostCSS à installer en prod, watch via `tailwindcss --watch`). Justification :
-  - Le projet n'a **aucun build tool** aujourd'hui ; introduire Vite/Webpack uniquement pour Tailwind est disproportionné.
-  - Tailwind v4 utilise un moteur Rust (`Oxide`) — performances de build > v3, et ne nécessite pas de `tailwind.config.js` complexe (configuration CSS-first via `@theme`).
-  - Le CLI standalone se distribue comme un exécutable unique, intégrable à un script `composer run` ou un simple `Makefile`, sans dépendances.
-  - Pas de PostCSS = pas de chaîne `autoprefixer`/`postcss-nested` à entretenir.
-  - Migration depuis Bootstrap 4 : la plupart des utilities (`d-flex`, `mb-3`, `text-center`, `col-md-8`) ont des équivalents 1-pour-1 (`flex`, `mb-3`, `text-center`, `md:w-2/3`).
-- **PHP 8.1+ minimum** (à confirmer côté hébergeur prod).
-- **Alpine.js** (3 KB) ou `<dialog>` HTML natif pour remplacer les modals Bootstrap. Évite de réintroduire un framework JS lourd.
-- **Garder jQuery temporairement** pour la cohabitation (player.php, main.js) puis dégager en phase 2.
+> **État au 1er mai 2026 (post-Phase-4)** : la stack cible est en place. Tailwind v4 + CLI standalone implémenté ; Bootstrap 4 supprimé ; modals sur `<dialog>` natif HTML5 ; jQuery WP-bundled conservé pour like/player/infinite-scroll (les autres scripts du thème — `dialogs.js` — sont vanilla). Cette section reste à titre de référence historique.
+
+- **Tailwind CSS v4 + CLI standalone** ✅ implémenté Phase 4 (`assets/build/tailwindcss` v4.1.18, `assets/css/tailwind.input.css` config CSS-first via `@theme`, build minifié dans `assets/css/tailwind.css` 13 KB).
+- **PHP 8.2** ✅ confirmé en prod.
+- **`<dialog>` HTML natif** ✅ pour les modals donate/contact (Phase 4 Axe C, `js/dialogs.js` vanilla, focus trap browser-natif). Alpine.js non utilisé.
+- **jQuery WP-bundled conservé** pour `lmt-main` (like + burger), `lmt-player` (MediaElement), `lmt-infinite-scroll` (Phase 3 wrapper jQuery par convenance, vanilla-able si Phase 6 outillage le requiert). `lmt-dialogs` est vanilla. Bootstrap-imposed jQuery (Popper) supprimé Phase 4 Axe C C18.
 
 ### Approche de refacto recommandée — **itératif par template**
 
@@ -331,6 +367,7 @@ Si tu rencontres encore un nom qui sent le boilerplate générique (préfixe non
 | 10 | **PERF-006 search performance — refonte stratégie** | À planifier (probablement après Phase 6, post-refacto thème complet). Options : (1) index FT MySQL (`MATCH ... AGAINST` + `wp_postmeta` indexé), (2) plugin Relevanssi ou SearchWP, (3) Algolia / Meilisearch (overkill pour ce volume), (4) status quo accepté | Recherche fonctionne post-fix QC-005 (Phase 1) mais reste lente sur termes complexes à cause du `LEFT JOIN postmeta` systématique (`lmt_search_postmeta_join`). Tolérable < 1k posts ; à ré-évaluer si la BDD croît. Décision business potentielle (qualité résultats vs perf vs dépendance externe) |
 | 11 | **Content-Security-Policy header** | À planifier Phase 5/6 (après Tailwind v4 qui élimine le Bootstrap inline). Inventaire des sources externes à autoriser : `'self'`, fonts.gstatic.com (déjà éliminé via auto-host Outfit Phase 1), `https://www.youtube.com` + `https://*.youtube-nocookie.com` (player iframes), `https://cloud.umami.is` + `https://api.umami.is` (analytics), Cloudflare Turnstile si activé, `'unsafe-inline'` style temporaire pour ACF `style="background-color:..."` dynamiques (à supprimer dès qu'on bouge ces inline en classes CSS). | Posté en Phase 3 : 5 headers de sécurité baseline (`X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `Permissions-Policy`) + suppression `X-Powered-By` (cf. `lmt_send_security_headers` `2d10728`). CSP intentionnellement reporté car matrice non-triviale (Bootstrap inline + YouTube iframe + MediaElement + Cloudflare Turnstile + Umami CDN + ACF inline). À reprendre après Phase 4 Tailwind qui aura déjà nettoyé une bonne partie des inline styles. |
 | 12 | **Dette de validation Phase 3** | Re-tester en prod après déploiement Phase 3, OU intégrer aux tests de Phase 6 (outillage CI/lint). Pas de blocker pour Phase 4 (le code est conforme aux findings AUDIT). | **Tests sécurité skippés sur Local** (option "dette acceptée" validée à la closure Phase 3) : `curl -i` rate-limit pagination → 429 attendu après 100 req/h, endpoint sans nonce → 403 attendu, `?context=injection` → 400 attendu, `curl -I https://lamixtape.local` → 5 nouveaux headers attendus + plus de `X-Powered-By`. **Tests perf** non explicitement confirmés (DevTools Network home → ~30 cards rendues serveur ; lazy loading images hors viewport ; transient `lmt_random_mixtape_*` présent ; Outfit woff2 en preload). Site fonctionne en frontal donc dette tolérable, mais le code Phase 3 mérite une vérification runtime au moment du déploiement prod. |
+| 13 | **Petits écarts visuels Phase 4 acceptés en CHECKPOINT 3** | Acceptés en l'état à la closure Phase 4 (1er mai 2026), à corriger plus tard en commits dédiés ad-hoc sur `main` ou en Phase 5 a11y polish. | Périmètre exact à identifier en review post-merge par diff visuel `_docs/captures-post-phase-3/` vs `_docs/captures-post-phase-4/`. La règle no-visual-change a été tenue à 99% (les 4 régressions CHECKPOINT 2 + 4 régressions CHECKPOINT 3 ont été corrigées) ; les écarts résiduels acceptés correspondent au 1% de marge prévu par le prompt-phase-4 ("micro-différences acceptables : font-rendering Tailwind reset, kerning, sub-pixel rounding"). Patterns probables : font-rendering Outfit légèrement différent (TW v4 reset vs Bootstrap reset), spacing ½px sur certains éléments où BS spacing scale et TW spacing scale ne matchent pas exactement, behaviour `data-toggle="tooltip"` legacy sur le lien "getting lost" home (BS Tooltip stylé vs native browser title fallback). Aucun blocker fonctionnel. |
 
 ## 8. Règles pour les futures sessions Claude Code
 
