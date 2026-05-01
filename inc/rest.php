@@ -104,7 +104,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'h2_extra_classes'      => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,
-                    'tag_link_attr'         => 'alt',
                 ),
                 'where_filter' => null,
             );
@@ -134,7 +133,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'conditional',
                     'hide_curator_on_small' => false,
-                    'tag_link_attr'         => 'alt',
                 ),
                 'where_filter' => $where_filter,
             );
@@ -160,7 +158,6 @@ function lmt_rest_build_paginated_args( $context, $offset, $category, $exclude )
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'none',
                     'hide_curator_on_small' => true,
-                    'tag_link_attr'         => 'title',
                 ),
                 'where_filter' => null,
             );

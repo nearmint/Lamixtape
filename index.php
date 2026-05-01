@@ -53,7 +53,6 @@ $the_query = new WP_Query( array(
                     'h2_extra_classes'      => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,
-                    'tag_link_attr'         => 'alt',
                 ) ); ?>
             <?php endwhile; ?>
         </div>

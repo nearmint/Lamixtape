@@ -34,7 +34,6 @@
                         'article_extra_classes' => 'font-smoothing',
                         'highlight_mode'        => 'none',
                         'hide_curator_on_small' => true,
-                        'tag_link_attr'         => 'title',
                     ) ); ?>
                 <?php endwhile; ?>
             </div>

@@ -26,11 +26,6 @@
  *                                       hidden lg:block (true
  *                                       everywhere except single.php
  *                                       previous-loop)
- *   - 'tag_link_attr'         string  — 'alt' (legacy index/single/search,
- *                                       invalid HTML on <a>, A11Y-005)
- *                                       or 'title' (category.php legacy).
- *                                       Preserved as-is in Phase 2;
- *                                       fix tracked under A11Y-005.
  *
  * @package Lamixtape
  */
@@ -42,7 +37,6 @@ $args = wp_parse_args(
         'h2_extra_classes'      => '',
         'highlight_mode'        => 'always_span',
         'hide_curator_on_small' => true,
-        'tag_link_attr'         => 'alt',
     )
 );
 
@@ -68,7 +62,7 @@ $is_highlight = (bool) get_field( 'highlight' );
             if ( ! empty( $categories ) ) {
                 foreach ( $categories as $category ) {
                     $output .= '<a class="mr-1" href="' . esc_url( get_category_link( $category->term_id ) ) . '" '
-                        . esc_attr( $args['tag_link_attr'] ) . '="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">'
+                        . 'title="' . esc_attr( sprintf( __( 'View all posts in %s', 'lamixtape' ), $category->name ) ) . '">'
                         . esc_html( $category->name ) . '</a>' . $separator;
                 }
                 echo trim( $output, $separator );

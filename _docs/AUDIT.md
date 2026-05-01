@@ -264,6 +264,7 @@
 - **Description** : `<a class="mr-1" href="..." alt="View all posts in ...">` — `alt` n'est pas un attribut valide sur `<a>`. C'est probablement une confusion avec `title`.
 - **Impact** : Information ignorée par tous les lecteurs d'écran. HTML invalide.
 - **Recommandation** : Remplacer `alt=` par `title=` (ou mieux : `aria-label=` si le texte du lien est insuffisant).
+- **Statut** : Résolu Phase 5 (`title=` hardcodé dans `template-parts/card-mixtape.php`, paramètre `tag_link_attr` supprimé du template-part et de tous ses callers — `index.php`, `search.php`, `single.php`, `category.php`, `inc/rest.php` x3 contexts. Le paramètre n'avait plus qu'une seule valeur valide après le fix, sa suppression simplifie l'API et garantit l'invalidité HTML ne peut plus revenir).
 
 ### [A11Y-006] Mobile menu overlay sans `aria-hidden`/focus trap
 - **Sévérité** : Moyenne

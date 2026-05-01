@@ -28,7 +28,6 @@ global $wp_query;
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'always_span',
                     'hide_curator_on_small' => true,
-                    'tag_link_attr'         => 'alt',
                 ) ); ?>
             <?php endwhile; else: ?>
             <?php echo '<div class="container mx-auto px-4 nothing--found"><h2 class="font-smoothing">' . esc_html__('Nothing found', 'lamixtape') . '</h2></div>'; ?>

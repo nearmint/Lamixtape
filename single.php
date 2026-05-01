@@ -104,7 +104,6 @@
                     'article_extra_classes' => 'font-smoothing',
                     'highlight_mode'        => 'conditional',
                     'hide_curator_on_small' => false,
-                    'tag_link_attr'         => 'alt',
                 ) ); ?>
             <?php endforeach; ?>
         </div>
