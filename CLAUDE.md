@@ -586,6 +586,62 @@ Pour les sniffs hors ruleset principal (ex. `Internal.NoCodeFound` qui est sniff
 
 **Pointeur** : tous les findings audit utilisateur view-source résolus. Aucune régression sur les éléments à conserver (main feed, OG meta, 3 icons WP). Ready for next chantier ou déploiement prod.
 
+## Workflow déploiement (post-Phase 8 ad-hoc CI fix)
+
+### Règle "2 validations séparées"
+
+Après chaque amélioration de code traitée par Claude Code :
+
+1. **Commit local** d'abord (toujours, automatique)
+2. **Demander validation utilisateur** avant `git push origin main` ("GO push GitHub ?")
+3. Si validé → push GitHub (= main repo synchronisé sur `origin/main`)
+4. **Demander validation utilisateur séparée** avant deploy SFTP ("GO deploy SFTP OVH ?")
+5. Si validé → `bash bin/deploy-sftp.sh` (avec confirmation interactive du script + dry-run préalable conseillé)
+6. Sanity check post-deploy : `bash bin/check-headers.sh https://lamixtape.fr`
+
+**JAMAIS de deploy SFTP sans validation utilisateur explicite.** **JAMAIS de coller le mot de passe SFTP dans la chat conversation** (toujours dans `.env` local gitignored).
+
+### Outils en place
+
+| Outil | Rôle | Localisation |
+|---|---|---|
+| `bin/deploy-sftp.sh` | Full mirror lftp vers OVH SFTP | committed |
+| `bin/check-headers.sh` | Sanity headers HTTP post-deploy | committed |
+| `.env.example` | Template credentials SFTP | committed |
+| `.env` | Credentials réels (SFTP_PASSWORD) | **gitignored, jamais committé** |
+| `lftp` | Binaire CLI lftp 4.x | `brew install lftp` (chaque dev) |
+
+### Architecture sécurité credentials
+
+- `.env.example` committé avec `your_password_here` placeholder
+- `.env` créé via `cp .env.example .env`, le user remplit le vrai password depuis le manager OVH
+- `.gitignore` contient `.env` (vérifié + protégé par `git check-ignore`)
+- Le script `deploy-sftp.sh` refuse explicitement le placeholder `your_password_here` (`exit 1` si présent)
+- Aucun password n'apparaît dans l'historique git ni dans les logs Claude Code
+- Si une fuite est détectée → revoke + regenerate le password dans manager OVH > Modify password, puis update `.env` local
+
+### Note critique case-sensitivity
+
+- Local repo path : `.../themes/Lamixtape/` (L majuscule, macOS case-insensitive)
+- Prod OVH path : `www/wp-content/themes/lamixtape/` (LOWERCASE, Linux case-sensitive)
+- `SFTP_REMOTE_PATH` dans `.env` DOIT être `lamixtape` lowercase
+- Sync vers `Lamixtape` (L majuscule) créerait un dossier orphelin à côté de l'actif → site live pointant vers l'ancien thème → **régression silencieuse difficile à détecter**
+- Le script affiche le `SFTP_REMOTE_PATH` avant la confirmation full sync pour permettre un last-second abort
+
+### Premier deploy (refacto thème complet, à venir)
+
+Le PREMIER deploy sera la mise en prod du refacto Phases 0-8 + ad-hoc cleanup + CI fix. À traiter avec précaution :
+
+1. **Backup OVH côté serveur** (manager OVH > Backups > Create) — filet de sécurité avant tout
+2. `bash bin/deploy-sftp.sh --connect-test` — sanity connexion (10 entrées du remote dir)
+3. `bash bin/deploy-sftp.sh --dry-run` — preview complet, **REVIEWER attentivement** la liste
+4. `bash bin/deploy-sftp.sh` (avec confirmation interactive)
+5. `bash bin/check-headers.sh https://lamixtape.fr` — sanity headers immédiat
+6. Sanity visuel + tests UX (modals / burger / player / infinite scroll / search)
+7. Audits Q14 différés (Lighthouse / Pa11y / Mozilla Observatory / etc.)
+
+Cf. `_docs/deployment-checklist.md` pour la checklist détaillée et la procédure rollback (méthode 1 OVH backup OU méthode 2 re-deploy git).
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
