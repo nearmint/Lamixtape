@@ -642,6 +642,54 @@ Le PREMIER deploy sera la mise en prod du refacto Phases 0-8 + ad-hoc cleanup + 
 
 Cf. `_docs/deployment-checklist.md` pour la checklist détaillée et la procédure rollback (méthode 1 OVH backup OU méthode 2 re-deploy git).
 
+### Tracking v1 Umami close — récap (1er mai 2026)
+
+**Métriques globales** :
+- **8 commits** sur `main` (T.2 helper + T.3-T.8 6 events + closure ce commit). Pas de branche feature, modifications JS/PHP atomiques.
+- 5 fichiers JS/PHP modifiés : `js/tracking.js` (créé), `js/player.js` (3 hooks : play_start + play_complete + youtube_embed_error), `js/main.js` (1 hook like_click), `js/dialogs.js` (1 hook donate_modal_open), `functions.php` (1 enqueue lmt-tracking en <head>). Plus 4 templates avec `data-tracking-source` ajouté (header/index×2/single×2).
+- ~150 lignes ajoutées au total. Aucune suppression. Aucun changement visuel. Aucune régression fonctionnelle.
+
+**6 events MUST implémentés** (specs `_docs/tracking-plan.md`) :
+
+| # | Event | Source code | Commit |
+|---|---|---|---|
+| 1 | `play_start` | YouTube `PLAYING` + MediaElement `playing` (flag anti-duplicate) | `9a1fe11` |
+| 2 | `play_complete` | YouTube `ENDED` >=95% + MediaElement `ended` natif | `9be74be` |
+| 3 | `like_click` | `js/main.js` AJAX success handler (single-click design) | `00afcd9` |
+| 4 | `donate_modal_open` | `js/dialogs.js` delegated click + 5 `data-tracking-source` | `4665ea0` |
+| 5 | `donate_paypal_click` | `js/tracking.js` delegated click sur `.btn-donate` | `25cdf77` |
+| 6 | `youtube_embed_error` | `js/player.js` `onPlayerError` (codes 2/5/100/101/150) | `70a7787` |
+
+**Helper centralisé** (`9a1fe11` `4303774`) :
+- `js/tracking.js` (~75 lignes) avec 2 helpers globaux : `window.lmtTrack(eventName, data)` et `window.lmtGetMixtapeSlug()`
+- Enqueued en `<head>` (`$in_footer = false`), no dep — disponible avant TOUS les autres scripts
+- Silent fail sur 3 conditions (Umami non load / API change / throw) — fire-and-forget, ne casse jamais l'UX
+- Plus 1 listener delegated PayPal click ajouté lors du commit T.7
+
+**Sources `donate_modal_open`** (5 attribués via `data-tracking-source` HTML attr) :
+- `mobile_menu` (header burger menu)
+- `home_about_link` (index "supporting" inline link)
+- `home_sidebar_image` (index booking.jpg illustration)
+- `mixtape_thumbnail` (single post thumbnail wrap)
+- `mixtape_action_button` (single "⚡️ Support us" action button)
+
+Pattern de nommage `<page>_<location>_<element>` permet le filtrage Umami par préfixe (home_*, mixtape_*).
+
+**Validation finale Local** :
+- WPCS local exit 0 (0 errors / 0 warnings) ✅
+- node --check sur 4 fichiers JS modifiés : OK ✅
+- Curl runtime confirme `<script id="lmt-tracking-js">` émis en `<head>` ✅
+- 3 `data-tracking-source` visibles sur home, 2 sur single (5 total cohérent) ✅
+- Tests fonctionnels effectifs (play / like / modals / PayPal / error YouTube) à charge utilisateur via DevTools console + Network filtre umami
+
+**Pointeur deploy prod** : tracking v1 partira en prod **avec** le refacto Phases 0-8 lors du prochain `bash bin/deploy-sftp.sh`. Pas d'action séparée requise — les fichiers JS + PHP modifiés sont inclus dans le sync standard.
+
+**Roadmap suite** (specs `_docs/tracking-plan.md`) :
+- **v1.5** (3 events SHOULD) : `play_skip`, `mixtape_listen_significant`, `search_query` — à implémenter après baseline v1 collectée 2-4 semaines en prod
+- **v2** (2 events NICE) : `contact_form_submit`, `outbound_click` — bonus à faible volume
+
+**Apprentissage tracking** : pour les players hybrides (YouTube IFrame + MediaElement), 2 systèmes d'événements en parallèle nécessitent 2 hooks séparés mais cohérents (même fire `play_start` avec `source: 'youtube'` ou `source: 'mp3'`). Le flag `playStartTrackedForCurrentTrack` reset dans `preparePlayer()` évite les duplicates au resume sans complexité side-effect. Pattern réutilisable pour tout futur event multi-source dans le même contexte.
+
 ## Refacto thème Lamixtape — bilan global
 
 **Période** : Phase 0 → Phase 6 (29 avril 2026 → 1er mai 2026)
