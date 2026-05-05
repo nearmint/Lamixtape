@@ -14,7 +14,7 @@
                 </div>
                 <div class="w-5/6">
                     <label for="s" class="sr-only"><?php esc_html_e( 'Search artists and more', 'lamixtape' ); ?></label>
-                    <input type="text" value="<?php the_search_query(); ?>" name="s" id="s" placeholder="<?php esc_attr_e('Search artists and more...', 'lamixtape'); ?>">
+                    <input type="text" value="<?php the_search_query(); ?>" name="s" id="s" data-placeholder-mobile="<?php esc_attr_e( 'Search', 'lamixtape' ); ?>" placeholder="<?php esc_attr_e('Search artists and more...', 'lamixtape'); ?>">
                 </div>
             </form>
         </div>

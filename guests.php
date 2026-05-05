@@ -4,7 +4,7 @@
     <header>
         <div class="container mx-auto px-4">
             <hr class="mb-0">
-			<div class="h-[85px] flex items-center justify-center">
+			<div class="min-h-[85px] flex items-center justify-center">
 				<h1 class="font-smoothing"><?php esc_html_e('Alongside our roaster of curators, we occasionally invite guest artists, DJs, and labels...', 'lamixtape'); ?></h1>
 			</div>
         </div>

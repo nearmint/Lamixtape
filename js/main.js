@@ -15,6 +15,24 @@ jQuery(function ($) {
     var LMT_TADA_DURATION_MS = 600;
 
     $(document).ready(function() {
+        // Phase Recette II L3 — F7 : swap the explore search-input
+        // placeholder between a long desktop label and a short mobile
+        // label below 768px (input gets cropped on small screens).
+        // The mobile label is sourced from data-placeholder-mobile so
+        // i18n stays handled by esc_attr_e() in PHP.
+        var searchInput = document.querySelector('#explore #s');
+        if (searchInput) {
+            var defaultPlaceholder = searchInput.placeholder;
+            var mobilePlaceholder = searchInput.dataset.placeholderMobile || 'Search';
+            var updateSearchPlaceholder = function () {
+                searchInput.placeholder = window.innerWidth < 768
+                    ? mobilePlaceholder
+                    : defaultPlaceholder;
+            };
+            updateSearchPlaceholder();
+            window.addEventListener('resize', updateSearchPlaceholder);
+        }
+
         var likedKey = lmtData.post_id ? 'lmt_liked_' + lmtData.post_id : null;
         var $likeBtn = $('.like__btn');
 

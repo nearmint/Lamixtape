@@ -10,7 +10,7 @@ $the_query = new WP_Query( array(
 <section class="about font-smoothing">
     <div class="container mx-auto px-4">
         <hr>
-        <article class="flex flex-wrap pt-12 pb-12">
+        <article class="flex flex-wrap pt-6 pb-6 lg:pt-12 lg:pb-12">
             <div class="w-full lg:w-2/3">
                 <p class="pb-4"><?php esc_html_e('Hi and welcome to Lamixtape.', 'lamixtape'); ?></p>
 				<p class="pb-4"><?php esc_html_e('Between', 'lamixtape'); ?> <a class="underline" href="https://web.archive.org/web/20130612232050/http://lamixtape.fr/" target="_blank"><?php esc_html_e('2011', 'lamixtape'); ?></a> <?php esc_html_e('and 2022, we released mixtapes every month, curated by our roster of curators and', 'lamixtape'); ?> <a class="underline" href="https://lamixtape.fr/guests/"><?php esc_html_e('incredible guests', 'lamixtape'); ?></a>. <?php esc_html_e("Our foundational reason for building Lamixtape was that we're really excited about sharing music. If we had a central goal, it was to feed your ears and curiosity with as much quality and diversity as possible.", 'lamixtape'); ?></p>
