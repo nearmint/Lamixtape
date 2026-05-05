@@ -9,23 +9,23 @@
 <body <?php body_class(); ?>>
     <a class="lmt-skip-link" href="#main"><?php esc_html_e( 'Skip to main content', 'lamixtape' ); ?></a>
     <nav class="navbar" aria-label="<?php esc_attr_e( 'Main navigation', 'lamixtape' ); ?>">
-        <div class="container mx-auto px-4 flex flex-wrap items-center justify-between h-[85px]">
-            <a class="no--hover" href="<?php echo esc_url( get_bloginfo( 'wpurl' ) ); ?>">
+        <div class="container mx-auto px-4 flex flex-wrap items-center gap-3 h-[85px]">
+            <!-- LEFT: burger (toggle menu — full-screen mobile, side panel desktop) -->
+            <button id="burger-btn" class="bg-transparent border-0 p-0 cursor-pointer" aria-label="<?php esc_attr_e( 'Open menu', 'lamixtape' ); ?>" aria-expanded="false" aria-controls="mobile-menu-overlay">
+                <svg aria-hidden="true" focusable="false" width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <rect x="0" y="0" width="22" height="1.5" rx="0.75" fill="#ffffff"/>
+                    <rect x="8" y="7" width="14" height="1.5" rx="0.75" fill="#ffffff"/>
+                    <rect x="3" y="14" width="19" height="1.5" rx="0.75" fill="#ffffff"/>
+                </svg>
+            </button>
+            <!-- LEFT (next to burger): title (Lamixtape logo) -->
+            <a class="no--hover" href="<?php echo esc_url( home_url( '/' ) ); ?>">
                 <span class="lmt-logo"><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></span>
             </a>
-            <span class="text-right">
-                <ul class="flex gap-x-2 uppercase mb-0">
-                    <li class="burger-menu block">
-                        <button id="burger-btn" class="bg-transparent border-0 p-0 cursor-pointer" aria-label="Open menu">
-                            <svg aria-hidden="true" focusable="false" width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg" fill="none">
-                                <rect x="0" y="0" width="22" height="1.5" rx="0.75" fill="#ffffff"/>
-                                <rect x="8" y="7" width="14" height="1.5" rx="0.75" fill="#ffffff"/>
-                                <rect x="3" y="14" width="19" height="1.5" rx="0.75" fill="#ffffff"/>
-                            </svg>
-                        </button>
-                    </li>
-                </ul>
-            </span>
+            <!-- RIGHT: random mixtape text link (REST endpoint 302 redirect to random permalink). ml-auto pushes it to the far right of the flex row. uppercase for visual consistency with the burger-menu items; hover styling comes from the global a:hover in general.css (border-bottom 2px CurrentColor + padding-bottom 1px). -->
+            <a class="ml-auto uppercase" href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>" aria-label="<?php esc_attr_e( 'Random mixtape', 'lamixtape' ); ?>">
+                <?php esc_html_e( 'Random mixtape', 'lamixtape' ); ?>
+            </a>
         </div>
     </nav>
 
