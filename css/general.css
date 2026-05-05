@@ -61,12 +61,25 @@ input[type="range"]:focus-visible {
 }
 
 /* ========== Link Styles ========== */
-a.underline {
+/* Phase Recette II L2 — F4 : home intro modal triggers
+ * (<button class="lmt-link-button underline" data-lmt-dialog="...">
+ * for "supporting" and "here") rendered with the Tailwind .underline
+ * utility (text-decoration-line) instead of the thicker border-bottom
+ * we use for <a class="underline">. Extending the selector to
+ * .lmt-link-button.underline gives the buttons the same style; the
+ * explicit text-decoration: none neutralises the Tailwind utility on
+ * the buttons. Scope is strict: only buttons that also carry .underline
+ * (the home triggers) are affected — footer/header/sidebar
+ * .lmt-link-button without .underline stay untouched. */
+a.underline,
+.lmt-link-button.underline {
     border-bottom: solid 2px CurrentColor;
     padding-bottom: 1px;
+    text-decoration: none;
 }
 
-a:hover {
+a:hover,
+.lmt-link-button.underline:hover {
     color: #fff;
     text-decoration: none;
     border-bottom: solid 2px CurrentColor;
