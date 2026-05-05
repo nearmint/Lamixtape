@@ -3,7 +3,7 @@
 <div id="category">
     <header class="font-smoothing">
         <div class="container mx-auto px-4">
-            <hr class="mb-6 pb-1">
+            <hr class="pb-1">
             <h1>
                 <?php esc_html_e('Genre :', 'lamixtape'); ?> <?php single_cat_title(); ?>
                 <a href="<?php echo esc_url( home_url('/explore') ); ?>" class="float-right no--hover" aria-label="<?php esc_attr_e( 'Clear category filter and back to explore', 'lamixtape' ); ?>">

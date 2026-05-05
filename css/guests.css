@@ -1,6 +1,6 @@
 #guests header {
     background-color: #333;
-    height: 85px
+    min-height: 85px
 }
 
 #guests header h1 {
@@ -62,4 +62,17 @@
 
 #guests section span.Lamixtape {
     display: none
+}
+
+/* Phase Recette II L1 — F9 vertically center the curator nickname
+ * h2 inside its 85px colored header. The header has min-height
+ * via #guests header above, but no vertical centering — flex
+ * column + justify-center does the job without any markup change.
+ * Selector is scoped to span > header so it never touches the
+ * page-level #guests > header (h1 "Alongside…") which has its
+ * own Tailwind flex centering in guests.php. */
+#guests section span > header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

@@ -22,7 +22,8 @@ body.home section.about article img.illustration {
 
 
 .mixtape-list article {
-    min-height: 85px
+    min-height: 85px;
+    position: relative;
 }
 
 .mixtape-list article h2 span.curator {
@@ -50,5 +51,8 @@ body.home section.about article img.illustration {
 .mixtape-list span.highlight {
     position: absolute;
     margin-left: -50px!important;
-    padding-top: 26px
+    font-size: x-large;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-top: 0;
 }

@@ -1,6 +1,22 @@
 #search header {
     background-color: #333;
-    height: 85px
+    min-height: 85px;
+}
+
+/* Phase Recette II L1 — match h1 size pattern (Phase R.D F#17
+ * #category header h1) for consistency on archive page headers.
+ * Symmetric padding-block centers the h1 vertically in the space
+ * below the <hr> (which stays at the top). Using padding instead
+ * of flex preserves the h1 block-level width so the inner
+ * <a class="float-right"> X icon keeps floating to the far right
+ * of the header. */
+#search header h1 {
+    font-weight: 500;
+    font-size: 35px;
+    letter-spacing: 0;
+    margin: 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
 #search .nothing--found {

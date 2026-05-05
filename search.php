@@ -7,7 +7,7 @@ global $wp_query;
     <header class="font-smoothing">
         <form role="search" method="get" id="" action="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>">
             <div class="container mx-auto px-4">
-                <hr class="mb-6">
+                <hr>
                 <h1><?php esc_html_e('Search:', 'lamixtape'); ?>
                     <?php the_search_query(); ?>
                     <a href="<?php echo esc_url( get_bloginfo( 'wpurl' ) );?>/explore" class="float-right no--hover" aria-label="<?php esc_attr_e( 'Clear search and back to explore', 'lamixtape' ); ?>">

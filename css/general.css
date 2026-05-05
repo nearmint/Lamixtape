@@ -80,8 +80,14 @@ a.no--border, a.no--hover:hover {
 }
 
 /* ========== Miscellaneous ========== */
+/* Phase Recette II L1 — margin-bottom removed to let Tailwind
+ * utilities drive hr spacing per template (mb-0 on guests,
+ * mb-6 on category/search, mb-[5px] on explore, my-6 on single).
+ * The unlayered general.css rule was silently overriding @layer
+ * utilities since the Phase 4 Tailwind migration. The naked <hr>
+ * occurrences (404, home, text) fall back to browser default
+ * (0px margin) — visually validated. */
 hr {
-    margin-bottom: 10px;
     border: 0;
     border-top: 2px solid #fff;
 }
