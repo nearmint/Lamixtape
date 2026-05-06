@@ -197,13 +197,12 @@ jQuery(function ($) {
             if (e.target === this) closeMenu();
         });
         // Close menu when any link or dialog-trigger button inside the
-        // overlay is tapped or clicked (for iOS/Safari reliability).
-        // Phase Recette F-10: extending the selector to match
-        // <button data-lmt-dialog> ensures Contact us / Support us also
-        // close the mobile menu before the modal opens (the dialogs.js
+        // overlay is clicked. The selector also matches
+        // <button data-lmt-dialog> so Contact us / Support us close
+        // the mobile menu before the modal opens (the dialogs.js
         // handler on `document` fires later in the bubble path, so
         // closeMenu runs first by DOM order).
-        $mobileMenu.find('a, button[data-lmt-dialog]').on('click touchend', function() {
+        $mobileMenu.find('a, button[data-lmt-dialog]').on('click', function() {
             closeMenu();
         });
     });
