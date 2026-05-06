@@ -117,16 +117,35 @@ article .action-buttons button.middle {
     border-right: 0;
 }
 
+/* Phase Recette II L5 — F10 : mobile horizontal scroll slider for
+ * mixtape action buttons (Random Mixtape / Send feedback / Support
+ * us). Replaces the previous mobile vertical stack (display:grid +
+ * width:100%). flex nowrap + overflow-x: auto + min-width 200px on
+ * each button forces overflow, so the user swipes horizontally to
+ * reach Send feedback / Support us. scroll-snap-* gives the swipe
+ * an iOS-native snap feel. Scrollbar hidden visually for a cleaner
+ * look. The middle button keeps joined-buttons horizontal borders
+ * (no left/right) for visual consistency with the >=769px layout. */
 @media (max-width: 768px) {
     article .action-buttons {
         width: 100%;
-        display: grid;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
         margin-top: 24px;
+    }
+    article .action-buttons::-webkit-scrollbar {
+        display: none;
     }
 
     article .action-buttons a,
     article .action-buttons button {
-        width: 100%;
+        flex-shrink: 0;
+        min-width: 200px;
+        width: auto;
         text-align: center;
         border: solid 2px currentColor;
         padding: 10px;
@@ -135,12 +154,12 @@ article .action-buttons button.middle {
         color: inherit;
         font-family: inherit;
         cursor: pointer;
+        scroll-snap-align: start;
     }
 
     article .action-buttons a.middle,
     article .action-buttons button.middle {
-        border: solid 2px currentColor;
-        border-top: 0;
-        border-bottom: 0;
+        border-left: 0;
+        border-right: 0;
     }
 }
