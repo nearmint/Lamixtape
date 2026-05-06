@@ -517,6 +517,31 @@ function lmt_deregister_block_library_css() {
 }
 add_action( 'wp_print_styles', 'lmt_deregister_block_library_css', 100 );
 
+/**
+ * Remove jquery-migrate from the jquery dependency chain on the
+ * frontend. WordPress core registers jquery-migrate as a default
+ * dep of jquery, so any script enqueued with array('jquery') pulls
+ * it in transitively. Theme scripts (js/main.js, js/player.js,
+ * js/infinite-scroll.js) only use modern jQuery 3.7 APIs and do
+ * not need migrate. Admin behavior preserved via the is_admin()
+ * guard (Gutenberg / plugins may still rely on migrate in admin).
+ *
+ * @param WP_Scripts $scripts Default scripts registry.
+ * @return void
+ */
+function lmt_dequeue_jquery_migrate( $scripts ) {
+    if ( is_admin() ) {
+        return;
+    }
+    if ( isset( $scripts->registered['jquery'] ) ) {
+        $scripts->registered['jquery']->deps = array_diff(
+            $scripts->registered['jquery']->deps,
+            array( 'jquery-migrate' )
+        );
+    }
+}
+add_action( 'wp_default_scripts', 'lmt_dequeue_jquery_migrate' );
+
 // -----------------------------------------
 // ---- Backoffice : rename "Posts" --------
 // -----------------------------------------
