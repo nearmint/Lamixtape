@@ -44,3 +44,8 @@ wp-config.php
 # and ignore the HTML pretty reports (regeneratable on demand from
 # JSON via `lighthouse-ci` or `lighthouse --view` flag).
 _docs/audit/lighthouse/*.html
+
+# Internal documentation (not for public repo)
+_docs/
+CLAUDE.md
+.claude/
