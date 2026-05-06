@@ -22,14 +22,16 @@
             <a class="no--hover" href="<?php echo esc_url( home_url( '/' ) ); ?>">
                 <span class="lmt-logo"><?php esc_html_e( 'Lamixtape', 'lamixtape' ); ?></span>
             </a>
-            <!-- RIGHT: random mixtape text link (REST endpoint 302 redirect to random permalink). ml-auto pushes it to the far right of the flex row. uppercase for visual consistency with the burger-menu items; hover styling comes from the global a:hover in general.css (border-bottom 2px CurrentColor + padding-bottom 1px). -->
-            <a class="ml-auto uppercase" href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>" aria-label="<?php esc_attr_e( 'Random mixtape', 'lamixtape' ); ?>">
-                <?php esc_html_e( 'Random mixtape', 'lamixtape' ); ?>
+            <!-- RIGHT: random mixtape text link (REST endpoint 302 redirect to random permalink). ml-auto pushes it to the far right of the flex row. uppercase for visual consistency with the burger-menu items. .lmt-random-link reserves 2px of border-bottom space at rest so the hover state can reveal the underline without bumping the link height (same pattern as sidebar items, see css/navbar.css). The visible label is "Random" on narrow viewports (saves space) and "Random Mixtape" on desktop ≥992px via the .lmt-random-extra responsive span; the aria-label always exposes the full label to assistive tech regardless of viewport. -->
+            <a class="ml-auto uppercase lmt-random-link" href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>" aria-label="<?php esc_attr_e( 'Random mixtape', 'lamixtape' ); ?>">
+                <?php esc_html_e( 'Random', 'lamixtape' ); ?><span class="lmt-random-extra"> <?php esc_html_e( 'Mixtape', 'lamixtape' ); ?></span>
             </a>
         </div>
     </nav>
 
-    <!-- Fullscreen Menu Overlay for mobile navigation -->
+    <!-- Menu : full-screen overlay on mobile <992px, left-anchored
+         sidebar that pushes the body content rightward on desktop ≥992px.
+         The toggle is the burger button in the navbar above. -->
     <div id="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Mobile navigation', 'lamixtape' ); ?>" aria-hidden="true">
         <div class="container mx-auto px-4 flex items-center justify-end h-[85px]">
             <button id="close-mobile-menu" aria-label="Close menu">
@@ -40,14 +42,16 @@
         </div>
         <div class="container mx-auto px-4 mt-4">
             <ul>
-                <li class="menu-fade-in menu-delay-0"><a href="<?php echo esc_url( home_url( '/explore/' ) ); ?>">Search</a></li>
-                <li class="menu-fade-in menu-delay-1"><a href="<?php echo esc_url( rest_url( 'lamixtape/v1/random-mixtape' ) ); ?>"><?php esc_html_e( 'Random mixtape', 'lamixtape' ); ?></a></li>
-                <li class="menu-fade-in menu-delay-2"><a href="<?php echo esc_url( home_url( '/guests/' ) ); ?>">Guest curators</a></li>
-                <li class="menu-fade-in menu-delay-3"><button type="button" class="lmt-link-button" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal">Contact us</button></li>
-                <li class="menu-fade-in menu-delay-4"><button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="mobile_menu" aria-haspopup="dialog" aria-controls="donatemodal">Support us</button> ⚡️</li>
-                <li class="menu-fade-in menu-delay-5"><a href="<?php echo esc_url( home_url( '/colophon/' ) ); ?>">Colophon</a></li>
-                <li class="menu-fade-in menu-delay-5"><a href="<?php echo esc_url( home_url( '/legal-notice/' ) ); ?>">Legal Notice</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/explore/' ) ); ?>"><?php esc_html_e( 'Search', 'lamixtape' ); ?></a></li>
+                <li><a href="<?php echo esc_url( home_url( '/guests/' ) ); ?>"><?php esc_html_e( 'Guest Curators', 'lamixtape' ); ?></a></li>
+                <li><button type="button" class="lmt-link-button" data-lmt-dialog="contactmodal" aria-haspopup="dialog" aria-controls="contactmodal"><?php esc_html_e( 'Contact us', 'lamixtape' ); ?></button></li>
+                <li><button type="button" class="lmt-link-button" data-lmt-dialog="donatemodal" data-tracking-source="mobile_menu" aria-haspopup="dialog" aria-controls="donatemodal"><?php esc_html_e( 'Support us', 'lamixtape' ); ?></button> ⚡️</li>
             </ul>
         </div>
+        <footer class="lmt-sidebar-footer">
+            <a href="https://github.com/nearmint/Lamixtape" target="_blank" rel="noopener">GitHub</a>
+            <span aria-hidden="true">·</span>
+            <a href="<?php echo esc_url( home_url( '/legal-notice/' ) ); ?>"><?php esc_html_e( 'Legal', 'lamixtape' ); ?></a>
+        </footer>
     </div>
     <main id="main" tabindex="-1">

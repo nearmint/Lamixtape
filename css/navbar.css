@@ -4,6 +4,48 @@ nav {
     color: #fff;
     height: 85px;
 }
+
+/* Phase Recette II L4 polish 3 — Random Mixtape header link
+ * (same shift-prevention pattern as sidebar items in polish 2):
+ * reserve 2px of border-bottom space at rest (transparent =
+ * invisible). The :hover state only swaps the color, no height
+ * change. Specificity 0,2,0 beats the global a:hover (0,1,1) so
+ * this wins the cascade.
+ *
+ * Symmetric border-top + padding-top mirror the bottom so the box
+ * has the text vertically centered inside it. Without the mirror,
+ * the asymmetric 3px-bottom would shift the text 1.5px upward
+ * within its flex item box, breaking visual alignment with the
+ * Lamixtape title (which has no border / no padding). */
+.lmt-random-link {
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    /* Optical nudge: items-center aligns the flex-item box of the
+     * Random link with the Lamixtape title box, but Outfit's font
+     * metrics make the visual centre of 16px glyphs land slightly
+     * above the visual centre of 40px glyphs. A 3px top margin
+     * compensates so the small text feels centred next to the big
+     * title. Tune within 1-5px if visual feedback says otherwise. */
+    margin-top: 3px;
+}
+.lmt-random-link:hover {
+    border-bottom-color: CurrentColor;
+}
+
+/* Responsive label: " Mixtape" only shown on desktop ≥992px so the
+ * narrow viewport keeps the link compact ("Random"). aria-label on
+ * the <a> exposes the full "Random mixtape" to assistive tech
+ * regardless of viewport. */
+.lmt-random-extra {
+    display: none;
+}
+@media (min-width: 992px) {
+    .lmt-random-extra {
+        display: inline;
+    }
+}
 /* Phase 5 A11Y-003: nav title is no longer a <h1> (the global <h1>
  * on every page broke the heading hierarchy and reduced individual
  * page titles to <h2>). Replaced by a <span class="lmt-logo">. */
@@ -58,28 +100,47 @@ nav .lmt-logo {
     list-style: none;
     padding: 0;
     margin: 0;
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+    text-align: left;
+    /* Phase Recette II L4 step 2 — items are no longer
+     * justify-evenly distributed across the height: they sit at the
+     * top of the panel under the close-button row, with the footer
+     * pinned to the bottom via flex column on the overlay itself. */
 }
 #mobile-menu-overlay li {
     margin: 0;
     padding-bottom: 2rem;
-
     letter-spacing: 1px;
     font-size: 2rem;
+    text-align: left;
 }
 
 /* R.A.bis: extend selector to .lmt-link-button so Contact us /
  * Support us entries (rendered as <button data-lmt-dialog>, not <a>)
- * share the same visual treatment as the <a> menu links. */
+ * share the same visual treatment as the <a> menu links.
+ *
+ * Phase Recette II L4 step 2 polish 2 — reserve 2px of border-bottom
+ * space at rest (transparent = invisible) so the hover state can
+ * reveal the underline without bumping the element height. The
+ * matching :hover rule below only swaps the color. Specificity note:
+ * this rule (0,2,0) sits above the global a:hover (0,1,1) from
+ * general.css, so the :hover rule below has to be explicit and
+ * scoped (0,3,0) to win the cascade for the color swap. */
 #mobile-menu-overlay :is(a, .lmt-link-button) {
     color: #fff;
     text-decoration: none;
     -webkit-font-smoothing: antialiased;
     text-shadow: 2px 2px 0 #1c5e8b;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 1px;
+}
+
+/* Hover parity for both <a> items (Search, Guest Curators) and
+ * <button class="lmt-link-button"> items (Contact us, Support us,
+ * footer GitHub/Legal via .lmt-sidebar-footer a inheritance from
+ * the rest rule above). Single unified rule, no layout shift. */
+#mobile-menu-overlay :is(a, .lmt-link-button):hover {
+    border-bottom-color: CurrentColor;
+    text-decoration: none;
 }
 
 #close-mobile-menu {
@@ -95,26 +156,96 @@ nav .lmt-logo {
   opacity: 0 !important;
 }
 
+/* Phase Recette II L4 step 2 — When the overlay is shown
+ * (aria-hidden=false set by JS), force flex column so the
+ * .lmt-sidebar-footer can pin to the bottom via margin-top: auto. */
+#mobile-menu-overlay[aria-hidden="false"] {
+    display: flex !important;
+    flex-direction: column;
+}
+
+/* Sidebar footer — sticky-bottom GitHub · Legal row. Active on
+ * mobile and desktop (only the overlay width changes between
+ * viewport sizes; the footer pin behavior is the same).
+ * Padding 1rem on all sides aligns the link group with the menu
+ * items above: items live inside <div class="container px-4">
+ * (so their content sits 1rem from the sidebar edge on mobile,
+ * 2rem on desktop where the sidebar itself has padding 1rem).
+ * The footer is a direct child of the overlay (no container
+ * wrapper), so a matching 1rem horizontal padding here lines up
+ * the visual indent across both viewport modes. */
+.lmt-sidebar-footer {
+    margin-top: auto;
+    padding: 1rem;
+    font-size: 0.875rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+/* Specificity bump (0,2,1) so this overrides the parent rule
+ * '#mobile-menu-overlay :is(a, .lmt-link-button) { text-shadow: ... }'
+ * (0,2,0). Without the #mobile-menu-overlay scope here the override
+ * lost the cascade and GitHub/Legal kept the parent text-shadow. */
+#mobile-menu-overlay .lmt-sidebar-footer a {
+    color: #fff;
+    text-shadow: none;
+}
+
+/* Phase Recette II L4 step 2 — Desktop ≥992px : the overlay
+ * collapses into a 280px-wide left-anchored sidebar, and the body
+ * content gets pushed rightward by the same 280px via margin-left
+ * on the `lmt-sidebar-open` body class (toggled by
+ * openMenu/closeMenu in js/main.js). Width is fixed (not
+ * max-content) so the body push value matches exactly — eliminates
+ * the residual gap visible when max-content yielded a sidebar
+ * narrower than 280px. The fixed-position #footer-player is also
+ * pushed (left + width) since position:fixed ignores the body
+ * margin. Mobile <992px keeps the full-screen overlay (body push
+ * neutralised below). */
+@media (min-width: 992px) {
+    #mobile-menu-overlay {
+        width: 280px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 1rem;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+    }
+    #mobile-menu-overlay li {
+        font-size: 1.5rem;
+        padding-bottom: 1.5rem;
+        white-space: nowrap;
+    }
+    body {
+        transition: margin-left 0.2s ease;
+    }
+    body.lmt-sidebar-open {
+        margin-left: 280px;
+    }
+    #footer-player {
+        transition: left 0.2s ease, width 0.2s ease;
+    }
+    body.lmt-sidebar-open #footer-player {
+        left: 280px;
+        width: calc(100% - 280px);
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.lmt-sidebar-open {
+        margin-left: 0;
+    }
+}
+
 /* ========== Contact Form 7 ========== */
 .wpcf7 form.sent .wpcf7-response-output {
     width: 100%;
     border: solid 2px #fff;
 }
 
-/* ========== Menu Overlay Entrance Animations ========== */
-.menu-fade-in {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
-}
-.menu-fade-in.visible {
-    opacity: 1;
-    transform: none;
-}
-.menu-delay-1 { transition-delay: 0.1s; }
-.menu-delay-2 { transition-delay: 0.2s; }
-.menu-delay-3 { transition-delay: 0.3s; }
-.menu-delay-4 { transition-delay: 0.4s; }
-.menu-delay-5 { transition-delay: 0.5s; }
+/* Phase Recette II L4 step 2 — entrance animations on menu items
+ * (.menu-fade-in, .menu-delay-*) removed: the new minimal sidebar
+ * favors instant reveal over staggered animation. The matching
+ * markup classes and JS animateMenuItems()/resetMenuItems()
+ * helpers were removed alongside. */
 
 /* ========== [END navbar.css] ========== */

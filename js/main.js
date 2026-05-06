@@ -142,20 +142,38 @@ jQuery(function ($) {
         function openMenu() {
             lastFocused = document.activeElement;
             $mobileMenu.attr('aria-hidden', 'false');
+            $burgerBtn.attr('aria-expanded', 'true');
+            // Phase Recette II L4 step 2 — desktop push: the body gets
+            // a margin-left via the `.lmt-sidebar-open` class so the
+            // page content shifts right of the sidebar instead of
+            // sitting underneath it. Mobile neutralises the push via
+            // a media query in css/navbar.css.
+            $('body').addClass('lmt-sidebar-open');
+            // inert + body overflow:hidden are mobile-only. On desktop
+            // push mode the user expects the pushed content to remain
+            // clickable / scrollable (VS Code / Outlook pattern).
+            // A11y trade-off accepted: focus trap dur (inert) was
+            // double-protection over the keyboard ESC + focus return,
+            // which still work in both modes.
+            if (window.innerWidth < 992) {
+                setSiblingsInert(true);
+                $('body').css('overflow', 'hidden');
+            }
             $mobileMenu.fadeIn(200, function() {
                 $mobileMenu.css({'pointer-events': 'auto', 'opacity': 1});
                 $closeBtn.trigger('focus');
             });
-            $('body').css('overflow', 'hidden');
-            setSiblingsInert(true);
         }
         function closeMenu() {
             $mobileMenu.attr('aria-hidden', 'true');
+            $burgerBtn.attr('aria-expanded', 'false');
+            $('body').removeClass('lmt-sidebar-open');
             $mobileMenu.fadeOut(200, function() {
                 $mobileMenu.css({'pointer-events': 'none', 'opacity': 0});
             });
-            $('body').css('overflow', '');
+            // Always reset, idempotent if openMenu skipped them.
             setSiblingsInert(false);
+            $('body').css('overflow', '');
             if (lastFocused && typeof lastFocused.focus === 'function') {
                 lastFocused.focus();
             }
@@ -190,29 +208,10 @@ jQuery(function ($) {
         });
     });
 
-    // =============================
-    // MENU OVERLAY ENTRANCE ANIMATIONS
-    // =============================
-    var $mobileMenu = $('#mobile-menu-overlay');
-    function animateMenuItems() {
-        $mobileMenu.find('.menu-fade-in').each(function(i, el) {
-            setTimeout(function() {
-                $(el).addClass('visible');
-            }, 100 + i * 100);
-        });
-    }
-    function resetMenuItems() {
-        $mobileMenu.find('.menu-fade-in').removeClass('visible');
-    }
-    // Animate on menu open
-    $('#burger-btn').on('click', function() {
-        setTimeout(animateMenuItems, 200); // after menu fade in
-    });
-    // Reset on menu close
-    $('#close-mobile-menu').on('click', resetMenuItems);
-    $mobileMenu.on('click', function(e) {
-        if (e.target === this) resetMenuItems();
-    });
+    // Phase Recette II L4 step 2 — entrance animations on menu items
+    // (animateMenuItems / resetMenuItems + .menu-fade-in markers)
+    // removed alongside the CSS rules. The minimal sidebar opens
+    // instantly via the existing fadeIn(200) on the overlay itself.
 
     // Homepage entrance animations (.fade-in stagger) removed in
     // Phase 4 CHECKPOINT 3 fix #4 — see css/general.css trailer
