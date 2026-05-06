@@ -1,12 +1,68 @@
 body.error404, body.error404 #menu, body.error404 nav {
-    background: #e74c3c
+    background: #e74c3c;
 }
 
-/* body.error404 .btn rule removed Phase 4 Axe B C5 — the `btn`
- * class no longer exists in 404.php (replaced by tw:* utilities). */
+/* Phase Recette II L7 polish — F13 redesign.
+ * Title + subtitle responsive sizing for visibility on both
+ * mobile and desktop. Markup uses .lmt-404-title and
+ * .lmt-404-subtitle (404.php) so the rules don't bleed onto
+ * other pages. */
+body.error404 .lmt-404-title {
+    font-size: 3rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+    font-weight: 500;
+    margin: 0 0 1rem;
+}
+body.error404 .lmt-404-subtitle {
+    font-size: 1.25rem;
+    margin: 0;
+}
 
+@media (min-width: 992px) {
+    body.error404 .lmt-404-title {
+        font-size: 4.5rem;
+    }
+    body.error404 .lmt-404-subtitle {
+        font-size: 1.5rem;
+    }
+}
+
+/* .lmt-404-btn hover : neutralize global a:hover shift.
+ * The global rule (general.css :is) sets padding-bottom: 1px +
+ * border-bottom: 2px solid CurrentColor on hover, which compresses
+ * the button's py-2.5 (10px) padding and re-asserts a 2px border
+ * that's already there statically. Specificity 0,2,0 here beats
+ * the global a:hover (0,1,1) so padding stays at 0.625rem (10px)
+ * and the border stays the same — no visible hover state change. */
+body.error404 .lmt-404-btn:hover,
+body.error404 .lmt-404-btn:focus {
+    padding-bottom: 0.625rem;
+    border-bottom-color: currentColor;
+    color: #fff;
+    text-decoration: none;
+    background: transparent;
+}
+
+/* Travolta GIF : fixed bottom-left both modes, height responsive.
+ * Mobile 30vh keeps the silhouette compact; desktop 60vh restores
+ * the legacy lower-corner identity. pointer-events: none lets the
+ * user click "through" the GIF if its area overlaps an action
+ * button on a narrow viewport. */
 body.error404 img.travolta {
     position: fixed;
     bottom: 0;
-    height: 60vh
+    left: 0;
+    height: 30vh;
+    max-width: none;
+    width: auto;
+    margin: 0;
+    display: block;
+    pointer-events: none;
+}
+
+@media (min-width: 992px) {
+    body.error404 img.travolta {
+        height: 60vh;
+    }
 }
