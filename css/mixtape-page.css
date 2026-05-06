@@ -31,6 +31,54 @@ article.mixtape ul li a.playing {
     padding-bottom: 1px;
 }
 
+/* Phase Recette II L6 — F11 : visual marking for tracks that
+ * failed to load (YouTube IFrame onError or MediaElement error
+ * event). Class added by markTrackUnavailable() in js/player.js.
+ * pointer-events on the inner <a> only — preserves the JS
+ * programmatic access used by playNextSong() / preparePlayer(). */
+.lmt-track-unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.lmt-track-unavailable a {
+    /* position: relative anchors the ::after tooltip to the <a>
+     * (text width) instead of the <li> (full container width), so
+     * the tooltip sits right next to the end of the track text.
+     * inline-block lets the <a> shrink to its content. */
+    position: relative;
+    display: inline-block;
+    pointer-events: none;
+}
+
+/* Custom CSS tooltip (replaces browser-native title tooltip which
+ * has a ~1s delay). Renders instantly on hover, dark
+ * semi-transparent background, white text. Anchored on the <a>
+ * (text width), positioned right of the text via left: 100% +
+ * 12px margin. Triggered on the <li>:hover so the inert <a>
+ * still appears hoverable. The aria-label on the <a> handles
+ * screen reader announcement. */
+.lmt-track-unavailable a::after {
+    content: 'Track unavailable';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 12px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.05s ease;
+    z-index: 100;
+}
+.lmt-track-unavailable:hover a::after {
+    opacity: 1;
+}
+
 @media (max-width:575px) {
     article.mixtape ul li a {
         cursor: not-allowed;

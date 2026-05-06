@@ -97,6 +97,9 @@ jQuery(function ($) {
         stopTimer();
       });
       player.addEventListener("error", function () {
+        // Phase Recette II L6 — F11 : mark the failed track DOM
+        // element greyed-out (parity with YouTube onError handler).
+        markTrackUnavailable(currentTrack);
         playNextSong();
       });
       player.addEventListener("loadedmetadata", function () {
@@ -228,7 +231,32 @@ if (event.data === YT.PlayerState.ENDED) {
         error_code: event.data
       });
     }
+    // Phase Recette II L6 — F11 : visual marking of unavailable
+    // tracks. Idempotent if onError fires multiple times for the
+    // same track.
+    markTrackUnavailable(currentTrack);
     playNextSong();
+  }
+
+  // Phase Recette II L6 — F11 : mark a tracklist <li> as unavailable.
+  // Adds opacity / cursor-not-allowed via .lmt-track-unavailable class
+  // (css/mixtape-page.css), plus title tooltip + aria-disabled on the
+  // inner <a>. Used by both YouTube onPlayerError and MediaElement
+  // error listener for cross-source consistency. Session-only marking;
+  // a page reload re-fires onError on still-broken tracks and re-marks
+  // them, which is acceptable.
+  function markTrackUnavailable(trackIndex) {
+    var $li = $(playlistItems[trackIndex]);
+    if ($li.length) {
+      $li.addClass('lmt-track-unavailable');
+      // aria-label (not title) so the message is announced by
+      // assistive tech without triggering the browser's native
+      // ~1s-delay tooltip — the visible tooltip is rendered by
+      // .lmt-track-unavailable::after in css/mixtape-page.css for
+      // instant hover feedback.
+      $li.find('a').attr('aria-label', 'Track unavailable')
+                   .attr('aria-disabled', 'true');
+    }
   }
 
   function formatTime(seconds) {
