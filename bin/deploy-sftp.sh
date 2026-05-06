@@ -110,7 +110,9 @@ echo "════════════════════════�
 # These files/dirs are dev-only and must NOT land on the prod server :
 # - .git/, .github/         : VCS + CI workflows
 # - node_modules/           : npm dev deps (audit tools)
-# - vendor/                 : Composer dev deps (PHPCS / WPCS)
+# - vendor/                 : Composer dev deps (PHPCS / WPCS) — root only,
+#                             NOT assets/vendor/ which holds theme assets
+#                             (Outfit font self-host since Phase 1)
 # - _docs/                  : internal documentation
 # - bin/                    : dev scripts (this script + check-headers.sh)
 # - .claude/                : Claude Code config (settings.local.json + caches)
@@ -137,7 +139,7 @@ EXCLUDES=(
     "--exclude-glob=.git/"
     "--exclude-glob=.github/"
     "--exclude-glob=node_modules/"
-    "--exclude-glob=vendor/"
+    "--exclude=^vendor/"
     "--exclude-glob=_docs/"
     "--exclude-glob=bin/"
     "--exclude-glob=.claude/"
