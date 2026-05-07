@@ -1,0 +1,94 @@
+/* ========== Auto-play next mixtape toast ==========
+ *
+ * Fixed-position toast emitted by js/autoplay.js when the last
+ * track of a single mixtape ends. Sits bottom-right above the
+ * persistent #footer-player (cf. css/player.css). On mobile
+ * (<768px), the toast spans the full width minus margins so the
+ * countdown + Cancel button stay tappable. The toast respects
+ * `prefers-reduced-motion` (no entry transition for users who've
+ * opted out).
+ */
+
+.lmt-autoplay-toast {
+    position: fixed;
+    right: 1rem;
+    /* Footer player real height ≈ 92px (70px container + 20px
+     * margin-bottom + 2×2px border). 110px buffers the seekbar
+     * focus ring + a 1rem gap. */
+    bottom: calc(110px + 1rem);
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.lmt-autoplay-toast.lmt-autoplay-toast-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.lmt-autoplay-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lmt-autoplay-toast-text {
+    white-space: nowrap;
+}
+
+.lmt-autoplay-countdown {
+    font-weight: 700;
+    display: inline-block;
+    min-width: 1ch;
+    text-align: center;
+}
+
+.lmt-autoplay-cancel {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+    font-family: inherit;
+}
+
+.lmt-autoplay-cancel:hover,
+.lmt-autoplay-cancel:focus-visible {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+    .lmt-autoplay-toast {
+        right: 0.5rem;
+        left: 0.5rem;
+        bottom: calc(110px + 0.5rem);
+    }
+    .lmt-autoplay-toast-content {
+        justify-content: space-between;
+    }
+}
+
+/* Respect prefers-reduced-motion : disable entry transition. The
+ * toast still appears (opacity flip is instant), but no slide. */
+@media (prefers-reduced-motion: reduce) {
+    .lmt-autoplay-toast {
+        transition: none;
+        transform: none;
+    }
+    .lmt-autoplay-toast.lmt-autoplay-toast-visible {
+        transform: none;
+    }
+}

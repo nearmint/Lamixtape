@@ -76,6 +76,7 @@ jQuery(function ($) {
             track_title: trackTitle
           });
         }
+        if (triggerAutoplayIfLastTrack()) { return; }
         playNextSong();
       });
       player.addEventListener("playing", function () {
@@ -100,6 +101,7 @@ jQuery(function ($) {
         // Phase Recette II L6 — F11 : mark the failed track DOM
         // element greyed-out (parity with YouTube onError handler).
         markTrackUnavailable(currentTrack);
+        if (triggerAutoplayIfLastTrack()) { return; }
         playNextSong();
       });
       player.addEventListener("loadedmetadata", function () {
@@ -191,6 +193,7 @@ if (event.data === YT.PlayerState.ENDED) {
       });
     }
   }
+  if (triggerAutoplayIfLastTrack()) { return; }
   playNextSong();
 } else if (event.data === YT.PlayerState.PLAYING) {
   $playPauseBtn.html(pauseSvg);
@@ -235,6 +238,7 @@ if (event.data === YT.PlayerState.ENDED) {
     // tracks. Idempotent if onError fires multiple times for the
     // same track.
     markTrackUnavailable(currentTrack);
+    if (triggerAutoplayIfLastTrack()) { return; }
     playNextSong();
   }
 
@@ -308,6 +312,23 @@ if (event.data === YT.PlayerState.ENDED) {
       currentTrack++;
     }
     preparePlayer($(playlistItems[currentTrack]));
+  }
+
+  // Auto-play feature — when the last track of the mixtape ends
+  // (naturally) or errors out (defensive : last-track failure still
+  // signals end-of-mixtape from the user's standpoint), trigger the
+  // autoplay countdown toast instead of looping back to track 0.
+  // Returns true if autoplay was triggered (caller must skip the
+  // legacy wrap-around playNextSong()), false otherwise.
+  function triggerAutoplayIfLastTrack() {
+    if (currentTrack !== playlistItems.length - 1) {
+      return false;
+    }
+    if (typeof window.lmtAutoplayInit === 'function') {
+      window.lmtAutoplayInit();
+      return true;
+    }
+    return false;
   }
 
   function preparePlayer($item) {

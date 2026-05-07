@@ -267,6 +267,22 @@ add_action( 'rest_api_init', function () {
         'callback'            => 'lmt_rest_random_mixtape',
         'permission_callback' => '__return_true',
     ) );
+
+    register_rest_route( 'lamixtape/v1', '/next-thematic-mixtape', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'lmt_rest_next_thematic_mixtape',
+        'permission_callback' => '__return_true',
+        'args'                => array(
+            'current_id' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'sanitize_callback' => 'absint',
+                'validate_callback' => function ( $param ) {
+                    return is_numeric( $param ) && (int) $param > 0;
+                },
+            ),
+        ),
+    ) );
 } );
 
 /**
@@ -334,4 +350,100 @@ function lmt_rest_random_mixtape( WP_REST_Request $request ) {
     $response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
     $response->header( 'Pragma', 'no-cache' );
     return $response;
+}
+
+/**
+ * REST callback for /lamixtape/v1/next-thematic-mixtape.
+ *
+ * Returns the next thematic mixtape relative to a given current_id.
+ * Used by the auto-play feature on single mixtape pages : when the
+ * last track of a mixtape ends (or errors out), the front-end fires
+ * a 5-second countdown toast offering to redirect to a thematically
+ * related mixtape.
+ *
+ * Resolution strategy (Q2 fallback) :
+ *   1. Pick a random published post sharing at least one category
+ *      with the current post (excluding the current post itself).
+ *   2. If no match : pick a random published post by the same author
+ *      (curator), excluding the current post.
+ *   3. If still no match : return {found: false}.
+ *
+ * Random ordering keeps repeated visits varied. No transient cache
+ * (true random per call, mirroring the /random-mixtape endpoint
+ * design). Acceptable on a ~370-post catalog with fields=ids +
+ * no_found_rows + LIMIT 1.
+ *
+ * Public endpoint (no nonce, no rate-limit), mirroring
+ * /random-mixtape. The fetch happens from a client-side JS module
+ * loaded only on single mixtape pages, so traffic comes from real
+ * navigation, not bulk scripted abuse. Rate-limit can be added
+ * later via lmt_rest_pagination_permission pattern if needed.
+ *
+ * Response shape :
+ *   { found: true, id, slug, url, title }   on match
+ *   { found: false }                         on no match
+ *
+ * @param  WP_REST_Request $request
+ * @return WP_REST_Response
+ */
+function lmt_rest_next_thematic_mixtape( WP_REST_Request $request ) {
+    $current_id   = (int) $request->get_param( 'current_id' );
+    $current_post = get_post( $current_id );
+
+    if ( ! $current_post || 'post' !== $current_post->post_type || 'publish' !== $current_post->post_status ) {
+        return rest_ensure_response( array( 'found' => false ) );
+    }
+
+    $base_args = array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'post__not_in'   => array( $current_id ),
+        'posts_per_page' => 1,
+        'orderby'        => 'rand',
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    );
+
+    $next_id    = 0;
+    $categories = wp_get_post_categories( $current_id );
+
+    if ( ! empty( $categories ) ) {
+        $cat_query = new WP_Query( array_merge(
+            $base_args,
+            array( 'category__in' => $categories )
+        ) );
+        if ( ! empty( $cat_query->posts ) ) {
+            $next_id = (int) $cat_query->posts[0];
+        }
+    }
+
+    if ( ! $next_id ) {
+        $author_id = (int) $current_post->post_author;
+        if ( $author_id > 0 ) {
+            $author_query = new WP_Query( array_merge(
+                $base_args,
+                array( 'author' => $author_id )
+            ) );
+            if ( ! empty( $author_query->posts ) ) {
+                $next_id = (int) $author_query->posts[0];
+            }
+        }
+    }
+
+    if ( ! $next_id ) {
+        return rest_ensure_response( array( 'found' => false ) );
+    }
+
+    $url = get_permalink( $next_id );
+    if ( ! $url ) {
+        return rest_ensure_response( array( 'found' => false ) );
+    }
+
+    return rest_ensure_response( array(
+        'found' => true,
+        'id'    => $next_id,
+        'slug'  => get_post_field( 'post_name', $next_id ),
+        'url'   => $url,
+        'title' => html_entity_decode( get_the_title( $next_id ), ENT_QUOTES, 'UTF-8' ),
+    ) );
 }
