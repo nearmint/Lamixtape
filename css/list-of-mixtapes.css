@@ -1,4 +1,4 @@
-body.home nav {
+body.home:not(.lmt-sticky-header-active) nav {
     background: #e74c3c!important
 }
 

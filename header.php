@@ -8,6 +8,7 @@
 </head>
 <body <?php body_class(); ?>>
     <a class="lmt-skip-link" href="#main"><?php esc_html_e( 'Skip to main content', 'lamixtape' ); ?></a>
+    <header>
     <nav class="navbar" aria-label="<?php esc_attr_e( 'Main navigation', 'lamixtape' ); ?>">
         <div class="container mx-auto px-4 flex flex-wrap items-center gap-3 h-[85px]">
             <!-- LEFT: burger (toggle menu — full-screen mobile, side panel desktop) -->
@@ -28,6 +29,7 @@
             </a>
         </div>
     </nav>
+    </header>
 
     <!-- Menu : full-screen overlay on mobile <992px, left-anchored
          sidebar that pushes the body content rightward on desktop ≥992px.

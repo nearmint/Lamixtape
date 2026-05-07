@@ -153,6 +153,22 @@ function lmt_enqueue_assets() {
         'nonce'        => wp_create_nonce( 'wp_rest' ),
     ) );
 
+    // Sticky header JS — home only. Watches <section class="about">
+    // via IntersectionObserver and toggles `lmt-sticky-header-active`
+    // on <body> so the <header> sticks to the top of the viewport
+    // once the user scrolls past the about section. Triple-gated
+    // (PHP enqueue + JS body.home guard + CSS body.home selector)
+    // for non-regression on every other template.
+    if ( is_front_page() || is_home() || is_page_template( 'index.php' ) ) {
+        wp_enqueue_script(
+            'lmt-sticky-header',
+            $theme_uri . '/js/sticky-header.js',
+            array(),
+            lmt_asset_ver( 'js/sticky-header.js' ),
+            true
+        );
+    }
+
     // Player JS — only on single mixtape pages. Depends on jQuery and
     // wp-mediaelement (the .mediaelementplayer plugin lives on the WP
     // jQuery instance — cf. fix in commit 81e0af2).

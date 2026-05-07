@@ -248,4 +248,70 @@ nav .lmt-logo {
  * markup classes and JS animateMenuItems()/resetMenuItems()
  * helpers were removed alongside. */
 
+/* ========== Sticky header on home (after section.about) ==========
+ *
+ * On the home template (body.home), js/sticky-header.js watches
+ * the <section class="about"> via IntersectionObserver. When the
+ * section exits the viewport through the top, the body gets the
+ * `lmt-sticky-header-active` class and the <header> wrapping the
+ * navbar becomes fixed at the top with a slide-down + fade-in
+ * entry animation. When the user scrolls back up and the about
+ * section re-enters the viewport, the class is removed and the
+ * header returns to its natural place in the flow.
+ *
+ * Scope is gated 3-fold so the rule is inert everywhere else:
+ *   1. body.home guards the CSS selector
+ *   2. js/sticky-header.js early-returns if !body.home
+ *   3. functions.php only enqueues the JS on home pages
+ *
+ * Sidebar push compatibility (Phase Recette II L4): on desktop
+ * ≥992px when the side panel is open (body.lmt-sidebar-open), the
+ * fixed sticky header is shifted right by 280px to mirror the
+ * #footer-player behavior.
+ */
+/* Non-sticky home navbar background (#e74c3c) is set in
+ * css/list-of-mixtapes.css with !important and the
+ * :not(.lmt-sticky-header-active) guard, so it auto-deactivates
+ * when the sticky class is on body. In sticky mode, the global
+ * `nav { background: #333 }` (top of this file) takes over for
+ * the inner <nav>, and the rule below sets #333 on the <header>
+ * wrapper — both align so the sticky bar reads as a uniform
+ * #333 strip. */
+body.home.lmt-sticky-header-active header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    animation: lmt-sticky-slide-in 0.3s ease forwards;
+    transition: left 0.2s ease;
+}
+
+@keyframes lmt-sticky-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 992px) {
+    body.home.lmt-sticky-header-active.lmt-sidebar-open header {
+        left: 280px;
+    }
+}
+
+/* Respect prefers-reduced-motion: skip the slide-down animation,
+ * the header just appears in its final position. */
+@media (prefers-reduced-motion: reduce) {
+    body.home.lmt-sticky-header-active header {
+        animation: none;
+    }
+}
+
 /* ========== [END navbar.css] ========== */
