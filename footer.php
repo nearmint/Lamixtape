@@ -1,7 +1,6 @@
     </main>
-    <!-- Container for player iframes (PJAX phase 3.1: moved from
-         single.php so playback survives <main> swaps). -->
-    <div id="player-container"></div>
+    <!-- Player iframe containers (PJAX phase 3.1: rendered outside
+         <main> so player state survives PJAX swaps). -->
     <audio id="audioPlayer" class="hidden"></audio>
     <div class="aspect-video relative hidden">
         <div id="youtubePlayer" class="player-frame"></div>
