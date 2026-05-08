@@ -33,9 +33,6 @@ jQuery(function ($) {
             window.addEventListener('resize', updateSearchPlaceholder);
         }
 
-        var likedKey = lmtData.post_id ? 'lmt_liked_' + lmtData.post_id : null;
-        var $likeBtn = $('.like__btn');
-
         // Apply the persistent "already liked" state to a like button. The
         // markup (🔥 + count span) is preserved untouched — only attributes
         // and CSS class change. The "Already liked" hint surfaces via the
@@ -49,69 +46,105 @@ jQuery(function ($) {
                 .addClass('like__btn--already-liked');
         }
 
-        // Hydrate persistent liked state on page load. The animation does
-        // NOT play on hydrate — only on a fresh user click.
-        if (likedKey && $likeBtn.length) {
+        // PJAX phase 3.3 — read the current single's post_id from the
+        // body class (`postid-<N>`, set by WP body_class()). lmt-pjax.js
+        // updates document.body.className on swap, so this stays fresh
+        // across navigations — unlike lmtData.post_id which is frozen
+        // at initial wp_localize_script time.
+        function getCurrentPostId() {
+            var match = document.body.className.match(/postid-(\d+)/);
+            return match ? parseInt(match[1], 10) : null;
+        }
+
+        // Hydrate the persistent liked state from localStorage onto the
+        // currently-rendered .like__btn. Called on initial load and on
+        // every lmt:pjax:swapped event so the right state shows for the
+        // current mixtape. PHP always renders a fresh button (likes are
+        // client-side state only), so we just opt-in to "already liked"
+        // when localStorage says so.
+        function applyLikedStateFromStorage() {
+            var $btn = $('.like__btn');
+            if (!$btn.length) return;
+            var postId = getCurrentPostId();
+            if (!postId) return;
+            var likedKey = 'lmt_liked_' + postId;
             try {
                 if (localStorage.getItem(likedKey) === '1') {
-                    applyAlreadyLikedState($likeBtn);
+                    applyAlreadyLikedState($btn);
                 }
             } catch (e) { /* localStorage unavailable (private mode, full quota) — silent fail */ }
         }
 
-        $likeBtn.on('click', function() {
-            var $btn = $(this);
-            $.ajax({
-                url: lmtData.site_url + '/wp-json/social/v2/likes/' + lmtData.post_id,
-                type: 'POST',
-                beforeSend: function (xhr) {
-                    if (lmtData.nonce) {
-                        xhr.setRequestHeader('X-WP-Nonce', lmtData.nonce);
-                    }
-                },
-                success: function (response) {
-                    $btn.attr('disabled', true).addClass('tada');
-                    // Server returns the new count; trust it over optimistic UI.
-                    $('.like__number').html(response);
-                    // Persist the liked state across sessions (F-7).
-                    if (likedKey) {
+        // Hydrate on initial load.
+        applyLikedStateFromStorage();
+
+        // Click handler — delegated on document with namespace
+        // 'click.lmt-like' so it survives PJAX swaps automatically. The
+        // post_id is read at click time (not at DOMContentLoaded), so
+        // the AJAX URL targets the currently-displayed mixtape even
+        // after navigating between different mixtapes via PJAX.
+        $(document)
+            .off('click.lmt-like')
+            .on('click.lmt-like', '.like__btn', function () {
+                var $btn = $(this);
+                var postId = getCurrentPostId();
+                if (!postId) return;
+                var likedKey = 'lmt_liked_' + postId;
+                $.ajax({
+                    url: lmtData.site_url + '/wp-json/social/v2/likes/' + postId,
+                    type: 'POST',
+                    beforeSend: function (xhr) {
+                        if (lmtData.nonce) {
+                            xhr.setRequestHeader('X-WP-Nonce', lmtData.nonce);
+                        }
+                    },
+                    success: function (response) {
+                        $btn.attr('disabled', true).addClass('tada');
+                        // Server returns the new count; trust it over optimistic UI.
+                        $('.like__number').html(response);
+                        // Persist the liked state across sessions (F-7).
                         try {
                             localStorage.setItem(likedKey, '1');
                         } catch (e) { /* silent fail */ }
-                    }
-                    // Phase Tracking v1 — fire like_click after server-confirmed
-                    // success. Single-click design (button disables post-success +
-                    // 429 rate-limit on subsequent clicks), so each AJAX success
-                    // is a legitimate toggle ON. No toggle OFF case to handle.
-                    if (typeof window.lmtTrack === 'function') {
-                        window.lmtTrack('like_click', {
-                            mixtape_slug: window.lmtGetMixtapeSlug()
-                        });
-                    }
-                    // Let the tada animation play before transitioning to
-                    // the persistent "Already liked" greyed-out state.
-                    // Markup (🔥 + count) preserved; only class + title +
-                    // disabled change.
-                    setTimeout(function () {
-                        applyAlreadyLikedState($btn);
-                    }, LMT_TADA_DURATION_MS);
-                },
-                error: function (xhr) {
-                    if (xhr.status === 429) {
-                        // Already liked from this IP within the hour. Apply
-                        // the persistent state immediately (no animation —
-                        // server didn't accept the click). Markup unchanged.
-                        applyAlreadyLikedState($btn);
-                        if (likedKey) {
+                        // Phase Tracking v1 — fire like_click after server-confirmed
+                        // success. Single-click design (button disables post-success +
+                        // 429 rate-limit on subsequent clicks), so each AJAX success
+                        // is a legitimate toggle ON. No toggle OFF case to handle.
+                        if (typeof window.lmtTrack === 'function') {
+                            window.lmtTrack('like_click', {
+                                mixtape_slug: window.lmtGetMixtapeSlug()
+                            });
+                        }
+                        // Let the tada animation play before transitioning to
+                        // the persistent "Already liked" greyed-out state.
+                        // Markup (🔥 + count) preserved; only class + title +
+                        // disabled change.
+                        setTimeout(function () {
+                            applyAlreadyLikedState($btn);
+                        }, LMT_TADA_DURATION_MS);
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 429) {
+                            // Already liked from this IP within the hour. Apply
+                            // the persistent state immediately (no animation —
+                            // server didn't accept the click). Markup unchanged.
+                            applyAlreadyLikedState($btn);
                             try {
                                 localStorage.setItem(likedKey, '1');
                             } catch (e) { /* silent fail */ }
+                        } else {
+                            console.log('like failed:', xhr.status);
                         }
-                    } else {
-                        console.log('like failed:', xhr.status);
                     }
-                }
+                });
             });
+
+        // Hook PJAX swap — re-apply liked UI state on the new mixtape's
+        // .like__btn. The click handler is already delegated on document
+        // so no re-bind is needed.
+        document.addEventListener('lmt:pjax:swapped', function () {
+            if (!document.body.classList.contains('single')) return;
+            applyLikedStateFromStorage();
         });
     });
 
