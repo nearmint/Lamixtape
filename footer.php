@@ -1,4 +1,11 @@
     </main>
+    <!-- Container for player iframes (PJAX phase 3.1: moved from
+         single.php so playback survives <main> swaps). -->
+    <div id="player-container"></div>
+    <audio id="audioPlayer" class="hidden"></audio>
+    <div class="aspect-video relative hidden">
+        <div id="youtubePlayer" class="player-frame"></div>
+    </div>
     <?php include "player.php"; ?>
     <!-- Donation Dialog -->
     <dialog id="donatemodal" class="lmt-dialog" aria-labelledby="donatemodal-title">

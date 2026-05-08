@@ -69,12 +69,6 @@ $fg_color = lmt_contrast_text_color( $bg_color );
                             ) ); ?></button>
                         <?php endif; ?>
                     </div>
-                    <!-- Container for player iframes -->
-                    <div id="player-container"></div>
-                    <audio id="audioPlayer" class="hidden"></audio>
-                    <div class="aspect-video relative hidden">
-                        <div id="youtubePlayer" class="player-frame"></div>
-                    </div>
                 </div>
             </div>
         </div>
