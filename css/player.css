@@ -208,7 +208,7 @@ a#discogs-search:focus-visible {
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: #ff6600;
+    background: white;
     cursor: pointer;
     border: none;
 }
@@ -230,7 +230,7 @@ a#discogs-search:focus-visible {
     height: 16px;
     width: 16px;
     border-radius: 50%;
-    background: #ff6600;
+    background: white;
     cursor: pointer;
     margin-top: 0;
 }
