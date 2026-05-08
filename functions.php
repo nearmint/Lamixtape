@@ -153,21 +153,21 @@ function lmt_enqueue_assets() {
         'nonce'        => wp_create_nonce( 'wp_rest' ),
     ) );
 
-    // Sticky header JS — home only. Watches <section class="about">
-    // via IntersectionObserver and toggles `lmt-sticky-header-active`
-    // on <body> so the <header> sticks to the top of the viewport
-    // once the user scrolls past the about section. Triple-gated
-    // (PHP enqueue + JS body.home guard + CSS body.home selector)
-    // for non-regression on every other template.
-    if ( is_front_page() || is_home() || is_page_template( 'index.php' ) ) {
-        wp_enqueue_script(
-            'lmt-sticky-header',
-            $theme_uri . '/js/sticky-header.js',
-            array(),
-            lmt_asset_ver( 'js/sticky-header.js' ),
-            true
-        );
-    }
+    // Sticky header JS — loaded site-wide for PJAX cross-page init
+    // (Phase 3.5). Watches <section class="about"> via
+    // IntersectionObserver and toggles `lmt-sticky-header-active` on
+    // <body> so the <header> sticks once the user scrolls past the
+    // about section. JS body.home guard inside initStickyHeader() +
+    // CSS body.home selector (navbar.css) still scope the behavior
+    // to the home template; the PHP enqueue gate was dropped so the
+    // function is available after PJAX nav from any other page.
+    wp_enqueue_script(
+        'lmt-sticky-header',
+        $theme_uri . '/js/sticky-header.js',
+        array(),
+        lmt_asset_ver( 'js/sticky-header.js' ),
+        true
+    );
 
     // Player JS — loaded site-wide for PJAX cross-page playback
     // (Phase 3.2). On non-single pages, the script runs but its
