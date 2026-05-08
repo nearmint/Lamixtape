@@ -46,7 +46,10 @@ jQuery(function ($) {
   var $durationDiv = $("#duration");
   var $playPauseBtn = $("#play-pause");
   var $titleDiv = $("#title");
+  var $titleMobile = $("#title-mobile");
   var $discogsSearchBtn = $("#discogs-search");
+  var $discogsSearchMobile = $("#discogs-search-mobile");
+  var $playerCountdown = $("#player-countdown");
   var $debugDiv = $("#debug");
   var $playlist = $("#playlist");
   var $audioPlayer = $("#audioPlayer");
@@ -271,6 +274,51 @@ if (event.data === YT.PlayerState.ENDED) {
     return (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
   }
 
+  // Mobile player redesign — marquee scroll only when title overflows
+  // its wrap. Otherwise the CSS ellipsis fallback applies. Used on both
+  // the desktop #title and the mobile #title-mobile (cross-device
+  // coherence: short titles stay still, long titles scroll). Called
+  // from preparePlayer() with a setTimeout so the DOM has updated.
+  function detectAndApplyMarquee($titleElement) {
+    if (!$titleElement.length) return;
+    var el = $titleElement[0];
+    if (el.scrollWidth > el.clientWidth) {
+      $titleElement.addClass('lmt-player-title-scroll');
+    } else {
+      $titleElement.removeClass('lmt-player-title-scroll');
+    }
+  }
+
+  // Typographic MINUS SIGN (U+2212) — wider and properly spaced
+  // versus the ASCII hyphen-minus. Used in the countdown prefix to
+  // avoid the "-5:53" cramped look on mobile. Also used for the
+  // initial value reset in preparePlayer().
+  var MINUS_SIGN = '−';
+
+  // Mobile player redesign — countdown −X:XX. Updated by
+  // updateTimeDisplay() (already ticking every 500ms via startTimer
+  // for both YouTube and MP3 sources). Falls back to −0:00 when
+  // duration is unknown (loadedmetadata not yet fired) or invalid.
+  function updateCountdown() {
+    var remaining = 0;
+    if (currentType === 'youtube' && youtubePlayer && typeof youtubePlayer.getCurrentTime === 'function' && typeof youtubePlayer.getDuration === 'function') {
+      var ytCur = youtubePlayer.getCurrentTime();
+      var ytDur = youtubePlayer.getDuration();
+      if (ytDur > 0 && !isNaN(ytDur) && ytDur !== Infinity) {
+        remaining = Math.max(0, ytDur - ytCur);
+      }
+    } else if (currentType === 'mp3' && player) {
+      var mpDur = player.duration;
+      var mpCur = player.currentTime;
+      if (mpDur > 0 && !isNaN(mpDur) && mpDur !== Infinity) {
+        remaining = Math.max(0, mpDur - mpCur);
+      }
+    }
+    var minutes = Math.floor(remaining / 60);
+    var seconds = Math.floor(remaining % 60);
+    $playerCountdown.text(MINUS_SIGN + minutes + ':' + (seconds < 10 ? '0' : '') + seconds);
+  }
+
   // Phase 5 A11Y-011: build a screen-reader-friendly seekbar value
   // text. Without this, AT announces "Seek, 0 of 100" — useless. With
   // it, AT announces "Track progress, 01:23 of 03:45 — <track title>".
@@ -303,6 +351,7 @@ if (event.data === YT.PlayerState.ENDED) {
       $seekbar.val(cur);
       updateSeekbarAria(cur, dur);
     }
+    updateCountdown();
   }
 
   function playNextSong() {
@@ -338,7 +387,33 @@ if (event.data === YT.PlayerState.ENDED) {
     trackUrl = $item.find('a').data('src');
     trackTitle = $item.find('a').text();
     $titleDiv.text(trackTitle);
-    $discogsSearchBtn.show();
+    $titleMobile.text(trackTitle);
+
+    // Mobile player redesign — update Discogs search URL on both
+    // the desktop link and the mobile link. Native <a target="_blank">
+    // handles the click; no JS handler needed. Always constructible
+    // since the search URL is built from the title — no "missing link"
+    // case (cf. spec : "Toujours un lien Discogs").
+    var trimmedTitle = (trackTitle || '').trim().replace(/\s+/g, ' ');
+    var discogsSearchUrl = trimmedTitle
+      ? 'https://www.discogs.com/search/?q=' + encodeURIComponent(trimmedTitle) + '&type=all'
+      : 'https://www.discogs.com/search/';
+    $discogsSearchBtn.attr('href', discogsSearchUrl);
+    $discogsSearchMobile.attr('href', discogsSearchUrl);
+
+    // Mobile player redesign — reset countdown to −0:00 (typographic
+    // MINUS SIGN U+2212) until loadedmetadata fires and
+    // updateTimeDisplay() recomputes it.
+    $playerCountdown.text(MINUS_SIGN + '0:00');
+
+    // Mobile player redesign — overflow-detection marquee. setTimeout
+    // 50ms lets the layout settle (the title text was just inserted
+    // and scrollWidth/clientWidth would be stale on the same tick).
+    setTimeout(function () {
+      detectAndApplyMarquee($titleDiv);
+      detectAndApplyMarquee($titleMobile);
+    }, 50);
+
     // Phase Tracking v1 — reset play_start flag for the new track.
     playStartTrackedForCurrentTrack = false;
     if (!trackUrl) {
@@ -470,14 +545,11 @@ if (event.data === YT.PlayerState.ENDED) {
     isSeeking = false;
   });
 
-  // Discogs Search Button event
-  $discogsSearchBtn.on("click", function (e) {
-    e.preventDefault();
-    var searchQuery = trackTitle.trim().replace(/\s+/g, ' ');
-    var encodedQuery = encodeURIComponent(searchQuery);
-    var discogsUrl = `https://www.discogs.com/search/?q=${encodedQuery}&type=all`;
-    window.open(discogsUrl, '_blank');
-  });
+  // Discogs link click handler removed — the <button> + window.open()
+  // pair was migrated to <a target="_blank" rel="noopener" href="..."
+  // aria-label="Discogs link"> for better A11y, middle-click support,
+  // and standard navigation. The href is updated in preparePlayer()
+  // for both #discogs-search (desktop) and #discogs-search-mobile.
 
   // Start with the first track in the playlist
   preparePlayer($(playlistItems[0]));

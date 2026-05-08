@@ -74,7 +74,12 @@
     .lmt-autoplay-toast {
         right: 0.5rem;
         left: 0.5rem;
-        bottom: calc(110px + 0.5rem);
+        /* Mobile player redesign — 80px height + 12px outer bottom
+         * margin = 92px occupied. 0.5rem (8px) buffer above the
+         * player's top edge keeps the toast clear of the seekbar
+         * focus ring. Desktop value above (calc(110px + 1rem))
+         * stays as-is — desktop player layout is unchanged. */
+        bottom: calc(80px + 12px + 0.5rem);
     }
     .lmt-autoplay-toast-content {
         justify-content: space-between;

@@ -6,13 +6,6 @@
     width: 100%;
 }
 
-@media (max-width:768px) {
-    .footer-player-container {
-        margin-left: 10px !important;
-        margin-right: 10px !important;
-    }
-}
-
 .footer-player-container {
     background-color: #333;
     border: solid 2px #fff;
@@ -20,22 +13,154 @@
     height: 70px;
 }
 
-#title {
+/* Marquee scroll — was always-on (animation applied unconditionally
+ * to #title). Now conditional on overflow detection: js/player.js
+ * detectAndApplyMarquee() adds .lmt-player-title-scroll only when
+ * scrollWidth > clientWidth. Short titles fall back to the CSS
+ * ellipsis below; long titles scroll. Applied to both the desktop
+ * #title and the mobile .lmt-player-title (cross-device coherence). */
+#title,
+.lmt-player-title {
+    display: block; /* span#title-mobile needs block to honor width:100% + meaningful scrollWidth/clientWidth */
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
     box-sizing: border-box;
-    /* Animate text scrolling using text-indent */
+    text-overflow: ellipsis;
+}
+
+#title.lmt-player-title-scroll,
+.lmt-player-title.lmt-player-title-scroll {
     animation: marquee 10s linear infinite;
+    text-overflow: clip;
 }
 
 .btn-discogs {
     font-size: 12px;
 }
 
+/* #discogs-search migrated from <button> to <a> — preserve the legacy
+ * desktop visual. The Tailwind `border border-white` utilities supply
+ * a 4-sided 1px white border. We must override two global <a> rules
+ * from css/general.css that would otherwise alter the look:
+ *   1. Default <a> underline (text-decoration).
+ *   2. `a:hover { border-bottom: solid 2px CurrentColor; padding-bottom:
+ *      1px }` — this would replace the Tailwind 1px bottom border with
+ *      a 2px one and shift the button vertically by 1px.
+ * The targeted #id selector wins specificity over the unlayered global
+ * rules cleanly without !important. */
+a#discogs-search {
+    text-decoration: none;
+}
+a#discogs-search:hover,
+a#discogs-search:focus,
+a#discogs-search:focus-visible {
+    text-decoration: none;
+    border-bottom: solid 1px #fff;
+    padding-bottom: 0.25rem;
+}
+
 @keyframes marquee {
     0%   { text-indent: 100%; }
     100% { text-indent: -100%; }
+}
+
+/* prefers-reduced-motion override — the global rule in
+ * css/general.css ('animation-duration: 0.01ms !important' +
+ * 'animation-iteration-count: 1 !important') would collapse the
+ * marquee instantly and freeze text-indent at -100% (end keyframe),
+ * leaving the title visually empty. Disable the animation entirely
+ * via animation-name and restore the ellipsis fallback. */
+@media (prefers-reduced-motion: reduce) {
+    #title.lmt-player-title-scroll,
+    .lmt-player-title.lmt-player-title-scroll {
+        animation-name: none !important;
+        text-indent: 0 !important;
+        text-overflow: ellipsis !important;
+    }
+}
+
+/* ========== Mobile player redesign (≤768px) ==========
+ *
+ * Genius-inspired compact layout: 80px tall, 12px outer margin
+ * (left/right/bottom), 2-line internal layout.
+ *   Line 1 : Discogs logo (16px) + track title (marquee-on-overflow)
+ *   Line 2 : Play/Pause + progress bar + countdown -X:XX
+ *
+ * The outer .container.mx-auto.px-4 wrapper has its horizontal
+ * padding overridden to 12px so the visual margin matches the spec
+ * exactly (without compounding with the 1rem px-4 default). The
+ * .footer-player-container drops its 20px margin-bottom and the
+ * legacy 10px lateral margins (both replaced by the .container
+ * padding above), and switches to flex-direction:column for the
+ * 2-line layout.
+ *
+ * Desktop ≥769px keeps the legacy 3-cols layout intact (col 1 thumb
+ * + title, col 2 controls, col 3 Discogs link).
+ *
+ * Companion patch in css/autoplay.css recalibrates the autoplay
+ * toast bottom for the new mobile player height (80px + 12px margin
+ * = 92px occupied).
+ */
+@media (max-width: 768px) {
+    #footer-player > .container {
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-bottom: 12px;
+        max-width: none;
+    }
+    .footer-player-container {
+        margin: 0;
+        /* height: auto so the column-flex container expands to fit
+         * line 1 (Discogs+title) + gap + line 2 (controls) + paddings.
+         * A fixed height was clipping line 1 due to overflow:hidden
+         * inherited via flex-wrap behavior. Practical rendered height
+         * ≈ 80px. */
+        height: auto;
+        padding: 10px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+    .lmt-player-info-mobile {
+        overflow: hidden;
+    }
+    .lmt-player-info-mobile .lmt-player-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    /* Mobile Discogs link — logo + "Discogs" text label inside a
+     * single <a> click target. Uses the existing .no--border class
+     * to defeat the global a-default underline + a:hover
+     * border-bottom shift. */
+    .lmt-player-discogs-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        color: #fff;
+    }
+    .lmt-player-discogs-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1;
+    }
+    .footer-player-container > .lmt-player-controls {
+        padding-left: 0;
+        padding-right: 0;
+        flex: 1;
+        gap: 12px;
+    }
+    .footer-player-container > .lmt-player-controls #play-pause {
+        margin-right: 0;
+    }
+    .lmt-player-countdown {
+        font-size: 0.875rem;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.9;
+        flex-shrink: 0;
+    }
 }
 
 #play-pause {
