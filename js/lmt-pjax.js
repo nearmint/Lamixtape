@@ -3,6 +3,70 @@
 
     var CONTAINER_SELECTOR = 'main';
 
+    // Phase 4.1 — whitelist of <head> tags whose content/href is
+    // page-specific and must be synced after a PJAX swap. Tags
+    // outside this list (charset, viewport, theme-color, preload,
+    // preconnect, dns-prefetch, icons, RSS feed, stylesheets) are
+    // page-stable and intentionally NOT touched. Stylesheets in
+    // particular are managed by WP enqueue dependencies — touching
+    // them in PJAX would risk FOUC and broken script_loader chain.
+    //
+    // Source : pre-flight curl Local on home + single, output by
+    // Rank Math (RANK_MATH_VERSION active in prod). The fallback
+    // in inc/seo.php auto-disables when Rank Math is loaded.
+    var META_SELECTORS = [
+        // A. Description / canonical / robots (3)
+        'meta[name="description"]',
+        'meta[name="robots"]',
+        'link[rel="canonical"]',
+        // B. Open Graph (11)
+        'meta[property="og:type"]',
+        'meta[property="og:title"]',
+        'meta[property="og:description"]',
+        'meta[property="og:url"]',
+        'meta[property="og:updated_time"]',
+        'meta[property="og:image"]',
+        'meta[property="og:image:secure_url"]',
+        'meta[property="og:image:width"]',
+        'meta[property="og:image:height"]',
+        'meta[property="og:image:alt"]',
+        'meta[property="og:image:type"]',
+        // C. Twitter Cards (6)
+        'meta[name="twitter:card"]',
+        'meta[name="twitter:title"]',
+        'meta[name="twitter:description"]',
+        'meta[name="twitter:image"]',
+        'meta[name="twitter:label2"]',
+        'meta[name="twitter:data2"]',
+        // D. Article-specific (2) — appended on home → single,
+        // removed on single → home via the add/remove branches.
+        'meta[property="article:publisher"]',
+        'meta[property="article:section"]'
+    ];
+
+    function updateMetaTags(newDoc) {
+        META_SELECTORS.forEach(function(selector) {
+            var newEl = newDoc.querySelector(selector);
+            var currentEl = document.querySelector(selector);
+
+            if (newEl && currentEl) {
+                // Both exist : sync content (meta) or href (link).
+                if (currentEl.tagName === 'LINK') {
+                    currentEl.setAttribute('href', newEl.getAttribute('href') || '');
+                } else {
+                    currentEl.setAttribute('content', newEl.getAttribute('content') || '');
+                }
+            } else if (newEl && !currentEl) {
+                // New page has tag, current doesn't : clone-append.
+                document.head.appendChild(newEl.cloneNode(true));
+            } else if (!newEl && currentEl) {
+                // Current has tag, new doesn't : remove.
+                currentEl.parentNode.removeChild(currentEl);
+            }
+            // Both absent : no-op.
+        });
+    }
+
     // Initialize history.state on first load so popstate (back/forward)
     // has a state object to read after a hard reload. Without this, the
     // first browser-back from a PJAX-navigated page would receive
@@ -121,6 +185,7 @@
             currentMain.innerHTML = newMain.innerHTML;
             document.title = newDoc.title;
             document.body.className = newDoc.body.className;
+            updateMetaTags(newDoc);
 
             // Forward nav (click) : push a new history entry and scroll
             // to top. Popstate (back/forward) : the browser already
