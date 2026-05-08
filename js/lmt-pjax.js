@@ -44,6 +44,38 @@
         'meta[property="article:section"]'
     ];
 
+    // Phase 4.2 — whitelist of runtime body classes (set
+    // dynamically by JS during the session) that must be preserved
+    // when replacing body.className with newDoc.body.className.
+    // Minimal/defensive approach : only preserve classes whose loss
+    // would cause a visible bug.
+    //
+    // - lmt-pjax-loading : present at swap moment (loading bar
+    //   visible). The .finally clause in performFetchAndSwap removes
+    //   it ~1ms later. Without preservation, the bar would disappear
+    //   prematurely between the swap and the .finally tick.
+    //
+    // Classes NOT preserved (handled by their own modules) :
+    //   - lmt-sticky-header-active : initStickyHeader() resets the
+    //     class and re-attaches the IntersectionObserver on each
+    //     lmt:pjax:swapped (Phase 3.5). Preserving would risk a
+    //     stale sticky on non-home pages.
+    //   - lmt-sidebar-open : closeMenu() fires before the PJAX
+    //     swap via the jQuery menu-internal handler (main.js).
+    var RUNTIME_CLASSES = [
+        'lmt-pjax-loading'
+    ];
+
+    function updateBodyClasses(newDoc) {
+        var preserved = RUNTIME_CLASSES.filter(function(cls) {
+            return document.body.classList.contains(cls);
+        });
+        document.body.className = newDoc.body.className;
+        preserved.forEach(function(cls) {
+            document.body.classList.add(cls);
+        });
+    }
+
     function updateMetaTags(newDoc) {
         META_SELECTORS.forEach(function(selector) {
             var newEl = newDoc.querySelector(selector);
@@ -184,7 +216,7 @@
 
             currentMain.innerHTML = newMain.innerHTML;
             document.title = newDoc.title;
-            document.body.className = newDoc.body.className;
+            updateBodyClasses(newDoc);
             updateMetaTags(newDoc);
 
             // Forward nav (click) : push a new history entry and scroll
