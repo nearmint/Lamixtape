@@ -203,26 +203,25 @@ function lmt_enqueue_assets() {
     // (mobile menu) and content templates (single, index).
     wp_enqueue_script( 'lmt-dialogs', $theme_uri . '/js/dialogs.js', array(), null, true );
 
-    // Infinite scroll — home, single (previous mixtapes), category.
-    // The script early-returns if no #lmt-infinite-sentinel is present,
-    // so the conditional is mainly a network-payload optimisation.
+    // Infinite scroll — loaded site-wide for PJAX cross-page init
+    // (Phase 3.4). The script early-returns at runtime if no
+    // #lmt-infinite-sentinel is present in the DOM (= page without
+    // listing : /explore, /search, /guests, /404, page templates).
     // Depends on lmt-main so the lmtData global (nonce + site_url) is
     // available when the script runs.
-    if ( is_front_page() || is_home() || is_page_template( 'index.php' ) || is_singular( 'post' ) || is_category() ) {
-        wp_enqueue_style(
-            'lmt-infinite-scroll',
-            $theme_uri . '/css/infinite-scroll.css',
-            array( 'lmt-tailwind' ),
-            lmt_asset_ver( 'css/infinite-scroll.css' )
-        );
-        wp_enqueue_script(
-            'lmt-infinite-scroll',
-            $theme_uri . '/js/infinite-scroll.js',
-            array( 'jquery', 'lmt-main' ),
-            null,
-            true
-        );
-    }
+    wp_enqueue_style(
+        'lmt-infinite-scroll',
+        $theme_uri . '/css/infinite-scroll.css',
+        array( 'lmt-tailwind' ),
+        lmt_asset_ver( 'css/infinite-scroll.css' )
+    );
+    wp_enqueue_script(
+        'lmt-infinite-scroll',
+        $theme_uri . '/js/infinite-scroll.js',
+        array( 'jquery', 'lmt-main' ),
+        null,
+        true
+    );
 
     // PJAX core — Phase 1/7. Intercepts internal link clicks and
     // swaps <main> content via fetch + DOMParser to preserve global
