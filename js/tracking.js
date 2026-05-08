@@ -92,4 +92,39 @@
             window.lmtTrack( 'donate_paypal_click' );
         }
     } );
+
+    /**
+     * Phase 5 — Manual Umami pageview after a PJAX swap.
+     *
+     * Umami auto-track only catches native navigations (full page
+     * loads). PJAX swaps don't trigger a load, so analytics would
+     * miss every navigation after the initial hit. This listener
+     * bridges the gap by calling umami.track() (no args) on every
+     * lmt:pjax:swapped event — which is dispatched by lmt-pjax.js
+     * for both forward clicks AND popstate (browser back/forward),
+     * so all PJAX-driven URL changes are reported.
+     *
+     * umami.track() with no arguments emits a default pageview using
+     * the current window.location.pathname, document.title and
+     * document.referrer. Those values are already up-to-date by the
+     * time we run : performFetchAndSwap performs history.pushState +
+     * document.title + meta tags update BEFORE dispatching
+     * lmt:pjax:swapped, so Umami sees the new URL.
+     *
+     * No double-pageview risk on hard reload : the listener only
+     * fires on lmt:pjax:swapped, which never dispatches at initial
+     * load (only on click/popstate-driven swaps).
+     *
+     * Silent fail (3 conditions) mirrors the lmtTrack() pattern so
+     * adblockers / Umami-down / API drift never break the UX.
+     */
+    document.addEventListener( 'lmt:pjax:swapped', function () {
+        if ( typeof umami === 'undefined' ) { return; }
+        if ( typeof umami.track !== 'function' ) { return; }
+        try {
+            umami.track();
+        } catch ( e ) {
+            // Silent fail — never break UX for tracking.
+        }
+    } );
 }() );
