@@ -82,6 +82,23 @@
     // superseded by a more recent click.
     var currentAbortController = null;
 
+    // Phase 6.2 — close any open native <dialog> before navigating.
+    // Prevents the modal from lingering on the swapped page (UX
+    // confusion) and covers the popstate-with-modal edge case.
+    // Targets : #donatemodal, #contactmodal (footer.php). Logic
+    // inlined here rather than depending on closeAllDialogs() from
+    // dialogs.js so lmt-pjax stays autonomous.
+    //
+    // Mobile menu (#mobile-menu-overlay) is NOT a native <dialog>
+    // and uses its own closeMenu() in main.js — unaffected by this
+    // helper. PhotoSwipe / lightboxes : not used in the theme
+    // (confirmed via grep).
+    function closeOpenModals() {
+        document.querySelectorAll('dialog[open]').forEach(function(dlg) {
+            try { dlg.close(); } catch (e) {}
+        });
+    }
+
     function updateBodyClasses(newDoc) {
         var preserved = RUNTIME_CLASSES.filter(function(cls) {
             return document.body.classList.contains(cls);
@@ -210,6 +227,10 @@
         }
         currentAbortController = new AbortController();
         var thisController = currentAbortController;
+
+        // Phase 6.2 — close open dialogs immediately so the user
+        // sees the modal disappear without waiting for the fetch.
+        closeOpenModals();
 
         document.body.classList.add('lmt-pjax-loading');
 
