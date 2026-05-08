@@ -176,26 +176,29 @@ function lmt_enqueue_assets() {
     // lives on the WP jQuery instance — cf. fix in commit 81e0af2).
     wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
 
-    // Auto-play next thematic mixtape — single only for now
-    // (re-init across PJAX deferred to Phase 3.6). Toast countdown
-    // emitted by js/autoplay.js when js/player.js detects the last
-    // track ended/errored. Vanilla JS, no jQuery dep. Loaded after
-    // lmt-tracking so window.lmtTrack is available.
-    if ( is_singular( 'post' ) ) {
-        wp_enqueue_script(
-            'lmt-autoplay',
-            $theme_uri . '/js/autoplay.js',
-            array( 'lmt-tracking' ),
-            lmt_asset_ver( 'js/autoplay.js' ),
-            true
-        );
-        wp_enqueue_style(
-            'lmt-autoplay',
-            $theme_uri . '/css/autoplay.css',
-            array( 'lmt-tailwind' ),
-            lmt_asset_ver( 'css/autoplay.css' )
-        );
-    }
+    // Auto-play next thematic mixtape — loaded site-wide for PJAX
+    // cross-page playback (Phase 3.6). When user starts mixtape A
+    // then PJAX-navigates to home, A continues playing; when its
+    // last track ends, the autoplay toast must appear wherever the
+    // user is (= on home, or any other page). On non-single pages
+    // js/player.js never calls window.lmtAutoplayInit() so the JS is
+    // a no-op. Toast countdown emitted by js/autoplay.js when
+    // js/player.js detects the last track ended/errored. Vanilla
+    // JS, no jQuery dep. Loaded after lmt-tracking so
+    // window.lmtTrack is available.
+    wp_enqueue_script(
+        'lmt-autoplay',
+        $theme_uri . '/js/autoplay.js',
+        array( 'lmt-tracking' ),
+        lmt_asset_ver( 'js/autoplay.js' ),
+        true
+    );
+    wp_enqueue_style(
+        'lmt-autoplay',
+        $theme_uri . '/css/autoplay.css',
+        array( 'lmt-tailwind' ),
+        lmt_asset_ver( 'css/autoplay.css' )
+    );
 
     // Dialogs JS — Phase 4 Axe C. Vanilla (no jQuery dep), handles
     // open/close of #donatemodal and #contactmodal native <dialog>s.

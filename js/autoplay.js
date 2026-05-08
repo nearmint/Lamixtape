@@ -20,8 +20,14 @@
  * come from js/tracking.js loaded in <head>. They silent-fail if
  * Umami is blocked.
  *
- * Current mixtape ID source : window.lmtData.post_id (exposed by
- * wp_localize_script on lmt-main, cf. functions.php).
+ * Current mixtape ID source (Phase 3.6) : window.lmtPlayerCurrentId,
+ * exposed by js/player.js. Tracks the post_id of the mixtape loaded
+ * in the player (= the one that will end), independent of which page
+ * is currently displayed in <main>. Falls back to lmtData.post_id
+ * (initial-load only) and body class (defensive). The page-current
+ * value would be wrong during PJAX cross-page playback (e.g. user
+ * starts mixtape A, navigates to home — when A ends, current_id
+ * must be A, not the home page which has no postid).
  */
 (function () {
     'use strict';
@@ -38,11 +44,19 @@
     };
 
     function getCurrentMixtapeId() {
+        // Phase 3.6 — prefer the player-tracked id (= the mixtape
+        // currently loaded in the player, which is the one that
+        // just ended). Stays correct under PJAX cross-page playback.
+        if (window.lmtPlayerCurrentId) {
+            return window.lmtPlayerCurrentId;
+        }
+        // Fallback 1: lmtData.post_id (initial-load value, stale
+        // after PJAX nav but the only canonical pre-3.6 source).
         if (window.lmtData && window.lmtData.post_id) {
             return parseInt(window.lmtData.post_id, 10) || null;
         }
-        // Fallback: parse `postid-X` body class (defensive — in case
-        // lmt-main ever stops localizing post_id).
+        // Fallback 2: parse `postid-X` body class (defensive — only
+        // valid when the displayed page IS the playing mixtape).
         var match = document.body.className.match(/postid-(\d+)/);
         return match ? parseInt(match[1], 10) : null;
     }
@@ -125,6 +139,12 @@
     }
 
     function cancelAutoplay() {
+        // Phase 3.6 — early-return when no autoplay is active. This
+        // makes cancelAutoplay() safe to call unconditionally on the
+        // lmt:pjax:swapped hook (most navigations happen with no
+        // toast in flight) and avoids spurious autoplay_cancel
+        // tracking events on every PJAX swap.
+        if (!state.active) { return; }
         if (state.cancelled) { return; }
         state.cancelled = true;
 
@@ -148,6 +168,16 @@
                 mixtape_id: getCurrentMixtapeId()
             });
         }
+
+        // Phase 3.6 — reset state so a future autoplay cycle (after
+        // PJAX nav + new mixtape ending) can fire. Pre-existing bug
+        // fix: state.active was never reset to false, so once
+        // cancelled, all subsequent lmtAutoplayInit() calls would
+        // early-return at the re-entrancy guard.
+        state.active = false;
+        state.cancelled = false;
+        state.nextMixtape = null;
+        state.toast = null;
     }
 
     window.lmtAutoplayInit = function () {
@@ -192,4 +222,13 @@
             // Silent fail — never break the page on a fetch error.
         });
     };
+
+    // PJAX phase 3.6 — dismiss the toast when the user navigates
+    // during the countdown. The user has chosen a different
+    // destination, so the parasitic redirect must not fire. Safe to
+    // call unconditionally: cancelAutoplay() early-returns if no
+    // autoplay is active (most swaps).
+    document.addEventListener('lmt:pjax:swapped', function () {
+        cancelAutoplay();
+    });
 })();

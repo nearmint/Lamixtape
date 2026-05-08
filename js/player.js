@@ -64,6 +64,14 @@ jQuery(function ($) {
   // window.location.pathname is updated by lmt-pjax history.pushState.
   window.lmtPlayerCurrentSlug = window.lmtPlayerCurrentSlug || null;
 
+  // PJAX phase 3.6 — companion to lmtPlayerCurrentSlug. Tracks the
+  // post_id of the mixtape currently loaded in the player, used by
+  // js/autoplay.js to query the next-thematic-mixtape REST endpoint
+  // with the ID of the mixtape that JUST ENDED (= playing), not the
+  // page being viewed when it ended. Without this, autoplay queries
+  // would target the wrong mixtape during PJAX cross-page playback.
+  window.lmtPlayerCurrentId = window.lmtPlayerCurrentId || null;
+
   // Phase Tracking v1 — flag to prevent duplicate play_start events.
   // YouTube `PLAYING` state and MediaElement `playing` event both
   // fire on initial play AND on resume after pause. We only want to
@@ -521,6 +529,16 @@ if (event.data === YT.PlayerState.ENDED) {
     playlistItems = $("#playlist li");
   }
 
+  // PJAX phase 3.6 — read the post_id from body class (`postid-X`,
+  // set by WP body_class()). lmt-pjax updates document.body.className
+  // on swap, so this returns the displayed page's post_id at call
+  // time. Used to keep window.lmtPlayerCurrentId in sync with the
+  // mixtape loaded into the player on initial load + Q-C1 + Q-A1.
+  function getPostIdFromBodyClass() {
+    var match = document.body.className.match(/postid-(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  }
+
   function highlightCurrentTrack() {
     playlistItems.find('a').removeClass('playing');
     if (playlistItems.length > currentTrack) {
@@ -543,8 +561,11 @@ if (event.data === YT.PlayerState.ENDED) {
       if (pageSlug !== window.lmtPlayerCurrentSlug) {
         // Q-C1: user clicked a track of a different mixtape →
         // switch the player to it (refresh playlist refs to point
-        // at the new <ul#playlist>).
+        // at the new <ul#playlist>). Phase 3.6: also sync currentId
+        // so autoplay's getCurrentMixtapeId() points to the new
+        // mixtape when its last track ends.
         window.lmtPlayerCurrentSlug = pageSlug;
+        window.lmtPlayerCurrentId = getPostIdFromBodyClass();
         refreshPlaylistRefs();
       }
       currentTrack = clickedIndex;
@@ -606,6 +627,13 @@ if (event.data === YT.PlayerState.ENDED) {
   if (playlistItems.length > 0) {
     preparePlayer($(playlistItems[0]));
     window.lmtPlayerCurrentSlug = window.lmtGetMixtapeSlug();
+    // PJAX phase 3.6 — sync currentId on initial single load. Prefer
+    // wp_localize_script's lmtData.post_id (canonical, set server-side
+    // by get_queried_object_id() at initial render); fall back to body
+    // class only if lmtData.post_id is unavailable.
+    window.lmtPlayerCurrentId = (typeof lmtData !== 'undefined' && lmtData.post_id)
+      ? parseInt(lmtData.post_id, 10) || null
+      : getPostIdFromBodyClass();
 
     // Reveal player slide-up animation. Moved here from main.js
     // post-A2 refactor (Phase 1 PJAX) so the .visible class is
@@ -636,6 +664,9 @@ if (event.data === YT.PlayerState.ENDED) {
     if (window.lmtPlayerCurrentSlug === null) {
       // Q-A1
       window.lmtPlayerCurrentSlug = newSlug;
+      // Phase 3.6 — first arrival on single, sync currentId from
+      // body class (lmt-pjax updates document.body.className on swap).
+      window.lmtPlayerCurrentId = getPostIdFromBodyClass();
       refreshPlaylistRefs();
       currentTrack = 0;
       if (playlistItems.length > 0) {
