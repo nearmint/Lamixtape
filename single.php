@@ -117,5 +117,4 @@ $fg_color = lmt_contrast_text_color( $bg_color );
 </section>
 <footer>
 </footer>
-<?php include "player.php" ?>
 <?php get_footer(); ?>
