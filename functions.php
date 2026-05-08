@@ -169,16 +169,19 @@ function lmt_enqueue_assets() {
         );
     }
 
-    // Player JS — only on single mixtape pages. Depends on jQuery and
-    // wp-mediaelement (the .mediaelementplayer plugin lives on the WP
-    // jQuery instance — cf. fix in commit 81e0af2).
-    if ( is_singular( 'post' ) ) {
-        wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
+    // Player JS — loaded site-wide for PJAX cross-page playback
+    // (Phase 3.2). On non-single pages, the script runs but its
+    // initialisations are no-ops (no #playlist, etc.). Depends on
+    // jQuery and wp-mediaelement (the .mediaelementplayer plugin
+    // lives on the WP jQuery instance — cf. fix in commit 81e0af2).
+    wp_enqueue_script( 'lmt-player', $theme_uri . '/js/player.js', array( 'jquery', 'wp-mediaelement' ), null, true );
 
-        // Auto-play next thematic mixtape — toast countdown emitted
-        // by js/autoplay.js when js/player.js detects the last
-        // track ended/errored. Vanilla JS, no jQuery dep. Loaded
-        // after lmt-tracking so window.lmtTrack is available.
+    // Auto-play next thematic mixtape — single only for now
+    // (re-init across PJAX deferred to Phase 3.6). Toast countdown
+    // emitted by js/autoplay.js when js/player.js detects the last
+    // track ended/errored. Vanilla JS, no jQuery dep. Loaded after
+    // lmt-tracking so window.lmtTrack is available.
+    if ( is_singular( 'post' ) ) {
         wp_enqueue_script(
             'lmt-autoplay',
             $theme_uri . '/js/autoplay.js',

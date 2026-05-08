@@ -56,6 +56,14 @@ jQuery(function ($) {
   var $youtubePlayer = $("#youtubePlayer");
   var currentType = null;
 
+  // PJAX phase 3.2 — global state exposed for cross-page detection.
+  // Tracks the slug of the mixtape currently loaded into the player
+  // (= the one whose track is or was last loaded), independent of
+  // which page is currently displayed in <main>. URL pathname acts
+  // as the canonical slug source via window.lmtGetMixtapeSlug() —
+  // window.location.pathname is updated by lmt-pjax history.pushState.
+  window.lmtPlayerCurrentSlug = window.lmtPlayerCurrentSlug || null;
+
   // Phase Tracking v1 — flag to prevent duplicate play_start events.
   // YouTube `PLAYING` state and MediaElement `playing` event both
   // fire on initial play AND on resume after pause. We only want to
@@ -380,7 +388,8 @@ if (event.data === YT.PlayerState.ENDED) {
     return false;
   }
 
-  function preparePlayer($item) {
+  function preparePlayer($item, options) {
+    var skipAutoPlay = !!(options && options.skipAutoPlay);
     stopTimer();
     playlistItems.find('a').removeClass('playing');
     $item.find('a').addClass('playing');
@@ -419,10 +428,10 @@ if (event.data === YT.PlayerState.ENDED) {
     if (!trackUrl) {
       return;
     }
-    setPlayerSource();
+    setPlayerSource(skipAutoPlay);
   }
 
-  function setPlayerSource() {
+  function setPlayerSource(skipAutoPlay) {
     if (!trackUrl) {
       return;
     }
@@ -441,14 +450,22 @@ if (event.data === YT.PlayerState.ENDED) {
       if (videoId) {
         setYouTubeThumbnail(videoId);
         if (youtubeReady && youtubePlayer && typeof youtubePlayer.loadVideoById === 'function') {
-          youtubePlayer.loadVideoById(videoId);
-          youtubePlayer.playVideo();
+          if (skipAutoPlay) {
+            youtubePlayer.cueVideoById(videoId);
+          } else {
+            youtubePlayer.loadVideoById(videoId);
+            youtubePlayer.playVideo();
+          }
         } else {
           // Only queue the action, do NOT skip to next song
           pendingYouTubeAction = function() {
             if (youtubePlayer && typeof youtubePlayer.loadVideoById === 'function') {
-              youtubePlayer.loadVideoById(videoId);
-              youtubePlayer.playVideo();
+              if (skipAutoPlay) {
+                youtubePlayer.cueVideoById(videoId);
+              } else {
+                youtubePlayer.loadVideoById(videoId);
+                youtubePlayer.playVideo();
+              }
             }
           };
         }
@@ -461,7 +478,9 @@ if (event.data === YT.PlayerState.ENDED) {
       if (player) {
         player.setSrc([{ src: trackUrl }]);
         player.load();
-        player.play();
+        if (!skipAutoPlay) {
+          player.play();
+        }
       }
       $("#yt-thumb-link").hide();
       $("#yt-thumb").hide();
@@ -494,13 +513,43 @@ if (event.data === YT.PlayerState.ENDED) {
     $("#yt-thumb").show();
   }
 
-  // Playlist item click event
-  $playlist.on("click", "li", function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    currentTrack = $(this).index();
-    preparePlayer($(this));
-  });
+  // Helpers for PJAX phase 3.2 — re-query stale jQuery refs after a
+  // <main> swap, and re-apply .playing highlight on the current
+  // track when returning to the currently-playing mixtape (Q-D1).
+  function refreshPlaylistRefs() {
+    $playlist = $("#playlist");
+    playlistItems = $("#playlist li");
+  }
+
+  function highlightCurrentTrack() {
+    playlistItems.find('a').removeClass('playing');
+    if (playlistItems.length > currentTrack) {
+      $(playlistItems[currentTrack]).find('a').addClass('playing');
+    }
+  }
+
+  // Playlist item click — delegated on document with namespace
+  // 'click.lmt-tracklist' so it survives PJAX <main> swaps (the
+  // document persists across navigations). Detects cross-mixtape
+  // clicks via URL pathname (Q-C1) and switches the player to the
+  // displayed mixtape's track when needed.
+  $(document)
+    .off('click.lmt-tracklist')
+    .on('click.lmt-tracklist', '#playlist li', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var pageSlug = window.lmtGetMixtapeSlug();
+      var clickedIndex = $(this).index();
+      if (pageSlug !== window.lmtPlayerCurrentSlug) {
+        // Q-C1: user clicked a track of a different mixtape →
+        // switch the player to it (refresh playlist refs to point
+        // at the new <ul#playlist>).
+        window.lmtPlayerCurrentSlug = pageSlug;
+        refreshPlaylistRefs();
+      }
+      currentTrack = clickedIndex;
+      preparePlayer($(this));
+    });
 
   // Play/Pause button event
   $playPauseBtn.on("click", function (e) {
@@ -551,16 +600,56 @@ if (event.data === YT.PlayerState.ENDED) {
   // and standard navigation. The href is updated in preparePlayer()
   // for both #discogs-search (desktop) and #discogs-search-mobile.
 
-  // Start with the first track in the playlist
-  preparePlayer($(playlistItems[0]));
+  // Start with the first track in the playlist (initial single
+  // load only — PJAX arrival on a single is handled in the
+  // lmt:pjax:swapped listener below).
+  if (playlistItems.length > 0) {
+    preparePlayer($(playlistItems[0]));
+    window.lmtPlayerCurrentSlug = window.lmtGetMixtapeSlug();
 
-  // Reveal player slide-up animation. Moved here from main.js
-  // post-A2 refactor (Phase 1 PJAX) so the .visible class is only
-  // added when player.js runs (enqueued on is_singular('post')
-  // only). On non-single pages the markup exists (rendered in
-  // footer.php since refacto A2) but stays hidden via the
-  // .player-slide-up base CSS rule.
-  setTimeout(function () {
-    $('#footer-player').addClass('visible');
-  }, 300);
+    // Reveal player slide-up animation. Moved here from main.js
+    // post-A2 refactor (Phase 1 PJAX) so the .visible class is
+    // only added when player.js actually has a tracklist to play.
+    // On non-single pages (Phase 3.2: player.js loads site-wide)
+    // the markup exists but stays hidden via the .player-slide-up
+    // base CSS rule.
+    setTimeout(function () {
+      $('#footer-player').addClass('visible');
+    }, 300);
+  }
+
+  // PJAX phase 3.2 — re-bind tracklist + state sync after a
+  // <main> swap. Three cases (cf. _docs/p5.md decisions A1/B1/D1):
+  //   * lmtPlayerCurrentSlug === null (Q-A1): first PJAX arrival
+  //     on a single, never played anything → preload track 0
+  //     without auto-playing (cueVideoById / no .play()).
+  //   * Same mixtape (Q-D1): refresh playlist refs to the new
+  //     <ul#playlist> and re-apply .playing on currentTrack.
+  //   * Different mixtape with playback active (Q-B1): no-op —
+  //     playback continues on current mixtape, the new tracklist
+  //     is displayed without highlight. Cornerstone of the
+  //     omniscient player UX.
+  document.addEventListener('lmt:pjax:swapped', function () {
+    if (!document.body.classList.contains('single')) return;
+    if (!$('#playlist').length) return;
+    var newSlug = window.lmtGetMixtapeSlug();
+    if (window.lmtPlayerCurrentSlug === null) {
+      // Q-A1
+      window.lmtPlayerCurrentSlug = newSlug;
+      refreshPlaylistRefs();
+      currentTrack = 0;
+      if (playlistItems.length > 0) {
+        preparePlayer($(playlistItems[0]), { skipAutoPlay: true });
+        $('#footer-player').addClass('visible');
+      }
+    } else if (newSlug === window.lmtPlayerCurrentSlug) {
+      // Q-D1
+      refreshPlaylistRefs();
+      highlightCurrentTrack();
+    }
+    // Else (Q-B1): different mixtape, current playback continues.
+    // playlistItems intentionally left pointing at the previous
+    // (now-detached) DOM so playNextSong() keeps walking the
+    // currently playing mixtape's tracks.
+  });
 });
