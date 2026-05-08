@@ -220,6 +220,29 @@ function lmt_enqueue_assets() {
             true
         );
     }
+
+    // PJAX core — Phase 1/7. Intercepts internal link clicks and
+    // swaps <main> content via fetch + DOMParser to preserve global
+    // elements (#footer-player, dialogs, header, sidebar, scripts
+    // already loaded). Active site-wide on the frontend (no is_X()
+    // gate). Loading indicator is a 2px top bar (CSS-only,
+    // prefers-reduced-motion respected).
+    wp_enqueue_script(
+        'lmt-pjax',
+        $theme_uri . '/js/lmt-pjax.js',
+        array(),
+        lmt_asset_ver( 'js/lmt-pjax.js' ),
+        array(
+            'strategy'  => 'defer',
+            'in_footer' => true,
+        )
+    );
+    wp_enqueue_style(
+        'lmt-pjax',
+        $theme_uri . '/css/pjax.css',
+        array(),
+        lmt_asset_ver( 'css/pjax.css' )
+    );
 }
 add_action( 'wp_enqueue_scripts', 'lmt_enqueue_assets' );
 

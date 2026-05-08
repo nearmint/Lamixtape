@@ -216,14 +216,10 @@ jQuery(function ($) {
     // Phase 4 CHECKPOINT 3 fix #4 — see css/general.css trailer
     // for the rationale.
 
-    // =============================
-    // PLAYER SLIDE-UP ANIMATION
-    // =============================
-    $(function() {
-        setTimeout(function() {
-            $('#footer-player').addClass('visible');
-        }, 300);
-    });
+    // Player slide-up animation moved to js/player.js (Phase 1 PJAX,
+    // post-A2 refactor) so .visible is only added when player.js runs
+    // (is_singular('post') only). On non-single pages the markup
+    // exists in footer.php but stays hidden via .player-slide-up base.
 });
 
 // Smooth scrolling

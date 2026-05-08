@@ -553,4 +553,14 @@ if (event.data === YT.PlayerState.ENDED) {
 
   // Start with the first track in the playlist
   preparePlayer($(playlistItems[0]));
+
+  // Reveal player slide-up animation. Moved here from main.js
+  // post-A2 refactor (Phase 1 PJAX) so the .visible class is only
+  // added when player.js runs (enqueued on is_singular('post')
+  // only). On non-single pages the markup exists (rendered in
+  // footer.php since refacto A2) but stays hidden via the
+  // .player-slide-up base CSS rule.
+  setTimeout(function () {
+    $('#footer-player').addClass('visible');
+  }, 300);
 });
