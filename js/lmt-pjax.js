@@ -66,6 +66,22 @@
         'lmt-pjax-loading'
     ];
 
+    // Phase 6.1 — module-level AbortController tracking the
+    // currently in-flight PJAX fetch. Each call to
+    // performFetchAndSwap aborts the previous fetch (if still
+    // running) before starting a new one, so rapid concurrent
+    // clicks A → B → C end up with only the latest navigation
+    // winning. Without this, fetch A and fetch B could both
+    // resolve, with B's swap potentially overwritten by A's
+    // delayed .then() — visible bug : URL = B but content = A.
+    //
+    // The variable is reassigned on each call ; performFetchAndSwap
+    // takes a local snapshot (thisController) so the .finally
+    // clause can tell whether it is still the active controller
+    // (i.e. the latest navigation) or a stale one that was
+    // superseded by a more recent click.
+    var currentAbortController = null;
+
     function updateBodyClasses(newDoc) {
         var preserved = RUNTIME_CLASSES.filter(function(cls) {
             return document.body.classList.contains(cls);
@@ -186,6 +202,15 @@
         var isPopstate = options && options.isPopstate;
         var scrollY = (options && options.scrollY) || 0;
 
+        // Phase 6.1 — cancel any in-flight fetch before starting a
+        // new one. The local snapshot is what .catch / .finally
+        // compare against later to know if they're still owners.
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+        currentAbortController = new AbortController();
+        var thisController = currentAbortController;
+
         document.body.classList.add('lmt-pjax-loading');
 
         fetch(url, {
@@ -193,7 +218,8 @@
                 'Accept': 'text/html',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            credentials: 'same-origin'
+            credentials: 'same-origin',
+            signal: thisController.signal
         })
         .then(function(response) {
             if (!response.ok) {
@@ -235,11 +261,28 @@
             }));
         })
         .catch(function(err) {
+            // Phase 6.1 — AbortError = aborted by a more recent
+            // click. Silent return ; do NOT trigger the
+            // window.location.href fallback (which would wrongly
+            // reload the page after the user chose a new link).
+            if (err.name === 'AbortError') {
+                return;
+            }
             console.error('PJAX fetch failed:', err);
             window.location.href = url;
         })
         .finally(function() {
-            document.body.classList.remove('lmt-pjax-loading');
+            // Phase 6.1 — only release the loading-bar class if we
+            // are still the owning controller. If a newer click
+            // superseded us, the new performFetchAndSwap call has
+            // already re-added (idempotent) the class and will
+            // remove it when its own fetch settles. This keeps the
+            // loading bar visible continuously across rapid
+            // concurrent clicks rather than flashing on/off.
+            if (currentAbortController === thisController) {
+                currentAbortController = null;
+                document.body.classList.remove('lmt-pjax-loading');
+            }
         });
     }
 
