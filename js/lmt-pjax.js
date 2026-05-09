@@ -82,6 +82,46 @@
     // superseded by a more recent click.
     var currentAbortController = null;
 
+    // Phase 6.3 — detect whether any user-fillable form has been
+    // modified since render. Used to surface a confirm dialog
+    // before discarding the user's input on PJAX nav. Targets the
+    // CF7 contact form (#wpcf7-f6329-o1) inside #contactmodal —
+    // the only realistic user-fill on the site.
+    //
+    // Skips :
+    //   - Search forms (role='search' or .search-form) : query
+    //     inputs are not "dirtiable" in user-meaningful sense.
+    //   - Hidden / button / submit / reset inputs : not user-fill.
+    //   - Akismet honeypot textarea (name starts with _wpcf7_ak) :
+    //     hidden via CSS rather than type=hidden, would false-
+    //     positive otherwise.
+    //   - Turnstile injected inputs are naturally type=hidden.
+    function isAnyFormDirty() {
+        var forms = document.querySelectorAll('form');
+        for (var i = 0; i < forms.length; i++) {
+            var form = forms[i];
+            if (form.matches('[role="search"], .search-form')) continue;
+            var inputs = form.querySelectorAll('input, textarea, select');
+            for (var j = 0; j < inputs.length; j++) {
+                var input = inputs[j];
+                if (input.type === 'hidden' || input.type === 'button' ||
+                    input.type === 'submit' || input.type === 'reset') continue;
+                if (input.name && input.name.indexOf('_wpcf7_ak') === 0) continue;
+                if (input.value !== input.defaultValue) return true;
+            }
+        }
+        return false;
+    }
+
+    // Phase 6.3 — detect whether any form is currently mid-POST.
+    // CF7 toggles class 'submitting' on its <form> for the duration
+    // of the AJAX request (cf. wp-content/plugins/contact-form-7/
+    // includes/js/index.js). The data-submitting attribute is a
+    // generic fallback any future form might use.
+    function isAnyFormSubmitting() {
+        return !!document.querySelector('form.submitting, form[data-submitting="true"]');
+    }
+
     // Phase 6.2 — close any open native <dialog> before navigating.
     // Prevents the modal from lingering on the swapped page (UX
     // confusion) and covers the popstate-with-modal edge case.
@@ -218,6 +258,25 @@
     function performFetchAndSwap(url, options) {
         var isPopstate = options && options.isPopstate;
         var scrollY = (options && options.scrollY) || 0;
+
+        // Phase 6.3 — Q3 : silently block PJAX while a form is
+        // mid-submission (don't lose the user's in-flight POST).
+        // Applies to popstate too — never abort an in-flight submit.
+        if (isAnyFormSubmitting()) {
+            return;
+        }
+
+        // Phase 6.3 — Q2 : confirm before discarding dirty form
+        // data. Skip on popstate : browser back/forward is an
+        // intentional user nav, matches native browser behavior
+        // (no confirm on back) and avoids the URL/content desync
+        // that would arise if the user cancelled a popstate-driven
+        // confirm (browser already moved through history).
+        if (!isPopstate && isAnyFormDirty()) {
+            if (!window.confirm('You have unsaved changes. Leave without sending?')) {
+                return;
+            }
+        }
 
         // Phase 6.1 — cancel any in-flight fetch before starting a
         // new one. The local snapshot is what .catch / .finally
