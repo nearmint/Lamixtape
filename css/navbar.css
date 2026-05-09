@@ -248,21 +248,24 @@ nav .lmt-logo {
  * markup classes and JS animateMenuItems()/resetMenuItems()
  * helpers were removed alongside. */
 
-/* ========== Sticky header on home (after section.about) ==========
+/* ========== Sticky header on home + single ==========
  *
- * On the home template (body.home), js/sticky-header.js watches
- * the <section class="about"> via IntersectionObserver. When the
- * section exits the viewport through the top, the body gets the
- * `lmt-sticky-header-active` class and the <header> wrapping the
- * navbar becomes fixed at the top with a slide-down + fade-in
- * entry animation. When the user scrolls back up and the about
- * section re-enters the viewport, the class is removed and the
+ * On home and single mixtape templates, js/sticky-header.js watches
+ * a trigger element via IntersectionObserver :
+ *   - body.home   → <section class="about">
+ *   - body.single → <article class="mixtape">
+ * When the trigger exits the viewport through the top, the body
+ * gets the `lmt-sticky-header-active` class and the <header>
+ * wrapping the navbar becomes fixed at the top with a slide-down +
+ * fade-in entry animation. When the user scrolls back up and the
+ * trigger re-enters the viewport, the class is removed and the
  * header returns to its natural place in the flow.
  *
- * Scope is gated 3-fold so the rule is inert everywhere else:
- *   1. body.home guards the CSS selector
- *   2. js/sticky-header.js early-returns if !body.home
- *   3. functions.php only enqueues the JS on home pages
+ * Scope is gated 2-fold so the rule is inert everywhere else:
+ *   1. body:is(.home, .single) guards the CSS selector
+ *   2. js/sticky-header.js early-returns if !body.home && !body.single
+ * (Phase 3.5 dropped the PHP enqueue gate for site-wide loading;
+ * the JS function is harmless on other templates thanks to gate 2.)
  *
  * Sidebar push compatibility (Phase Recette II L4): on desktop
  * ≥992px when the side panel is open (body.lmt-sidebar-open), the
@@ -277,7 +280,7 @@ nav .lmt-logo {
  * the inner <nav>, and the rule below sets #333 on the <header>
  * wrapper — both align so the sticky bar reads as a uniform
  * #333 strip. */
-body.home.lmt-sticky-header-active header {
+body:is(.home, .single).lmt-sticky-header-active header {
     position: fixed;
     top: 0;
     left: 0;
@@ -301,7 +304,7 @@ body.home.lmt-sticky-header-active header {
 }
 
 @media (min-width: 992px) {
-    body.home.lmt-sticky-header-active.lmt-sidebar-open header {
+    body:is(.home, .single).lmt-sticky-header-active.lmt-sidebar-open header {
         left: 280px;
     }
 }
@@ -309,7 +312,7 @@ body.home.lmt-sticky-header-active header {
 /* Respect prefers-reduced-motion: skip the slide-down animation,
  * the header just appears in its final position. */
 @media (prefers-reduced-motion: reduce) {
-    body.home.lmt-sticky-header-active header {
+    body:is(.home, .single).lmt-sticky-header-active header {
         animation: none;
     }
 }

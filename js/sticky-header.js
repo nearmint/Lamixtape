@@ -1,20 +1,24 @@
 /**
- * Sticky header reveal on the home template.
+ * Sticky header reveal on home + single templates.
  *
- * Watches <section class="about"> via IntersectionObserver. When
- * the section exits the viewport through the top (user scrolled
- * past it), toggle `lmt-sticky-header-active` on <body> so the
- * CSS in css/navbar.css turns the <header> fixed with a slide-down
- * + fade-in animation. When the section re-enters, the class is
+ * Watches a trigger element via IntersectionObserver. When the
+ * element exits the viewport through the top (user scrolled past
+ * it), toggle `lmt-sticky-header-active` on <body> so the CSS in
+ * css/navbar.css turns the <header> fixed with a slide-down +
+ * fade-in animation. When the element re-enters, the class is
  * removed and the header returns to its natural place in the flow.
+ *
+ * Trigger element per template :
+ *   - body.home   → <section class="about">
+ *   - body.single → <article class="mixtape">
  *
  * Phase 3.5 (PJAX) — refactored into an idempotent
  * initStickyHeader() function so it can re-init after each
- * lmt:pjax:swapped event. Triple gating reduced to:
- *   1. JS body.home guard inside initStickyHeader()
- *   2. CSS rules in navbar.css scoped to body.home...
+ * lmt:pjax:swapped event. Gating reduced to:
+ *   1. JS body.home || body.single guard inside initStickyHeader()
+ *   2. CSS rules in navbar.css scoped to body:is(.home, .single)...
  * (PHP enqueue gate dropped for site-wide loading; the JS function
- * is harmless on non-home pages thanks to the guard above.)
+ * is harmless on non-home/non-single pages thanks to the guard above.)
  *
  * IntersectionObserver is preferred over a scroll listener: native,
  * passive, GPU-friendly, no jank on mobile.
@@ -38,12 +42,13 @@
         // Q1: early-return inside the function so it can be called
         // unconditionally on every PJAX swap (the JS file is now
         // loaded site-wide).
-        if (!document.body.classList.contains('home')) {
+        if (!document.body.classList.contains('home') &&
+            !document.body.classList.contains('single')) {
             return;
         }
 
-        var aboutSection = document.querySelector('section.about');
-        if (!aboutSection) {
+        var triggerEl = document.querySelector('section.about, article.mixtape');
+        if (!triggerEl) {
             return;
         }
 
@@ -53,11 +58,11 @@
 
         observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
-                // The about section has exited the viewport through the
-                // TOP when isIntersecting is false AND its top is above
-                // the viewport (negative). We don't activate on bottom
-                // exit (that would happen if the user resized to a tiny
-                // viewport, edge case not worth covering).
+                // The trigger element has exited the viewport through
+                // the TOP when isIntersecting is false AND its top is
+                // above the viewport (negative). We don't activate on
+                // bottom exit (would happen if the user resized to a
+                // tiny viewport, edge case not worth covering).
                 if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
                     document.body.classList.add(STICKY_CLASS);
                 } else {
@@ -69,7 +74,7 @@
             rootMargin: '0px'
         });
 
-        observer.observe(aboutSection);
+        observer.observe(triggerEl);
     }
 
     if (document.readyState === 'loading') {
