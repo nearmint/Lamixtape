@@ -107,6 +107,7 @@
                 if (input.type === 'hidden' || input.type === 'button' ||
                     input.type === 'submit' || input.type === 'reset') continue;
                 if (input.name && input.name.indexOf('_wpcf7_ak') === 0) continue;
+                if (input.name === 'hp') continue; // Phase 9.3 lmt-contact honeypot
                 if (input.value !== input.defaultValue) return true;
             }
         }

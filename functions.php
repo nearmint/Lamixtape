@@ -137,6 +137,7 @@ function lmt_enqueue_assets() {
         'list-of-mixtapes'     => 'css/list-of-mixtapes.css',
         'player'               => 'css/player.css',
         'text'                 => 'css/text.css',
+        'contact'              => 'css/contact.css',
     );
     foreach ( $theme_css as $slug => $rel ) {
         wp_enqueue_style( 'lmt-' . $slug, $theme_uri . '/' . $rel, array( 'lmt-tailwind' ), lmt_asset_ver( $rel ) );
@@ -218,6 +219,12 @@ function lmt_enqueue_assets() {
     // Loaded site-wide because the modal triggers live in header.php
     // (mobile menu) and content templates (single, index).
     wp_enqueue_script( 'lmt-dialogs', $theme_uri . '/js/dialogs.js', array(), null, true );
+
+    // Contact form AJAX submit (Phase 9.3 — Item 1, CF7 → native).
+    // Vanilla JS (no jQuery), delegated submit on document so it
+    // survives PJAX swaps. Loaded site-wide because the contact
+    // modal is reachable from the burger menu on every page.
+    wp_enqueue_script( 'lmt-contact', $theme_uri . '/js/contact.js', array(), lmt_asset_ver( 'js/contact.js' ), true );
 
     // Infinite scroll — loaded site-wide for PJAX cross-page init
     // (Phase 3.4). The script early-returns at runtime if no

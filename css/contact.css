@@ -1,0 +1,174 @@
+/* ========== Contact form — Phase 9.2 ==========
+ *
+ * Native PHP form rendered by lmt_render_contact_form() inside the
+ * #contactmodal <dialog>. Replaces the legacy Contact Form 7
+ * shortcode (Item 1, Phase 9). Brutalist/zine styling consistent
+ * with the rest of the theme : transparent surfaces, yellow accents
+ * (#feff00) matching the btn-donate pattern in donation.css,
+ * border-radius 0 throughout.
+ *
+ * UX choice (Phase 9.2 user feedback) : labels are visually hidden
+ * via .sr-only (still announced by screen readers) and replaced by
+ * placeholders for sighted users. Vertical gap is compact (0.5rem)
+ * and the submit button spans the input width for visual balance.
+ *
+ * Honeypot is positioned off-screen (left:-9999px) so humans + AT
+ * skip it but scrapers can still reach it (silent 422 backend
+ * reject if filled).
+ */
+
+.lmt-contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+}
+
+.lmt-contact-field {
+    display: flex;
+    flex-direction: column;
+}
+
+/* sr-only — visually hidden but accessible to screen readers.
+ * Standard utility (used elsewhere in the theme) for the labels
+ * that are visually replaced by placeholders. */
+.lmt-contact-form .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.lmt-contact-field input,
+.lmt-contact-field textarea {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    padding: 0.5rem 0.75rem;
+    color: #fff;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.lmt-contact-field input::placeholder,
+.lmt-contact-field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+}
+
+.lmt-contact-field input:focus,
+.lmt-contact-field textarea:focus,
+.lmt-contact-field input:focus-visible,
+.lmt-contact-field textarea:focus-visible {
+    outline: none;
+    border-color: #feff00;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.lmt-contact-field textarea {
+    resize: vertical;
+    min-height: 6rem;
+    font-family: inherit;
+}
+
+/* Honeypot — hidden from users + assistive tech, reachable by
+ * scrapers. Backend silently rejects (422) if filled. */
+.lmt-contact-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Submit + reset buttons — mirror the btn-donate pattern in
+ * donation.css (transparent, 2px yellow border, yellow text, no
+ * radius). Submit is full width to match the inputs ; reset
+ * (success state) keeps a natural padding-based width. */
+.lmt-contact-actions {
+    margin-top: 0.5rem;
+}
+
+.lmt-contact-submit {
+    width: 100%;
+    background-color: #fff;
+    border: solid 2px #fff;
+    border-radius: 0;
+    padding: 0.75rem 1.5rem;
+    color: #c16ecf;
+    font: inherit;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.lmt-contact-submit:hover,
+.lmt-contact-submit:focus-visible {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.lmt-contact-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Submitting state — applied to the form during AJAX POST in
+ * Phase 9.3. Visually dims + locks the form so the user can't
+ * interact while the request is in flight. */
+.lmt-contact-form.submitting {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: wait;
+}
+
+/* Inline feedback — only shown on validation / network errors.
+ * Success uses the dedicated .lmt-contact-success-state element
+ * which replaces the form entirely. Yellow palette for visual
+ * coherence with the .lmt-contact-reset button + theme accents. */
+.lmt-contact-feedback {
+    display: none;
+    padding: 0.75rem;
+    border: 2px solid #feff00;
+    background-color: transparent;
+    color: #feff00;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.lmt-contact-feedback.lmt-contact-error {
+    display: block;
+}
+
+/* Success state — the form is hidden via [hidden] attribute and
+ * this block is revealed (browser-native unhide) after a 200
+ * response. Full-width box with yellow border + yellow text for
+ * visual emphasis on successful submission. */
+.lmt-contact-success-state {
+    width: 100%;
+    background-color: transparent;
+    border: 2px solid #feff00;
+    color: #feff00;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.lmt-contact-success-message {
+    margin: 0;
+    color: #feff00;
+    font-size: 1.05rem;
+}
+
+/* Reset button kept in markup for potential future use, hidden
+ * via CSS per UX decision (Phase 9.3) — keep messaging
+ * unidirectional : user submits → confirmation, no loop back. */
+.lmt-contact-reset {
+    display: none;
+}

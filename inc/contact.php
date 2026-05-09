@@ -222,22 +222,16 @@ function lmt_render_contact_form() {
     ?>
     <form id="lmt-contact-form" class="lmt-contact-form" novalidate data-nonce="<?php echo esc_attr( $nonce ); ?>">
         <div class="lmt-contact-field">
-            <label for="lmt-contact-name"><?php esc_html_e( 'Name (optional)', 'lamixtape' ); ?></label>
-            <input type="text" id="lmt-contact-name" name="name" maxlength="100" autocomplete="name" />
+            <label for="lmt-contact-name" class="sr-only"><?php esc_html_e( 'Name (optional)', 'lamixtape' ); ?></label>
+            <input type="text" id="lmt-contact-name" name="name" maxlength="100" autocomplete="name" placeholder="<?php esc_attr_e( 'Name', 'lamixtape' ); ?>" />
         </div>
         <div class="lmt-contact-field">
-            <label for="lmt-contact-email">
-                <?php esc_html_e( 'Email', 'lamixtape' ); ?>
-                <span class="lmt-required" aria-hidden="true">*</span>
-            </label>
-            <input type="email" id="lmt-contact-email" name="email" required autocomplete="email" />
+            <label for="lmt-contact-email" class="sr-only"><?php esc_html_e( 'Email (required)', 'lamixtape' ); ?></label>
+            <input type="email" id="lmt-contact-email" name="email" required autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'lamixtape' ); ?>" />
         </div>
         <div class="lmt-contact-field">
-            <label for="lmt-contact-message">
-                <?php esc_html_e( 'Message', 'lamixtape' ); ?>
-                <span class="lmt-required" aria-hidden="true">*</span>
-            </label>
-            <textarea id="lmt-contact-message" name="message" rows="5" minlength="10" maxlength="5000" required></textarea>
+            <label for="lmt-contact-message" class="sr-only"><?php esc_html_e( 'Message (required)', 'lamixtape' ); ?></label>
+            <textarea id="lmt-contact-message" name="message" rows="5" minlength="10" maxlength="5000" required placeholder="<?php esc_attr_e( 'Message', 'lamixtape' ); ?>"></textarea>
         </div>
         <div class="lmt-contact-hp" aria-hidden="true">
             <label for="lmt-contact-hp">URL</label>

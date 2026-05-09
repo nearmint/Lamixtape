@@ -38,7 +38,7 @@
             </h2>
             <p class="mb-6">Your feedback helps us, we read each message and reply personally.</p>
             <div class="form-container">
-                <?php echo do_shortcode( '[contact-form-7 id="66478de" title="Contact"]' ); ?>
+                <?php lmt_render_contact_form(); ?>
             </div>
         </div>
     </dialog>
