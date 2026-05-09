@@ -288,5 +288,61 @@ a#discogs-search:focus-visible {
     transform: none;
 }
 
+/* ========== Phase 8.3 — Omniscient player mixtape link ==========
+ *
+ * Visible at all times during playback in the omniscient player —
+ * shows a color dot (ACF 'color' field) and the title of the mixtape
+ * currently loaded into the player (which may differ from the page
+ * being viewed during PJAX cross-page playback). Click → PJAX nav to
+ * that mixtape's page (handler delegated by lmt-pjax Phase 1).
+ *
+ * Two markup targets, kept in sync by updatePlayerMixtapeDisplay() :
+ *   - #lmt-current-mixtape-link        (desktop, in col 1 below #title)
+ *   - #lmt-current-mixtape-link-mobile (mobile, dedicated line 2)
+ *
+ * Layout : flex row with 6px gap between the 16px color dot and the
+ * mixtape name. Dot height matches the Discogs icon (16px) for
+ * visual coherence. Name truncates with ellipsis on long titles ;
+ * dot keeps its size via flex-shrink: 0.
+ */
+.lmt-mixtape-link {
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+}
+.lmt-mixtape-link:hover,
+.lmt-mixtape-link:focus-visible {
+    opacity: 1;
+}
+.lmt-mixtape-color {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: transparent;
+}
+.lmt-mixtape-name {
+    display: block;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+@media (max-width: 768px) {
+    .lmt-player-mixtape-line {
+        padding-top: 2px;
+    }
+    .lmt-mixtape-name {
+        font-size: 0.75rem;
+    }
+}
+
 /* ========== [END player.css] ========== */
 

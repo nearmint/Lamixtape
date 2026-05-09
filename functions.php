@@ -146,12 +146,24 @@ function lmt_enqueue_assets() {
     // info + REST nonce (consumed as `lmtData` inside the closure in
     // main.js).
     wp_enqueue_script( 'lmt-main', $theme_uri . '/js/main.js', array( 'jquery' ), null, true );
-    wp_localize_script( 'lmt-main', 'lmtData', array(
+    $lmt_data = array(
         'template_url' => $theme_uri,
         'site_url'     => site_url(),
         'post_id'      => get_queried_object_id(),
         'nonce'        => wp_create_nonce( 'wp_rest' ),
-    ) );
+    );
+    // Phase 8.3 — expose mixtape title + permalink to the player
+    // closure so the omniscient player can display the mixtape name
+    // and link back to its page (delegated PJAX handler from Phase 1
+    // intercepts the click). Single-only : these keys stay absent on
+    // home / category / search etc., where they would be meaningless.
+    if ( is_singular( 'post' ) ) {
+        $lmt_data['mixtape_title'] = get_the_title();
+        $lmt_data['mixtape_url']   = get_permalink();
+        $lmt_color                 = get_field( 'color' );
+        $lmt_data['mixtape_color'] = $lmt_color ? $lmt_color : null;
+    }
+    wp_localize_script( 'lmt-main', 'lmtData', $lmt_data );
 
     // Sticky header JS — loaded site-wide for PJAX cross-page init
     // (Phase 3.5). Watches <section class="about"> via

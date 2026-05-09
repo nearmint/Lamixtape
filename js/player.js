@@ -72,6 +72,19 @@ jQuery(function ($) {
   // would target the wrong mixtape during PJAX cross-page playback.
   window.lmtPlayerCurrentId = window.lmtPlayerCurrentId || null;
 
+  // Phase 8.3 — title + url + color of the mixtape currently loaded
+  // in the player, displayed in the omniscient player (#lmt-current-
+  // mixtape-link, desktop + mobile) so the user can click back to the
+  // playing mixtape's page from anywhere. Click is intercepted by the
+  // PJAX delegated handler (Phase 1). Synced at 3 points : initial
+  // single load (from lmtData), Q-A1 first PJAX arrival on single,
+  // and Q-C1 cross-mixtape track click (both read from current DOM).
+  // Color = ACF 'color' field (#RRGGBB), rendered as a 16px dot next
+  // to the mixtape name.
+  window.lmtPlayerCurrentTitle = window.lmtPlayerCurrentTitle || null;
+  window.lmtPlayerCurrentUrl = window.lmtPlayerCurrentUrl || null;
+  window.lmtPlayerCurrentColor = window.lmtPlayerCurrentColor || null;
+
   // Phase Tracking v1 — flag to prevent duplicate play_start events.
   // YouTube `PLAYING` state and MediaElement `playing` event both
   // fire on initial play AND on resume after pause. We only want to
@@ -539,6 +552,54 @@ if (event.data === YT.PlayerState.ENDED) {
     return match ? parseInt(match[1], 10) : null;
   }
 
+  // Phase 8.3 — extract the mixtape title from document.title.
+  // lmt-pjax (Phase 4.1) updates document.title from the swapped
+  // page's <title>, so this returns the current page's title at
+  // call time. Defensive regex strips common Rank Math suffixes
+  // (' — Lamixtape', ' - Lamixtape', ' | Lamixtape') ; if no match,
+  // returns the full title rather than empty (graceful fallback).
+  function getCurrentPageTitle() {
+    var t = document.title || '';
+    return t.replace(/\s+[—\-|]\s+Lamixtape\s*$/i, '').trim() || t.trim();
+  }
+
+  // Phase 8.3 — read the ACF mixtape color from <article class=
+  // "mixtape" data-color="#rrggbb"> in the swapped <main>. lmt-pjax
+  // swaps <main> on every PJAX nav, so this returns the displayed
+  // single's color at call time. Defensive regex validates #RRGGBB
+  // format ; returns null on invalid / missing / non-single page.
+  function getCurrentMixtapeColor() {
+    var article = document.querySelector('article.mixtape');
+    if (!article) { return null; }
+    var color = article.dataset.color;
+    return (color && /^#[0-9a-f]{6}$/i.test(color)) ? color : null;
+  }
+
+  // Phase 8.3 — sync the omniscient player's mixtape link DOM with
+  // window.lmtPlayerCurrentTitle / Url / Color. Updates both desktop
+  // and mobile <a> together (idiomatic of #title / #title-mobile,
+  // #discogs-search / #discogs-search-mobile pattern). Hides both
+  // when no mixtape is loaded (initial state on home, etc.). Color
+  // dot is hidden via background-color cleared when invalid.
+  function updatePlayerMixtapeDisplay() {
+    var $links = $('#lmt-current-mixtape-link, #lmt-current-mixtape-link-mobile');
+    if (!$links.length) { return; }
+    if (!window.lmtPlayerCurrentTitle || !window.lmtPlayerCurrentUrl) {
+      $links.hide();
+      return;
+    }
+    $links.attr('href', window.lmtPlayerCurrentUrl);
+    $('#lmt-current-mixtape-name, #lmt-current-mixtape-name-mobile')
+      .text(window.lmtPlayerCurrentTitle);
+    var $dots = $('#lmt-current-mixtape-color, #lmt-current-mixtape-color-mobile');
+    if (window.lmtPlayerCurrentColor) {
+      $dots.css({ 'background-color': window.lmtPlayerCurrentColor, 'display': '' });
+    } else {
+      $dots.hide();
+    }
+    $links.css('display', '');
+  }
+
   function highlightCurrentTrack() {
     playlistItems.find('a').removeClass('playing');
     if (playlistItems.length > currentTrack) {
@@ -563,9 +624,15 @@ if (event.data === YT.PlayerState.ENDED) {
         // switch the player to it (refresh playlist refs to point
         // at the new <ul#playlist>). Phase 3.6: also sync currentId
         // so autoplay's getCurrentMixtapeId() points to the new
-        // mixtape when its last track ends.
+        // mixtape when its last track ends. Phase 8.3: sync
+        // currentTitle + currentUrl so the omniscient player link
+        // tracks the new mixtape.
         window.lmtPlayerCurrentSlug = pageSlug;
         window.lmtPlayerCurrentId = getPostIdFromBodyClass();
+        window.lmtPlayerCurrentTitle = getCurrentPageTitle();
+        window.lmtPlayerCurrentUrl = window.location.href;
+        window.lmtPlayerCurrentColor = getCurrentMixtapeColor();
+        updatePlayerMixtapeDisplay();
         refreshPlaylistRefs();
       }
       currentTrack = clickedIndex;
@@ -634,6 +701,16 @@ if (event.data === YT.PlayerState.ENDED) {
     window.lmtPlayerCurrentId = (typeof lmtData !== 'undefined' && lmtData.post_id)
       ? parseInt(lmtData.post_id, 10) || null
       : getPostIdFromBodyClass();
+    // Phase 8.3 — sync currentTitle + currentUrl + currentColor from
+    // lmtData on initial single load (canonical, set server-side via
+    // wp_localize_script with get_the_title() + get_permalink() +
+    // ACF get_field('color')).
+    if (typeof lmtData !== 'undefined' && lmtData.mixtape_title && lmtData.mixtape_url) {
+      window.lmtPlayerCurrentTitle = lmtData.mixtape_title;
+      window.lmtPlayerCurrentUrl = lmtData.mixtape_url;
+      window.lmtPlayerCurrentColor = lmtData.mixtape_color || null;
+      updatePlayerMixtapeDisplay();
+    }
 
     // Reveal player slide-up animation. Moved here from main.js
     // post-A2 refactor (Phase 1 PJAX) so the .visible class is
@@ -667,6 +744,14 @@ if (event.data === YT.PlayerState.ENDED) {
       // Phase 3.6 — first arrival on single, sync currentId from
       // body class (lmt-pjax updates document.body.className on swap).
       window.lmtPlayerCurrentId = getPostIdFromBodyClass();
+      // Phase 8.3 — sync currentTitle + currentUrl + currentColor from
+      // the new page (document.title updated by lmt-pjax Phase 4.1,
+      // location updated by history.pushState, color read from
+      // article.mixtape data-color attribute in the swapped <main>).
+      window.lmtPlayerCurrentTitle = getCurrentPageTitle();
+      window.lmtPlayerCurrentUrl = window.location.href;
+      window.lmtPlayerCurrentColor = getCurrentMixtapeColor();
+      updatePlayerMixtapeDisplay();
       refreshPlaylistRefs();
       currentTrack = 0;
       if (playlistItems.length > 0) {

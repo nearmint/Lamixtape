@@ -14,13 +14,27 @@
 	  			</div>
 	  		</div>
 
-	  		<!-- DESKTOP ONLY: Col 1 (thumbnail + title) -->
+	  		<!-- MOBILE ONLY: Line 2 (mixtape color dot + name link, Phase 8.3) -->
+	  		<div class="w-full md:hidden lmt-player-mixtape-line">
+	  			<a id="lmt-current-mixtape-link-mobile" href="" class="lmt-mixtape-link no--border" style="display:none;">
+	  				<span id="lmt-current-mixtape-color-mobile" class="lmt-mixtape-color" aria-hidden="true"></span>
+	  				<span id="lmt-current-mixtape-name-mobile" class="lmt-mixtape-name"></span>
+	  			</a>
+	  		</div>
+
+	  		<!-- DESKTOP ONLY: Col 1 (thumbnail + title + mixtape link) -->
 	  		<div class="w-1/4 px-4 hidden md:block">
 	  			<div class="flex items-center gap-[10px]">
 	  				<a id="yt-thumb-link" href="#" target="_blank" rel="noopener" style="display:none;" class="no--border">
             <img id="yt-thumb" src="" alt="Track thumbnail" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" loading="lazy" decoding="async">
           </a>
-	  				<div id="title" style="white-space:nowrap;overflow:hidden;"></div>
+	  				<div class="flex flex-col overflow-hidden">
+	  					<div id="title" style="white-space:nowrap;overflow:hidden;"></div>
+	  					<a id="lmt-current-mixtape-link" href="" class="lmt-mixtape-link no--border" style="display:none;">
+	  						<span id="lmt-current-mixtape-color" class="lmt-mixtape-color" aria-hidden="true"></span>
+	  						<span id="lmt-current-mixtape-name" class="lmt-mixtape-name"></span>
+	  					</a>
+	  				</div>
 	  			</div>
 	  		</div>
 
