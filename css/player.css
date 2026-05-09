@@ -130,6 +130,25 @@ a#discogs-search:focus-visible {
         font-size: 0.875rem;
         font-weight: 500;
     }
+    /* Discrete separator between Discogs link and track title in
+     * the mobile player. Pure CSS via ::before — no DOM markup
+     * added. Subtle alpha for discrete visual weight on dark bg.
+     * .lmt-player-title-wrap is promoted to flex so ::before and
+     * #title-mobile sit on the same horizontal line, vertically
+     * centered. */
+    .lmt-player-title-wrap {
+        display: flex;
+        align-items: center;
+    }
+    .lmt-player-title-wrap::before {
+        content: '';
+        display: inline-block;
+        width: 1px;
+        height: 0.7em;
+        background-color: rgba(255, 255, 255, 0.2);
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
     /* Mobile Discogs link — logo + "Discogs" text label inside a
      * single <a> click target. Uses the existing .no--border class
      * to defeat the global a-default underline + a:hover
