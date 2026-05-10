@@ -218,21 +218,29 @@ function lmt_contact_submit( WP_REST_Request $request ) {
         )
     );
 
+    // TEMP DEBUG (Phase 9.7 prod diagnosis) — verbose error
+    // messages exposing the Web3Forms response. To be reverted as
+    // soon as the cause is identified.
     if ( is_wp_error( $response ) ) {
         return new WP_Error(
             'lmt_mail_transport_failed',
-            __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
+            sprintf( 'WP_Error: %s', $response->get_error_message() ),
             array( 'status' => 500 )
         );
     }
 
-    $response_code = (int) wp_remote_retrieve_response_code( $response );
-    $response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+    $response_code     = (int) wp_remote_retrieve_response_code( $response );
+    $response_body_raw = wp_remote_retrieve_body( $response );
+    $response_body     = json_decode( $response_body_raw, true );
 
     if ( 200 !== $response_code || empty( $response_body['success'] ) ) {
         return new WP_Error(
             'lmt_mail_transport_failed',
-            __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
+            sprintf(
+                'Web3Forms response code=%d body=%s',
+                $response_code,
+                substr( $response_body_raw, 0, 500 )
+            ),
             array( 'status' => 500 )
         );
     }
