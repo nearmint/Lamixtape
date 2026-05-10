@@ -7,6 +7,7 @@ require_once get_template_directory() . '/inc/queries.php';
 require_once get_template_directory() . '/inc/rest.php';
 require_once get_template_directory() . '/inc/seo.php';
 require_once get_template_directory() . '/inc/contact.php';
+require_once get_template_directory() . '/inc/listen-on.php';
 
 // -----------------------------------------------------
 // ------------------- Theme setup ---------------------

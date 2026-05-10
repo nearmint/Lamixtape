@@ -47,8 +47,6 @@ jQuery(function ($) {
   var $playPauseBtn = $("#play-pause");
   var $titleDiv = $("#title");
   var $titleMobile = $("#title-mobile");
-  var $discogsSearchBtn = $("#discogs-search");
-  var $discogsSearchMobile = $("#discogs-search-mobile");
   var $playerCountdown = $("#player-countdown");
   var $debugDiv = $("#debug");
   var $playlist = $("#playlist");
@@ -419,17 +417,10 @@ if (event.data === YT.PlayerState.ENDED) {
     $titleDiv.text(trackTitle);
     $titleMobile.text(trackTitle);
 
-    // Mobile player redesign — update Discogs search URL on both
-    // the desktop link and the mobile link. Native <a target="_blank">
-    // handles the click; no JS handler needed. Always constructible
-    // since the search URL is built from the title — no "missing link"
-    // case (cf. spec : "Toujours un lien Discogs").
-    var trimmedTitle = (trackTitle || '').trim().replace(/\s+/g, ' ');
-    var discogsSearchUrl = trimmedTitle
-      ? 'https://www.discogs.com/search/?q=' + encodeURIComponent(trimmedTitle) + '&type=all'
-      : 'https://www.discogs.com/search/';
-    $discogsSearchBtn.attr('href', discogsSearchUrl);
-    $discogsSearchMobile.attr('href', discogsSearchUrl);
+    // Phase 11.1 — Discogs button replaced by the multi-service
+    // "Listen on" dropdown. Search URLs are now built lazily via
+    // updateListenOnLinks() at toggle time (handler at the bottom
+    // of this closure) so each open reflects the current track.
 
     // Mobile player redesign — reset countdown to −0:00 (typographic
     // MINUS SIGN U+2212) until loadedmetadata fires and
@@ -577,10 +568,10 @@ if (event.data === YT.PlayerState.ENDED) {
 
   // Phase 8.3 — sync the omniscient player's mixtape link DOM with
   // window.lmtPlayerCurrentTitle / Url / Color. Updates both desktop
-  // and mobile <a> together (idiomatic of #title / #title-mobile,
-  // #discogs-search / #discogs-search-mobile pattern). Hides both
-  // when no mixtape is loaded (initial state on home, etc.). Color
-  // dot is hidden via background-color cleared when invalid.
+  // and mobile <a> together (idiomatic of the #title / #title-mobile
+  // dual-markup pattern). Hides both when no mixtape is loaded
+  // (initial state on home, etc.). Color dot is hidden via
+  // background-color cleared when invalid.
   function updatePlayerMixtapeDisplay() {
     var $links = $('#lmt-current-mixtape-link, #lmt-current-mixtape-link-mobile');
     if (!$links.length) { return; }
@@ -682,11 +673,12 @@ if (event.data === YT.PlayerState.ENDED) {
     isSeeking = false;
   });
 
-  // Discogs link click handler removed — the <button> + window.open()
-  // pair was migrated to <a target="_blank" rel="noopener" href="..."
-  // aria-label="Discogs link"> for better A11y, middle-click support,
-  // and standard navigation. The href is updated in preparePlayer()
-  // for both #discogs-search (desktop) and #discogs-search-mobile.
+  // Discogs standalone button retired in Phase 11.1 ; replaced by
+  // the multi-service "Listen on" dropdown. Discogs is one of the
+  // five entries in the dropdown, alongside Spotify, Apple Music,
+  // YouTube and Deezer. Search URLs are built lazily by
+  // updateListenOnLinks() at toggle time (handler at the bottom
+  // of this closure).
 
   // Start with the first track in the playlist (initial single
   // load only — PJAX arrival on a single is handled in the
@@ -797,6 +789,9 @@ if (event.data === YT.PlayerState.ENDED) {
       var tag = target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (target.isContentEditable) return;
+      // Phase 11.1 — let Space open the Listen on dropdown via
+      // its native button click, not toggle play/pause.
+      if (target.classList && target.classList.contains('lmt-listen-on-trigger')) return;
     }
 
     if (currentType === null) return;
@@ -817,5 +812,91 @@ if (event.data === YT.PlayerState.ENDED) {
         player.setCurrentTime(0);
       }
     }
+  });
+
+  // Phase 11.1 — "Listen on" dropdown handlers (replaces the
+  // standalone Discogs button). The two markup instances (desktop
+  // col 3 and mobile line 1) are both rendered by
+  // lmt_render_listen_on() in inc/listen-on.php and share the
+  // same .lmt-listen-on-* class hooks, so a single set of
+  // delegated handlers drives both.
+  //
+  // href attributes on the entries are intentionally rendered
+  // empty server-side ; updateListenOnLinks() rewrites them at
+  // toggle time so each open reflects the track currently loaded
+  // in the player (closure var trackTitle, kept fresh across PJAX
+  // by preparePlayer()).
+  var LISTEN_ON_URLS = {
+    spotify:     'https://open.spotify.com/search/{query}',
+    apple_music: 'https://music.apple.com/search?term={query}',
+    youtube:     'https://www.youtube.com/results?search_query={query}',
+    deezer:      'https://www.deezer.com/search/{query}',
+    discogs:     'https://www.discogs.com/search/?q={query}&type=all'
+  };
+  var LISTEN_ON_FALLBACK = {
+    spotify:     'https://open.spotify.com/search',
+    apple_music: 'https://music.apple.com/search',
+    youtube:     'https://www.youtube.com',
+    deezer:      'https://www.deezer.com/search',
+    discogs:     'https://www.discogs.com/search/'
+  };
+
+  function buildListenOnUrl(service, title) {
+    if (!LISTEN_ON_URLS[service]) return null;
+    var trimmed = (title || '').trim().replace(/\s+/g, ' ');
+    if (!trimmed) {
+      return LISTEN_ON_FALLBACK[service] || '#';
+    }
+    return LISTEN_ON_URLS[service].replace('{query}', encodeURIComponent(trimmed));
+  }
+
+  function updateListenOnLinks() {
+    var links = document.querySelectorAll('.lmt-listen-on-dropdown a[data-service]');
+    for (var i = 0; i < links.length; i++) {
+      var service = links[i].getAttribute('data-service');
+      var url = buildListenOnUrl(service, trackTitle);
+      if (url) links[i].setAttribute('href', url);
+    }
+  }
+
+  function closeAllListenDropdowns() {
+    $('.lmt-listen-on-dropdown').prop('hidden', true);
+    $('.lmt-listen-on-trigger').attr('aria-expanded', 'false');
+  }
+
+  // Click trigger → toggle (open + lazy update links).
+  $(document).on('click', '.lmt-listen-on-trigger', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $trigger = $(this);
+    var $wrap = $trigger.closest('.lmt-listen-on-wrap');
+    var $dropdown = $wrap.find('.lmt-listen-on-dropdown');
+    var willOpen = $dropdown.prop('hidden');
+    closeAllListenDropdowns();
+    if (willOpen) {
+      updateListenOnLinks();
+      $dropdown.prop('hidden', false);
+      $trigger.attr('aria-expanded', 'true');
+    }
+  });
+
+  // Click outside any wrap → close.
+  $(document).on('click', function (e) {
+    if (!$(e.target).closest('.lmt-listen-on-wrap').length) {
+      closeAllListenDropdowns();
+    }
+  });
+
+  // Escape → close.
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeAllListenDropdowns();
+    }
+  });
+
+  // Click a service entry → close (the link itself opens in a
+  // new tab via target=_blank).
+  $(document).on('click', '.lmt-listen-on-dropdown a[data-service]', function () {
+    closeAllListenDropdowns();
   });
 });
