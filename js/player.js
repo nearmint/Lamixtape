@@ -293,6 +293,38 @@ if (event.data === YT.PlayerState.ENDED) {
     }
   }
 
+  // Pre-validate track URLs at load (and after PJAX swap) to mark
+  // legacy invalid URLs as unavailable BEFORE the user can click
+  // them. Complements the runtime onError detection above (which
+  // catches dead-but-syntactically-valid URLs : private YouTube
+  // videos, deleted MP3s, etc.) by also catching URLs that never
+  // even reach the network — typically `http://0` from the historic
+  // SoundCloud cleanup, plus empty strings, '#', '0', non-HTTP(S)
+  // protocols and unparseable URLs.
+  function isInvalidTrackUrl(url) {
+    if (!url || typeof url !== 'string') return true;
+    var trimmed = url.trim();
+    if (!trimmed) return true;
+    if (trimmed === '#' || trimmed === '0') return true;
+    if (/^https?:\/\/0\/?$/i.test(trimmed)) return true;
+    try {
+      var u = new URL(trimmed);
+      return !(u.protocol === 'http:' || u.protocol === 'https:');
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function markInvalidTrackUrls() {
+    if (!playlistItems || !playlistItems.length) return;
+    playlistItems.each(function (i) {
+      var url = $(this).find('a').attr('data-src') || '';
+      if (isInvalidTrackUrl(url)) {
+        markTrackUnavailable(i);
+      }
+    });
+  }
+
   function formatTime(seconds) {
     if (isNaN(seconds) || seconds === undefined || seconds === null || seconds === Infinity) return '00:00';
     seconds = Math.max(0, seconds);
@@ -531,6 +563,7 @@ if (event.data === YT.PlayerState.ENDED) {
   function refreshPlaylistRefs() {
     $playlist = $("#playlist");
     playlistItems = $("#playlist li");
+    markInvalidTrackUrls();
   }
 
   // PJAX phase 3.6 — read the post_id from body class (`postid-X`,
@@ -608,6 +641,11 @@ if (event.data === YT.PlayerState.ENDED) {
     .on('click.lmt-tracklist', '#playlist li', function (e) {
       e.preventDefault();
       e.stopImmediatePropagation();
+      // Skip pre-marked unavailable tracks (legacy http://0 URLs
+      // and runtime onError-failed tracks) — preventing
+      // preparePlayer() from churning currentTrack/currentType
+      // for a known dead URL.
+      if ($(this).hasClass('lmt-track-unavailable')) return;
       var pageSlug = window.lmtGetMixtapeSlug();
       var clickedIndex = $(this).index();
       if (pageSlug !== window.lmtPlayerCurrentSlug) {
@@ -679,6 +717,10 @@ if (event.data === YT.PlayerState.ENDED) {
   // YouTube and Deezer. Search URLs are built lazily by
   // updateListenOnLinks() at toggle time (handler at the bottom
   // of this closure).
+
+  // Pre-validate URLs once at initial load — PJAX swaps re-run
+  // this via refreshPlaylistRefs().
+  markInvalidTrackUrls();
 
   // Start with the first track in the playlist (initial single
   // load only — PJAX arrival on a single is handled in the
