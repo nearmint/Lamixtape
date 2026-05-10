@@ -4,15 +4,17 @@
  *
  * Replaces Contact Form 7 (Item 1, Phase 9). Exposes :
  *   POST /wp-json/lamixtape/v1/contact
- *     Forwards a message to the site owner via the Web3Forms API
- *     (wp_mail() native is silently blocked on OVH — Phase 9.7).
+ *     Forwards a message to the site owner via the Formspree API
+ *     (wp_mail() native is silently blocked on OVH — Phase 9.7 ;
+ *     Web3Forms was blocked by Cloudflare bot protection — 9.8).
  *     Permission : wp_rest nonce + rate-limit 5/hour/IP (transients).
  *     Antispam   : honeypot field (silent 422 on fill).
  *     Validation : name 0-100, email FILTER_VALIDATE_EMAIL,
  *                  message 10-5000 chars.
- *     Transport  : LMT_WEB3FORMS_KEY constant (wp-config.php).
- *     Recipient  : LMT_CONTACT_EMAIL constant (wp-config.php),
- *                  passed to Web3Forms as 'email_to' override.
+ *     Transport  : LMT_FORMSPREE_ENDPOINT constant (wp-config).
+ *     Recipient  : fixed at form creation in Formspree dashboard
+ *                  (LMT_CONTACT_EMAIL no longer used by transport
+ *                  but kept as defensive fallback in the code).
  *
  * Loaded from functions.php via require_once.
  *
@@ -182,12 +184,17 @@ function lmt_contact_submit( WP_REST_Request $request ) {
         );
     }
 
-    // Phase 9.7 — wp_mail() native is silently blocked on OVH
-    // (CF7 didn't work either, confirmed by user). We forward the
-    // payload to the Web3Forms API instead, which delivers the
-    // mail using their infrastructure. Access key stored in the
-    // LMT_WEB3FORMS_KEY constant (wp-config.php, not committed).
-    if ( ! defined( 'LMT_WEB3FORMS_KEY' ) || ! LMT_WEB3FORMS_KEY ) {
+    // Phase 9.8 — switched to Formspree forwarding service.
+    // Web3Forms (Phase 9.7) was blocked by Cloudflare bot
+    // protection (403 + challenge HTML) for server-side requests
+    // from shared OVH IPs. Formspree is friendlier to backend
+    // POSTs and does not paywall server-side delivery. The form
+    // endpoint URL is stored in LMT_FORMSPREE_ENDPOINT (wp-config,
+    // not committed). Recipient is fixed at form creation in the
+    // Formspree dashboard ; LMT_CONTACT_EMAIL is no longer used
+    // by the transport but kept above as a defensive fallback for
+    // any future swap back to a direct mailer.
+    if ( ! defined( 'LMT_FORMSPREE_ENDPOINT' ) || ! LMT_FORMSPREE_ENDPOINT ) {
         return new WP_Error(
             'lmt_misconfigured',
             __( 'Contact form is misconfigured (no mail transport).', 'lamixtape' ),
@@ -196,18 +203,14 @@ function lmt_contact_submit( WP_REST_Request $request ) {
     }
 
     $payload = array(
-        'access_key' => LMT_WEB3FORMS_KEY,
-        'subject'    => $subject,
-        'email'      => $email,
-        'name'       => $name_for_subject,
-        'from_name'  => 'Lamixtape Contact',
-        'reply_to'   => $email,
-        'email_to'   => $to,
-        'message'    => $body,
+        'name'     => $name_for_subject,
+        'email'    => $email,
+        '_subject' => $subject,
+        'message'  => $body,
     );
 
     $response = wp_remote_post(
-        'https://api.web3forms.com/submit',
+        LMT_FORMSPREE_ENDPOINT,
         array(
             'timeout' => 15,
             'headers' => array(
@@ -218,29 +221,34 @@ function lmt_contact_submit( WP_REST_Request $request ) {
         )
     );
 
-    // TEMP DEBUG (Phase 9.7 prod diagnosis) — verbose error
-    // messages exposing the Web3Forms response. To be reverted as
-    // soon as the cause is identified.
     if ( is_wp_error( $response ) ) {
         return new WP_Error(
             'lmt_mail_transport_failed',
-            sprintf( 'WP_Error: %s', $response->get_error_message() ),
+            __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
             array( 'status' => 500 )
         );
     }
 
-    $response_code     = (int) wp_remote_retrieve_response_code( $response );
-    $response_body_raw = wp_remote_retrieve_body( $response );
-    $response_body     = json_decode( $response_body_raw, true );
+    $response_code = (int) wp_remote_retrieve_response_code( $response );
+    $response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-    if ( 200 !== $response_code || empty( $response_body['success'] ) ) {
+    // Formspree variants : `ok=true`, `success=true`, or a `next`
+    // field on the redirect-style response. Any of those on a 200
+    // is treated as success.
+    $is_success = (
+        200 === $response_code
+        && is_array( $response_body )
+        && (
+            ! empty( $response_body['ok'] )
+            || ! empty( $response_body['success'] )
+            || ! empty( $response_body['next'] )
+        )
+    );
+
+    if ( ! $is_success ) {
         return new WP_Error(
             'lmt_mail_transport_failed',
-            sprintf(
-                'Web3Forms response code=%d body=%s',
-                $response_code,
-                substr( $response_body_raw, 0, 500 )
-            ),
+            __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
             array( 'status' => 500 )
         );
     }
