@@ -64,14 +64,3 @@
 #contactmodal .modal-content input::placeholder, #contactmodal .modal-content textarea::placeholder {
     color: #fff;
 }
-
-.wpcf7 form.sent .wpcf7-response-output {
-    border: solid 2px #fff;
-    width: 75%;
-    padding: 10px;
-}
-
-.wpcf7 form.sent .wpcf7-response-output {
-    border-color: white;
-    width: 100%;
-}

@@ -85,17 +85,16 @@
     // Phase 6.3 — detect whether any user-fillable form has been
     // modified since render. Used to surface a confirm dialog
     // before discarding the user's input on PJAX nav. Targets the
-    // CF7 contact form (#wpcf7-f6329-o1) inside #contactmodal —
-    // the only realistic user-fill on the site.
+    // native contact form (#lmt-contact-form) inside #contactmodal
+    // — the only realistic user-fill on the site (CF7 retired in
+    // Phase 9.6).
     //
     // Skips :
     //   - Search forms (role='search' or .search-form) : query
     //     inputs are not "dirtiable" in user-meaningful sense.
     //   - Hidden / button / submit / reset inputs : not user-fill.
-    //   - Akismet honeypot textarea (name starts with _wpcf7_ak) :
-    //     hidden via CSS rather than type=hidden, would false-
-    //     positive otherwise.
-    //   - Turnstile injected inputs are naturally type=hidden.
+    //   - Native form honeypot 'hp' (Phase 9.3 lmt-contact) :
+    //     defensive skip in case a bot fills it before nav.
     function isAnyFormDirty() {
         var forms = document.querySelectorAll('form');
         for (var i = 0; i < forms.length; i++) {
@@ -106,7 +105,6 @@
                 var input = inputs[j];
                 if (input.type === 'hidden' || input.type === 'button' ||
                     input.type === 'submit' || input.type === 'reset') continue;
-                if (input.name && input.name.indexOf('_wpcf7_ak') === 0) continue;
                 if (input.name === 'hp') continue; // Phase 9.3 lmt-contact honeypot
                 if (input.value !== input.defaultValue) return true;
             }
@@ -115,10 +113,11 @@
     }
 
     // Phase 6.3 — detect whether any form is currently mid-POST.
-    // CF7 toggles class 'submitting' on its <form> for the duration
-    // of the AJAX request (cf. wp-content/plugins/contact-form-7/
-    // includes/js/index.js). The data-submitting attribute is a
-    // generic fallback any future form might use.
+    // The native contact form (Phase 9.3 lmt-contact) toggles
+    // class 'submitting' on its <form> for the duration of the
+    // AJAX fetch (cf. js/contact.js submitForm()). The
+    // data-submitting attribute is a generic fallback any future
+    // form might use.
     function isAnyFormSubmitting() {
         return !!document.querySelector('form.submitting, form[data-submitting="true"]');
     }

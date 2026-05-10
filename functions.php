@@ -299,13 +299,14 @@ add_action( 'wp_head', 'lmt_preload_outfit_font', 1 );
  * Preconnect to third-party origins used at runtime.
  *
  * Phase 7 audit (audit-post-refacto.md section 1.3) — Lighthouse
- * reported "Preconnect to required origins" as a 322ms saving on 3
- * URLs out of 4. The two recurring third-party origins are:
- *   - Cloudflare Turnstile (challenges.cloudflare.com) — loaded by
- *     CF7 form on the contact modal, render-blocking on single
- *     pages
+ * reported "Preconnect to required origins" as a 322ms saving.
+ * The remaining recurring third-party origin is:
  *   - YouTube IFrame API (www.youtube.com) — loaded dynamically by
  *     js/player.js when a YouTube track is selected
+ *
+ * Phase 9.6 — challenges.cloudflare.com (Cloudflare Turnstile,
+ * loaded by CF7 contact form) was removed after CF7 was replaced
+ * by the native form (Item 1).
  *
  * Both `dns-prefetch` (cheaper) and `preconnect` (handshake) are
  * emitted: `preconnect` is the primary win, `dns-prefetch` is a
@@ -318,7 +319,6 @@ add_action( 'wp_head', 'lmt_preload_outfit_font', 1 );
  */
 function lmt_preconnect_third_party() {
     $origins = array(
-        'https://challenges.cloudflare.com',
         'https://www.youtube.com',
     );
     foreach ( $origins as $origin ) {
@@ -377,10 +377,9 @@ add_filter( 'script_loader_tag', 'lmt_defer_scripts', 10, 2 );
  * - X-Powered-By:              removed (PHP version leak).
  *
  * Content-Security-Policy is intentionally NOT posted here — the
- * matrix (Bootstrap inline, YouTube iframe, MediaElement, Cloudflare
- * Turnstile, Umami SaaS, ACF dynamic style="...") is non-trivial.
- * Tracked as Q11 in CLAUDE.md, scheduled for Phase 5/6 after the
- * Tailwind migration eliminates Bootstrap-driven inline behaviour.
+ * matrix (YouTube iframe, MediaElement, Umami SaaS, Formspree
+ * connect-src, ACF dynamic style="...") is non-trivial. Tracked
+ * as Q11 in CLAUDE.md, scheduled post-refacto.
  *
  * Skipped on the admin side: WP / plugins set their own headers
  * there and the trade-offs (e.g. iframe previews, framed media

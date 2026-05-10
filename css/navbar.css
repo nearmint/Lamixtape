@@ -236,12 +236,6 @@ nav .lmt-logo {
     }
 }
 
-/* ========== Contact Form 7 ========== */
-.wpcf7 form.sent .wpcf7-response-output {
-    width: 100%;
-    border: solid 2px #fff;
-}
-
 /* Phase Recette II L4 step 2 — entrance animations on menu items
  * (.menu-fade-in, .menu-delay-*) removed: the new minimal sidebar
  * favors instant reveal over staggered animation. The matching
