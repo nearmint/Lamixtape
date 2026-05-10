@@ -35,31 +35,6 @@
     text-overflow: clip;
 }
 
-.btn-discogs {
-    font-size: 12px;
-}
-
-/* #discogs-search migrated from <button> to <a> — preserve the legacy
- * desktop visual. The Tailwind `border border-white` utilities supply
- * a 4-sided 1px white border. We must override two global <a> rules
- * from css/general.css that would otherwise alter the look:
- *   1. Default <a> underline (text-decoration).
- *   2. `a:hover { border-bottom: solid 2px CurrentColor; padding-bottom:
- *      1px }` — this would replace the Tailwind 1px bottom border with
- *      a 2px one and shift the button vertically by 1px.
- * The targeted #id selector wins specificity over the unlayered global
- * rules cleanly without !important. */
-a#discogs-search {
-    text-decoration: none;
-}
-a#discogs-search:hover,
-a#discogs-search:focus,
-a#discogs-search:focus-visible {
-    text-decoration: none;
-    border-bottom: solid 1px #fff;
-    padding-bottom: 0.25rem;
-}
-
 @keyframes marquee {
     0%   { text-indent: 100%; }
     100% { text-indent: -100%; }
@@ -124,7 +99,11 @@ a#discogs-search:focus-visible {
         gap: 6px;
     }
     .lmt-player-info-mobile {
-        overflow: hidden;
+        /* Phase 11.1 — overflow:hidden removed : it clipped the
+         * absolutely-positioned "Listen on" dropdown on mobile.
+         * The title scroll marquee clipping is already handled by
+         * the child .lmt-player-title-wrap which has its own
+         * overflow:hidden. */
     }
     .lmt-player-info-mobile .lmt-player-title {
         font-size: 0.875rem;
@@ -341,6 +320,111 @@ a#discogs-search:focus-visible {
     }
     .lmt-mixtape-name {
         font-size: 0.75rem;
+    }
+}
+
+/* ========== Phase 11.1 — "Listen on" dropdown ==================
+ *
+ * Replaces the standalone "Search on Discogs" button (desktop col
+ * 3) and the "Discogs" link (mobile line 1) with a unified
+ * trigger button that opens a dropdown listing 5 streaming /
+ * crate-digging services. Markup rendered by lmt_render_listen_on()
+ * in inc/listen-on.php (two instances : desktop + mobile).
+ *
+ * Dropdown opens above the player (bottom: 100% on the wrap),
+ * aligned right on desktop and left on mobile so it stays on
+ * screen on small viewports.
+ *
+ * Icons inherit currentColor by default ; per-service brand
+ * colour rules below override on hover.
+ */
+.lmt-listen-on-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.lmt-listen-on-trigger {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    color: #fff;
+    padding: 0.4rem 0.8rem;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    line-height: 1;
+}
+.lmt-listen-on-trigger:hover,
+.lmt-listen-on-trigger:focus-visible {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.lmt-listen-on-chevron {
+    transition: transform 200ms ease-out;
+    flex-shrink: 0;
+}
+.lmt-listen-on-trigger[aria-expanded="true"] .lmt-listen-on-chevron {
+    transform: rotate(180deg);
+}
+
+.lmt-listen-on-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    margin: 0;
+    padding: 0.25rem;
+    min-width: 180px;
+    background-color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    list-style: none;
+    z-index: 100;
+}
+.lmt-listen-on-dropdown[hidden] {
+    display: none;
+}
+
+.lmt-listen-on-dropdown li {
+    margin: 0;
+    padding: 0;
+}
+
+.lmt-listen-on-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+.lmt-listen-on-dropdown a:hover,
+.lmt-listen-on-dropdown a:focus-visible {
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+.lmt-service-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: rgba(255, 255, 255, 0.85);
+}
+
+/* Mobile : align dropdown to the left of the trigger so it
+ * doesn't overflow the right edge of the screen on narrow
+ * viewports. */
+@media (max-width: 768px) {
+    .lmt-listen-on-dropdown {
+        right: auto;
+        left: 0;
+    }
+    .lmt-listen-on-trigger {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
     }
 }
 
