@@ -768,4 +768,54 @@ if (event.data === YT.PlayerState.ENDED) {
     // (now-detached) DOM so playNextSong() keeps walking the
     // currently playing mixtape's tracks.
   });
+
+  // Phase 10.1 — Keyboard controls.
+  //
+  // Space        → toggle play/pause (reuses existing
+  //                $playPauseBtn click handler, preserves YouTube
+  //                readyness fallback + pendingYouTubeAction logic)
+  // ArrowRight   → next track (or autoplay end-of-mixtape if last
+  //                track, leveraging Phase 3.6 autoplay)
+  // ArrowLeft    → restart current track (idempotent if at 0)
+  //
+  // Skips :
+  //   - Modifier keys pressed (Cmd/Ctrl/Alt) — preserve browser
+  //     shortcuts (Cmd+Space spotlight, Ctrl+Right history, etc.)
+  //   - Focus on input/textarea/select/contenteditable — preserve
+  //     text input UX (form contact, future search inputs)
+  //   - currentType === null — page sans player (404, fresh visit
+  //     without playback, PJAX Q-A1 first arrival before track load)
+  //
+  // Listener attached on document inside this jQuery closure runs
+  // once at DOMContentLoaded. document persists across PJAX swaps,
+  // so the listener stays bound naturally without any re-init.
+  document.addEventListener('keydown', function (event) {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+    var target = document.activeElement;
+    if (target) {
+      var tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (target.isContentEditable) return;
+    }
+
+    if (currentType === null) return;
+
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      $playPauseBtn.trigger('click');
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      if (!triggerAutoplayIfLastTrack()) {
+        playNextSong();
+      }
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (currentType === 'youtube' && youtubePlayer && typeof youtubePlayer.seekTo === 'function') {
+        youtubePlayer.seekTo(0, true);
+      } else if (currentType === 'mp3' && player) {
+        player.setCurrentTime(0);
+      }
+    }
+  });
 });
