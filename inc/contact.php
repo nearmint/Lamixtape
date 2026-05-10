@@ -4,11 +4,15 @@
  *
  * Replaces Contact Form 7 (Item 1, Phase 9). Exposes :
  *   POST /wp-json/lamixtape/v1/contact
- *     Sends a message to the site owner via wp_mail().
+ *     Forwards a message to the site owner via the Web3Forms API
+ *     (wp_mail() native is silently blocked on OVH — Phase 9.7).
  *     Permission : wp_rest nonce + rate-limit 5/hour/IP (transients).
  *     Antispam   : honeypot field (silent 422 on fill).
  *     Validation : name 0-100, email FILTER_VALIDATE_EMAIL,
  *                  message 10-5000 chars.
+ *     Transport  : LMT_WEB3FORMS_KEY constant (wp-config.php).
+ *     Recipient  : LMT_CONTACT_EMAIL constant (wp-config.php),
+ *                  passed to Web3Forms as 'email_to' override.
  *
  * Loaded from functions.php via require_once.
  *
@@ -161,11 +165,6 @@ function lmt_contact_submit( WP_REST_Request $request ) {
     $body .= 'IP: ' . $ip . "\n";
     $body .= 'Date: ' . gmdate( 'Y-m-d H:i:s' ) . " UTC\n";
 
-    $headers = array(
-        'Content-Type: text/plain; charset=UTF-8',
-        'Reply-To: ' . $email,
-    );
-
     // Resolve recipient — never hardcode an email address in this
     // file because the theme repo is public on GitHub. The canonical
     // source of truth is the LMT_CONTACT_EMAIL constant defined in
@@ -178,16 +177,61 @@ function lmt_contact_submit( WP_REST_Request $request ) {
     if ( ! $to || ! is_email( $to ) ) {
         return new WP_Error(
             'lmt_misconfigured',
-            __( 'Contact form is misconfigured.', 'lamixtape' ),
+            __( 'Contact form is misconfigured (no destination email).', 'lamixtape' ),
             array( 'status' => 500 )
         );
     }
 
-    $sent = wp_mail( $to, $subject, $body, $headers );
-
-    if ( ! $sent ) {
+    // Phase 9.7 — wp_mail() native is silently blocked on OVH
+    // (CF7 didn't work either, confirmed by user). We forward the
+    // payload to the Web3Forms API instead, which delivers the
+    // mail using their infrastructure. Access key stored in the
+    // LMT_WEB3FORMS_KEY constant (wp-config.php, not committed).
+    if ( ! defined( 'LMT_WEB3FORMS_KEY' ) || ! LMT_WEB3FORMS_KEY ) {
         return new WP_Error(
-            'lmt_mail_failed',
+            'lmt_misconfigured',
+            __( 'Contact form is misconfigured (no mail transport).', 'lamixtape' ),
+            array( 'status' => 500 )
+        );
+    }
+
+    $payload = array(
+        'access_key' => LMT_WEB3FORMS_KEY,
+        'subject'    => $subject,
+        'email'      => $email,
+        'name'       => $name_for_subject,
+        'from_name'  => 'Lamixtape Contact',
+        'reply_to'   => $email,
+        'email_to'   => $to,
+        'message'    => $body,
+    );
+
+    $response = wp_remote_post(
+        'https://api.web3forms.com/submit',
+        array(
+            'timeout' => 15,
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Accept'       => 'application/json',
+            ),
+            'body'    => wp_json_encode( $payload ),
+        )
+    );
+
+    if ( is_wp_error( $response ) ) {
+        return new WP_Error(
+            'lmt_mail_transport_failed',
+            __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
+            array( 'status' => 500 )
+        );
+    }
+
+    $response_code = (int) wp_remote_retrieve_response_code( $response );
+    $response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+    if ( 200 !== $response_code || empty( $response_body['success'] ) ) {
+        return new WP_Error(
+            'lmt_mail_transport_failed',
             __( 'Failed to send the message. Please try again later.', 'lamixtape' ),
             array( 'status' => 500 )
         );
